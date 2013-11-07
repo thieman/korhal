@@ -17,7 +17,7 @@
 
 (defn korhal-main [& args]
   (let [ai (korhal.core.)]
-    (.start (:api @ai))))
+    (.start (:api @(.state ai)))))
 
 (defn korhal-init [this]
   [[] (atom {:api (jnibwapi.JNIBWAPI. this)})])
