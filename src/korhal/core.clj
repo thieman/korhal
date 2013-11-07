@@ -55,7 +55,16 @@
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
       (when (and (< 50 (.. (:api @this) getSelf getMinerals)) (not (:morphed-drone this)))
         (.morph (:api @this) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
-        (swap-keys (.state this) :morphed-drone true)))))
+        (swap-keys (.state this) :morphed-drone true))))
+
+  ;; collect minerals
+  (for [unit (.getMyUnits (:api @this))]
+    (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
+      (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @this))))
+        (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Mineral_Field)))
+              mineral (first (filter mineral? (.getNeutralUnits (:api @this))))]
+        (.rightClick (.getID unit) (.getID mineral)))))))
+
 
 
 (defn korhal-gameEnded [this])
