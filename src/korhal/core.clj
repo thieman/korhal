@@ -16,19 +16,20 @@
   (merge curr-val {k v}))
 
 (defn korhal-main [& args]
-  (let [ai (korhal.core.)
-        api (jnibwapi.JNIBWAPI. ai)]
-    (reset! (.state ai) {:api api})
-    (.start api)))
+  (let [ai (korhal.core.)]
+    (.start (:api @ai))))
 
 (defn korhal-init [this]
-  [[] (atom {})])
+  [[] (atom {:api (jnibwapi.JNIBWAPI. this)})])
+
+(defn korhal-deref [this]
+  @(.state this))
 
 (defn korhal-connected [this])
 
 (defn korhal-gameStarted [this]
   (println "Here we go!")
-  (doto (:api @(.state this))
+  (doto (:api @this)
     (.enableUserInput)
     (.enablePerfectInformation)
     (.setGameSpeed 0)
