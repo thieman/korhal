@@ -61,7 +61,7 @@
   (for [unit (.getMyUnits (:api @this))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
       (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @this))))
-        (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Mineral_Field)))
+        (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
               mineral (first (filter mineral? (.getNeutralUnits (:api @this))))]
         (.rightClick (.getID unit) (.getID mineral)))))))
 
