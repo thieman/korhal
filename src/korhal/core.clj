@@ -18,7 +18,7 @@
 
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
-        api (jnibwapi.JNIBWAPI. this)]
+        api (jnibwapi.JNIBWAPI. ai)]
     (swap! (.state ai) swap-key :api api)
     (.start (:api @ai))))
 
