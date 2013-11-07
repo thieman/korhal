@@ -2,7 +2,7 @@
   (:import (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)
            (jnibwapi.model.Unit)
-           (jnibwapi.util.BWColor)))
+           (jnibwapi.types.UnitType.UnitTypes)))
 
 (gen-class
  :name "korhal.core"
@@ -16,6 +16,10 @@
 (defn swap-key [curr-val k v]
   (merge curr-val {k v}))
 
+(defmacro swap-keys [swap-atom & forms]
+  (for [pair (partition 2 forms)]
+    `(swap! swap-atom swap-key ~@pair)))
+
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
         api (jnibwapi.JNIBWAPI. ai)]
@@ -28,7 +32,8 @@
 (defn korhal-deref [this]
   @(.state this))
 
-(defn korhal-connected [this])
+(defn korhal-connected [this]
+  (.loadTypeData (:api @this)))
 
 (defn korhal-gameStarted [this]
   (println "Here we go!")
@@ -36,9 +41,23 @@
     (.enableUserInput)
     (.enablePerfectInformation)
     (.setGameSpeed 0)
-    (.loadMapData true)))
+    (.loadMapData true))
+  (swap-keys (.state this)
+    :claimed []
+    :morphed-drone false
+    :pool-drone -1
+    :supply-cap 0))
 
-(defn korhal-gameUpdate [this])
+(defn korhal-gameUpdate [this]
+
+  ;; spawn a drone
+  (for [unit (.getMyUnits (:api @this))]
+    (when (= (.getTypeID unit) (.. jnibwapi.types.UnitType.UnitTypes Zerg_Larve getID))
+      (when (and (< 50 (.. (:api @this) getSelf getMinerals)) (not (:morphed-drone this)))
+        (.morph (:api @this) (.getID unit) (.. jnibwapi.types.UnitType.UnitTypes Zerg_Drone getID))
+        (swap-keys (.state this) :morphed-drone true)))))
+
+
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
 (defn korhal-matchEnded [this winner])
