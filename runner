@@ -1,0 +1,1 @@
+java -Djava.library.path=C:/repos/korhal/jnibwapi/release -jar target/korhal-0.1.0-SNAPSHOT-standalone.jar
