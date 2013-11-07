@@ -51,12 +51,11 @@
 (defn korhal-gameUpdate [this]
 
   (println "updating")
-  (println (.getMyUnits (:api @this)))
 
   ;; spawn a drone
   (for [unit (.getMyUnits (:api @this))]
-    (do (println unit)
-        (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
+    (do (println "bacon")
+        #_(when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
           (when (and (>= (.. (:api @this) getSelf getMinerals) 50) (not (:morphed-drone this)))
             (println "morphing a drone")
             (.morph (:api @this) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
