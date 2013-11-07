@@ -12,9 +12,11 @@
  :constructors {[] []}
  :prefix "korhal-")
 
-(defn korhal-main [& args] (korhal.core.))
+(defn korhal-main [& args]
+  (let [ai (new korhal.core)]
+    (.start (jnibwapi.JNIBWAPI. ai))))
 
-(defn korhal-init [this] (.start (jnibwapi.JNIBWAPI. this)))
+(defn korhal-init [this] [[] "state"])
 
 (defn korhal-connected [this])
 (defn korhal-gameStarted [this])
