@@ -1,21 +1,22 @@
 (ns korhal.core
-  (:import (jnibwapi JNIBWAPI BWAPIEventListener)
-           (jnibwapi.model Unit)
-           (jnibwapi.util BWColor)))
+  (:import (jnibwapi.JNIBWAPI)
+           (jnibwapi.BWAPIEventListener)
+           (jnibwapi.model.Unit)
+           (jnibwapi.util.BWColor)))
 
 (gen-class
  :name "korhal.core"
- :implements [JNIBWAPI]
+ :implements [jnibwapi.BWAPIEventListener]
  :state state
  :main true
  :constructors {[] []}
  :prefix "korhal-")
 
 (defn korhal-main [& args]
-  (let [ai (new korhal.core)
-        api (JNIBWAPI. ai)]
+  (let [ai (korhal.core.)
+        api (jnibwapi.JNIBWAPI. ai)]
     (compare-and-set! (.state ai) @(.state ai) (merge @(.state ai) {:api api}))
-    (.start api))))
+    (.start api)))
 
 (defn korhal-init [this]
   [[] (atom {})])
