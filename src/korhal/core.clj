@@ -12,10 +12,13 @@
  :constructors {[] []}
  :prefix "korhal-")
 
+(defn swap-key [curr-val k v]
+  (merge curr-val {k v}))
+
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
         api (jnibwapi.JNIBWAPI. ai)]
-    (compare-and-set! (.state ai) @(.state ai) (merge @(.state ai) {:api api}))
+    (swap! (.state ai) swap-key :api api)
     (.start api)))
 
 (defn korhal-init [this]
