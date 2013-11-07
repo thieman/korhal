@@ -29,15 +29,12 @@
 (defn korhal-init []
   [[] (atom {})])
 
-(defn korhal-deref [this]
-  @(.state this))
-
 (defn korhal-connected [this]
-  (.loadTypeData (:api @this)))
+  (.loadTypeData (:api @(.state this))))
 
 (defn korhal-gameStarted [this]
   (println "Here we go!")
-  (doto (:api @this)
+  (doto (:api @(.state this))
     (.enableUserInput)
     (.enablePerfectInformation)
     (.setGameSpeed 0)
@@ -50,20 +47,22 @@
 
 (defn korhal-gameUpdate [this]
 
+  (println "updating")
+
   ;; spawn a drone
-  (doseq [unit (.getMyUnits (:api @this))]
+  (doseq [unit (.getMyUnits (:api @(.state this)))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
-      (when (and (>= (.. (:api @this) getSelf getMinerals) 50) (not (:morphed-drone this)))
+      (when (and (>= (.. (:api @(.state this)) getSelf getMinerals) 50) (not (:morphed-drone this)))
         (println "morphing a drone")
-        (.morph (:api @this) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
+        (.morph (:api @(.state this)) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
         (swap-keys (.state this) :morphed-drone true))))
 
   ;; collect minerals
-  (for [unit (.getMyUnits (:api @this))]
+  (for [unit (.getMyUnits (:api @(.state this)))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
-      (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @this))))
+      (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @(.state this)))))
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
-              mineral (first (filter mineral? (.getNeutralUnits (:api @this))))]
+              mineral (first (filter mineral? (.getNeutralUnits (:api @(.state this)))))]
         (.rightClick (.getID unit) (.getID mineral)))))))
 
 
