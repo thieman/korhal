@@ -49,6 +49,8 @@
 
 (defn korhal-gameUpdate [this]
 
+  (println (.getMyUnits (:api @this)))
+
   ;; spawn a drone
   (for [unit (.getMyUnits (:api @this))]
     (do (println unit)
