@@ -53,7 +53,7 @@
   ;; spawn a drone
   (for [unit (.getMyUnits (:api @this))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
-      (when (and (< 50 (.. (:api @this) getSelf getMinerals)) (not (:morphed-drone this)))
+      (when (and (>= (.. (:api @this) getSelf getMinerals) 50) (not (:morphed-drone this)))
         (.morph (:api @this) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
         (swap-keys (.state this) :morphed-drone true))))
 
