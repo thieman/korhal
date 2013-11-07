@@ -69,7 +69,9 @@
         (println "collecting minerals")
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
               mineral (first (filter mineral? (.getNeutralUnits (:api @this))))]
-        (.rightClick (.getID unit) (.getID mineral)))))))
+        (.rightClick (.getID unit) (.getID mineral))))))
+
+  (println "end of update"))
 
 
 
