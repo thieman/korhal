@@ -8,6 +8,7 @@
  :name "korhal.core"
  :implements [jnibwapi.BWAPIEventListener]
  :state state
+ :init korhal-init
  :main true
  :constructors {[] []}
  :prefix "korhal-")
