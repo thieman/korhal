@@ -1,25 +1,35 @@
 (ns korhal.core
-  (:import (jnibwapi.JNIBWAPI)
-           (jnibwapi.BWAPIEventListener)
-           (jnibwapi.model.Unit)
-           (jnibwapi.util.BWColor)))
+  (:import (jnibwapi JNIBWAPI BWAPIEventListener)
+           (jnibwapi.model Unit)
+           (jnibwapi.util BWColor)))
 
 (gen-class
  :name "korhal.core"
- :implements [jnibwapi.BWAPIEventListener]
- :state "state"
+ :implements [JNIBWAPI]
+ :state state
  :main true
  :constructors {[] []}
  :prefix "korhal-")
 
 (defn korhal-main [& args]
-  (let [ai (new korhal.core)]
-    (.start (jnibwapi.JNIBWAPI. ai))))
+  (let [ai (new korhal.core)
+        api (JNIBWAPI. ai)]
+    (compare-and-set! (.state ai) @(.state ai) (merge @(.state ai) {:api api}))
+    (.start api))))
 
-(defn korhal-init [this] [[] "state"])
+(defn korhal-init [this]
+  [[] (atom {})])
 
 (defn korhal-connected [this])
-(defn korhal-gameStarted [this])
+
+(defn korhal-gameStarted [this]
+  (println "Here we go!")
+  (doto (:api @(.state this))
+    (.enableUserInput)
+    (.enablePerfectInformation)
+    (.setGameSpeed 0)
+    (.loadMapData true)))
+
 (defn korhal-gameUpdate [this])
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
