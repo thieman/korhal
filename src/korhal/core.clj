@@ -53,7 +53,7 @@
   (println "updating")
 
   ;; spawn a drone
-  (for [unit (.getMyUnits (:api @this))]
+  (doseq [unit (.getMyUnits (:api @this))]
     (do (println "bacon")
         #_(when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
           (when (and (>= (.. (:api @this) getSelf getMinerals) 50) (not (:morphed-drone this)))
