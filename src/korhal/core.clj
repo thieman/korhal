@@ -18,7 +18,7 @@
 
 (defmacro swap-keys [swap-atom & forms]
   (for [pair (partition 2 forms)]
-    `(swap! swap-atom swap-key ~@pair)))
+    `(swap! ~swap-atom swap-key ~@pair)))
 
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
