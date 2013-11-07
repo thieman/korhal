@@ -42,10 +42,6 @@
     (.enablePerfectInformation)
     (.setGameSpeed 0)
     (.loadMapData true))
-  ;; (.enableUserInput (:api @this))
-  ;; (.enablePerfectInformation (:api @this))
-  ;; (.setGameSpeed (:api @this) 0)
-  ;; (.loadMapData (:api @this) true)
   (swap-keys (.state this)
     :claimed []
     :morphed-drone false
@@ -54,6 +50,7 @@
 
 (defn korhal-gameUpdate [this]
 
+  (println "updating")
   (println (.getMyUnits (:api @this)))
 
   ;; spawn a drone
