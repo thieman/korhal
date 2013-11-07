@@ -17,11 +17,13 @@
   (merge curr-val {k v}))
 
 (defn korhal-main [& args]
-  (let [ai (korhal.core.)]
-    (.start (:api @(.state ai)))))
+  (let [ai (korhal.core.)
+        api (jnibwapi.JNIBWAPI. this)]
+    (swap! (.state ai) swap-key :api api)
+    (.start (:api @ai))))
 
-(defn korhal-init [this]
-  [[] (atom {:api (jnibwapi.JNIBWAPI. this)})])
+(defn korhal-init []
+  [[] (atom {})])
 
 (defn korhal-deref [this]
   @(.state this))
