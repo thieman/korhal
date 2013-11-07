@@ -50,13 +50,13 @@
 
 (defn korhal-gameUpdate [this]
 
-  (println 'updating')
+  (println "updating")
 
   ;; spawn a drone
   (for [unit (.getMyUnits (:api @this))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
       (when (and (>= (.. (:api @this) getSelf getMinerals) 50) (not (:morphed-drone this)))
-        (println 'morphing a drone')
+        (println "morphing a drone")
         (.morph (:api @this) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
         (swap-keys (.state this) :morphed-drone true))))
 
@@ -64,7 +64,7 @@
   (for [unit (.getMyUnits (:api @this))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
       (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @this))))
-        (println 'collecting minerals')
+        (println "collecting minerals")
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
               mineral (first (filter mineral? (.getNeutralUnits (:api @this))))]
         (.rightClick (.getID unit) (.getID mineral)))))))
