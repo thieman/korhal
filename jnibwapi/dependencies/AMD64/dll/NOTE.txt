@@ -1,0 +1,2 @@
+This folder must be added to the PATH environment variable (or placed in another folder on the PATH) for 64-bit execution to work.
+These are the 64-bit equivalents to the ones BWAPI puts in the Windows directory.

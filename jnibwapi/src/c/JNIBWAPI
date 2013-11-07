@@ -1,0 +1,407 @@
+Compiled from "JNIBWAPI.java"
+public class jnibwapi.JNIBWAPI {
+  static {};
+    Signature: ()V
+
+  public native int getReplayFrameTotal();
+    Signature: ()I
+
+  public native boolean attack(int, int, int);
+    Signature: (III)Z
+
+  public native boolean attack(int, int);
+    Signature: (II)Z
+
+  public native boolean build(int, int, int, int);
+    Signature: (IIII)Z
+
+  public native boolean buildAddon(int, int);
+    Signature: (II)Z
+
+  public native boolean train(int, int);
+    Signature: (II)Z
+
+  public native boolean morph(int, int);
+    Signature: (II)Z
+
+  public native boolean research(int, int);
+    Signature: (II)Z
+
+  public native boolean upgrade(int, int);
+    Signature: (II)Z
+
+  public native boolean setRallyPoint(int, int, int);
+    Signature: (III)Z
+
+  public native boolean setRallyPoint(int, int);
+    Signature: (II)Z
+
+  public native boolean move(int, int, int);
+    Signature: (III)Z
+
+  public native boolean patrol(int, int, int);
+    Signature: (III)Z
+
+  public native boolean holdPosition(int);
+    Signature: (I)Z
+
+  public native boolean stop(int);
+    Signature: (I)Z
+
+  public native boolean follow(int, int);
+    Signature: (II)Z
+
+  public native boolean gather(int, int);
+    Signature: (II)Z
+
+  public native boolean returnCargo(int);
+    Signature: (I)Z
+
+  public native boolean repair(int, int);
+    Signature: (II)Z
+
+  public native boolean burrow(int);
+    Signature: (I)Z
+
+  public native boolean unburrow(int);
+    Signature: (I)Z
+
+  public native boolean cloak(int);
+    Signature: (I)Z
+
+  public native boolean decloak(int);
+    Signature: (I)Z
+
+  public native boolean siege(int);
+    Signature: (I)Z
+
+  public native boolean unsiege(int);
+    Signature: (I)Z
+
+  public native boolean lift(int);
+    Signature: (I)Z
+
+  public native boolean land(int, int, int);
+    Signature: (III)Z
+
+  public native boolean load(int, int);
+    Signature: (II)Z
+
+  public native boolean unload(int, int);
+    Signature: (II)Z
+
+  public native boolean unloadAll(int);
+    Signature: (I)Z
+
+  public native boolean unloadAll(int, int, int);
+    Signature: (III)Z
+
+  public native boolean rightClick(int, int, int);
+    Signature: (III)Z
+
+  public native boolean rightClick(int, int);
+    Signature: (II)Z
+
+  public native boolean haltConstruction(int);
+    Signature: (I)Z
+
+  public native boolean cancelConstruction(int);
+    Signature: (I)Z
+
+  public native boolean cancelAddon(int);
+    Signature: (I)Z
+
+  public native boolean cancelTrain(int, int);
+    Signature: (II)Z
+
+  public native boolean cancelMorph(int);
+    Signature: (I)Z
+
+  public native boolean cancelResearch(int);
+    Signature: (I)Z
+
+  public native boolean cancelUpgrade(int);
+    Signature: (I)Z
+
+  public native boolean useTech(int, int);
+    Signature: (II)Z
+
+  public native boolean useTech(int, int, int, int);
+    Signature: (IIII)Z
+
+  public native boolean useTech(int, int, int);
+    Signature: (III)Z
+
+  public native boolean placeCOP(int, int, int);
+    Signature: (III)Z
+
+  public native void drawHealth(boolean);
+    Signature: (Z)V
+
+  public native void drawTargets(boolean);
+    Signature: (Z)V
+
+  public native void drawIDs(boolean);
+    Signature: (Z)V
+
+  public native void enableUserInput();
+    Signature: ()V
+
+  public native void enablePerfectInformation();
+    Signature: ()V
+
+  public native void setGameSpeed(int);
+    Signature: (I)V
+
+  public native void setFrameSkip(int);
+    Signature: (I)V
+
+  public native void leaveGame();
+    Signature: ()V
+
+  public native void drawBox(int, int, int, int, int, boolean, boolean);
+    Signature: (IIIIIZZ)V
+
+  public native void drawCircle(int, int, int, int, boolean, boolean);
+    Signature: (IIIIZZ)V
+
+  public native void drawLine(int, int, int, int, int, boolean);
+    Signature: (IIIIIZ)V
+
+  public void drawLine(java.awt.Point, java.awt.Point, int, boolean);
+    Signature: (Ljava/awt/Point;Ljava/awt/Point;IZ)V
+
+  public native void drawDot(int, int, int, boolean);
+    Signature: (IIIZ)V
+
+  public native void drawText(int, int, java.lang.String, boolean);
+    Signature: (IILjava/lang/String;Z)V
+
+  public void drawText(java.awt.Point, java.lang.String, boolean);
+    Signature: (Ljava/awt/Point;Ljava/lang/String;Z)V
+
+  public native boolean isVisible(int, int);
+    Signature: (II)Z
+
+  public native boolean isExplored(int, int);
+    Signature: (II)Z
+
+  public native boolean isBuildable(int, int, boolean);
+    Signature: (IIZ)Z
+
+  public boolean isBuildable(int, int);
+    Signature: (II)Z
+
+  public native boolean hasCreep(int, int);
+    Signature: (II)Z
+
+  public native boolean hasPower(int, int);
+    Signature: (II)Z
+
+  public native boolean hasPower(int, int, int);
+    Signature: (III)Z
+
+  public native boolean hasPower(int, int, int, int);
+    Signature: (IIII)Z
+
+  public native boolean hasPower(int, int, int, int, int);
+    Signature: (IIIII)Z
+
+  public native boolean hasPowerPrecise(int, int);
+    Signature: (II)Z
+
+  public native boolean hasPath(int, int, int, int);
+    Signature: (IIII)Z
+
+  public native boolean hasPath(int, int);
+    Signature: (II)Z
+
+  public native boolean hasPath(int, int, int);
+    Signature: (III)Z
+
+  public native boolean hasLoadedUnit(int, int);
+    Signature: (II)Z
+
+  public native boolean canBuildHere(int, int, int, boolean);
+    Signature: (IIIZ)Z
+
+  public native boolean canBuildHere(int, int, int, int, boolean);
+    Signature: (IIIIZ)Z
+
+  public native boolean canMake(int);
+    Signature: (I)Z
+
+  public native boolean canMake(int, int);
+    Signature: (II)Z
+
+  public native boolean canResearch(int);
+    Signature: (I)Z
+
+  public native boolean canResearch(int, int);
+    Signature: (II)Z
+
+  public native boolean canUpgrade(int);
+    Signature: (I)Z
+
+  public native boolean canUpgrade(int, int);
+    Signature: (II)Z
+
+  public native void printText(java.lang.String);
+    Signature: (Ljava/lang/String;)V
+
+  public native void sendText(java.lang.String);
+    Signature: (Ljava/lang/String;)V
+
+  public native void setCommandOptimizationLevel(int);
+    Signature: (I)V
+
+  public native boolean isReplay();
+    Signature: ()Z
+
+  public boolean isVisibleToPlayer(jnibwapi.model.Unit, jnibwapi.model.Player);
+    Signature: (Ljnibwapi/model/Unit;Ljnibwapi/model/Player;)Z
+
+  public native int getLastError();
+    Signature: ()I
+
+  public native int getRemainingLatencyFrames();
+    Signature: ()I
+
+  public jnibwapi.types.UnitType getUnitType(int);
+    Signature: (I)Ljnibwapi/types/UnitType;
+
+  public jnibwapi.types.RaceType getRaceType(int);
+    Signature: (I)Ljnibwapi/types/RaceType;
+
+  public jnibwapi.types.TechType getTechType(int);
+    Signature: (I)Ljnibwapi/types/TechType;
+
+  public jnibwapi.types.UpgradeType getUpgradeType(int);
+    Signature: (I)Ljnibwapi/types/UpgradeType;
+
+  public jnibwapi.types.WeaponType getWeaponType(int);
+    Signature: (I)Ljnibwapi/types/WeaponType;
+
+  public jnibwapi.types.UnitSizeType getUnitSizeType(int);
+    Signature: (I)Ljnibwapi/types/UnitSizeType;
+
+  public jnibwapi.types.BulletType getBulletType(int);
+    Signature: (I)Ljnibwapi/types/BulletType;
+
+  public jnibwapi.types.DamageType getDamageType(int);
+    Signature: (I)Ljnibwapi/types/DamageType;
+
+  public jnibwapi.types.ExplosionType getExplosionType(int);
+    Signature: (I)Ljnibwapi/types/ExplosionType;
+
+  public jnibwapi.types.UnitCommandType getUnitCommandType(int);
+    Signature: (I)Ljnibwapi/types/UnitCommandType;
+
+  public jnibwapi.types.OrderType getOrderType(int);
+    Signature: (I)Ljnibwapi/types/OrderType;
+
+  public java.util.Collection<jnibwapi.types.UnitType> unitTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.RaceType> raceTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.TechType> techTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.UpgradeType> upgradeTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.WeaponType> weaponTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.UnitSizeType> unitSizeTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.BulletType> bulletTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.DamageType> damageTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.ExplosionType> explosionTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.UnitCommandType> unitCommandTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.Collection<jnibwapi.types.OrderType> orderTypes();
+    Signature: ()Ljava/util/Collection;
+
+  public int getFrameCount();
+    Signature: ()I
+
+  public jnibwapi.model.Player getSelf();
+    Signature: ()Ljnibwapi/model/Player;
+
+  public jnibwapi.model.Player getNeutralPlayer();
+    Signature: ()Ljnibwapi/model/Player;
+
+  public jnibwapi.model.Player getPlayer(int);
+    Signature: (I)Ljnibwapi/model/Player;
+
+  public java.util.Collection<jnibwapi.model.Player> getPlayers();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.List<jnibwapi.model.Player> getAllies();
+    Signature: ()Ljava/util/List;
+
+  public java.util.List<jnibwapi.model.Player> getEnemies();
+    Signature: ()Ljava/util/List;
+
+  public jnibwapi.model.Unit getUnit(int);
+    Signature: (I)Ljnibwapi/model/Unit;
+
+  public java.util.Collection<jnibwapi.model.Unit> getAllUnits();
+    Signature: ()Ljava/util/Collection;
+
+  public java.util.List<jnibwapi.model.Unit> getMyUnits();
+    Signature: ()Ljava/util/List;
+
+  public java.util.List<jnibwapi.model.Unit> getAlliedUnits();
+    Signature: ()Ljava/util/List;
+
+  public java.util.List<jnibwapi.model.Unit> getEnemyUnits();
+    Signature: ()Ljava/util/List;
+
+  public java.util.List<jnibwapi.model.Unit> getNeutralUnits();
+    Signature: ()Ljava/util/List;
+
+  public java.util.List<jnibwapi.model.Unit> getUnits(jnibwapi.model.Player);
+    Signature: (Ljnibwapi/model/Player;)Ljava/util/List;
+
+  public java.util.List<jnibwapi.model.Unit> getUnitsOnTile(int, int);
+    Signature: (II)Ljava/util/List;
+
+  public jnibwapi.model.Map getMap();
+    Signature: ()Ljnibwapi/model/Map;
+
+  public void loadTypeData();
+    Signature: ()V
+
+  public void loadMapData(boolean);
+    Signature: (Z)V
+
+  public jnibwapi.JNIBWAPI(jnibwapi.BWAPIEventListener);
+    Signature: (Ljnibwapi/BWAPIEventListener;)V
+
+  public void start();
+    Signature: ()V
+
+  public void javaPrint(java.lang.String);
+    Signature: (Ljava/lang/String;)V
+
+  public void connected();
+    Signature: ()V
+
+  public void gameStarted();
+    Signature: ()V
+
+  public void keyPressed(int);
+    Signature: (I)V
+}
