@@ -2,7 +2,7 @@
   (:import (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)
            (jnibwapi.model.Unit)
-           (jnibwapi.types.UnitType.UnitTypes)))
+           (jnibwapi.types.UnitType$UnitTypes)))
 
 (gen-class
  :name "korhal.core"
@@ -51,10 +51,10 @@
 (defn korhal-gameUpdate [this]
 
   ;; spawn a drone
-  (for [unit (.getMyUnits (:api @this))]
-    (when (= (.getTypeID unit) (.. jnibwapi.types.UnitType.UnitTypes Zerg_Larve getID))
+  #_(for [unit (.getMyUnits (:api @this))]
+    (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva)
       (when (and (< 50 (.. (:api @this) getSelf getMinerals)) (not (:morphed-drone this)))
-        (.morph (:api @this) (.getID unit) (.. jnibwapi.types.UnitType.UnitTypes Zerg_Drone getID))
+        (.morph (:api @this) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
         (swap-keys (.state this) :morphed-drone true)))))
 
 
