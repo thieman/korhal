@@ -20,6 +20,9 @@
   (for [pair (partition 2 forms)]
     `(swap! ~swap-atom swap-key ~@pair)))
 
+(defn dist [a b]
+  (Math/sqrt (+ (Math/pow (- (.getX a) (.getX b)) 2) (Math/pow (- (.getY a) (.getY b)) 2))))
+
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
         api (jnibwapi.JNIBWAPI. ai)]
@@ -63,7 +66,8 @@
       (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @(.state this)))))
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
               mineral (first (filter mineral? (.getNeutralUnits (:api @(.state this)))))]
-        (.rightClick (:api @(.state this)) (.getID unit) (.getID mineral)))))))
+          (when (< (dist unit mineral) 300)
+            (.rightClick (:api @(.state this)) (.getID unit) (.getID mineral))))))))
 
 
 
