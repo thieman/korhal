@@ -67,7 +67,7 @@
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
               minerals (first (filter mineral? (.getNeutralUnits (:api @(.state this)))))
               closest-mineral (first (filter #(< (dist unit %) 300) minerals))]
-          (.rightClick (:api @(.state this)) (.getID unit) (.getID closest-mineral))))))))
+          (.rightClick (:api @(.state this)) (.getID unit) (.getID closest-mineral)))))))
 
 
 
