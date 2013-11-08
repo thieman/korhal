@@ -7,4 +7,5 @@
   :java-source-paths ["jnibwapi"]
   :main korhal.core
   :aot [korhal.core]
+  :jvm-opts ["-Djava.library.path=jnibwapi/release"]
   :dependencies [[org.clojure/clojure "1.5.1"]])
