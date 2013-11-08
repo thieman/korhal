@@ -1,8 +1,8 @@
 (ns korhal.core
+  (:require [korhal.interop :refer :all])
   (:import (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)
-           (jnibwapi.model.Unit)
-           (jnibwapi.types.UnitType$UnitTypes)))
+           (jnibwapi.model.Unit)))
 
 (gen-class
  :name "korhal.core"
@@ -27,6 +27,7 @@
   (let [ai (korhal.core.)
         api (jnibwapi.JNIBWAPI. ai)]
     (swap! (.state ai) swap-key :api api)
+    (bind-api api)
     (.start (:api @(.state ai)))))
 
 (defn korhal-init []
@@ -44,30 +45,22 @@
     (.loadMapData true))
   (swap-keys (.state this)
     :claimed []
-    :morphed-drone false
     :pool-drone -1
     :supply-cap 0))
 
 (defn korhal-gameUpdate [this]
 
   ;; spawn a drone
-  (doseq [unit (.getMyUnits (:api @(.state this)))]
-    (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Larva))
-      (when (and (>= (.. (:api @(.state this)) getSelf getMinerals) 50) (not (:morphed-drone this)))
-        (println "morphing a drone")
-        (.morph (:api @(.state this)) (.getID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
-        (swap-keys (.state this) :morphed-drone true))))
+  (doseq [larva (my-larvas)]
+    (when (>= (my-minerals) 50)
+      (morph larva :drone)))
 
   ;; collect minerals
-  (doseq [unit (.getMyUnits (:api @(.state this)))]
-    (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
-      (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @(.state this)))))
-        (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
-              minerals (filter mineral? (.getNeutralUnits (:api @(.state this))))
-              closest-mineral (first (filter #(< (dist unit %) 300) minerals))]
-          (.rightClick (:api @(.state this)) (.getID unit) (.getID closest-mineral)))))))
-
-
+  (doseq [drone (my-drones)]
+    (when (and (is-idle? drone) (not (= (get-id drone) (:pool-drone @(.state this)))))
+      (let [minerals (filter is-mineral? (neutral-units))
+            closest-mineral (first (filter #(< (dist drone %) 300) minerals))]
+        (right-click drone closest-mineral)))))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
