@@ -58,7 +58,7 @@
         (swap-keys (.state this) :morphed-drone true))))
 
   ;; collect minerals
-  (for [unit (.getMyUnits (:api @(.state this)))]
+  (doseq [unit (.getMyUnits (:api @(.state this)))]
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
       (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @(.state this)))))
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
