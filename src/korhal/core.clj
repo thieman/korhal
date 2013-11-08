@@ -40,7 +40,7 @@
   (doto (:api @(.state this))
     (.enableUserInput)
     (.enablePerfectInformation)
-    (.setGameSpeed 0)
+    (.setGameSpeed 10)
     (.loadMapData true))
   (swap-keys (.state this)
     :claimed []
