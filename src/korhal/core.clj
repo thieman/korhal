@@ -65,9 +65,9 @@
     (when (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Zerg_Drone))
       (when (and (.isIdle unit) (not (= (.getID unit) (:pool-drone @(.state this)))))
         (let [mineral? (fn [unit] (= (.getTypeID unit) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field)))
-              mineral (first (filter mineral? (.getNeutralUnits (:api @(.state this)))))]
-          (when (< (dist unit mineral) 300)
-            (.rightClick (:api @(.state this)) (.getID unit) (.getID mineral))))))))
+              minerals (first (filter mineral? (.getNeutralUnits (:api @(.state this)))))
+              closest-mineral (first (filter #(< (dist unit %) 300) minerals))]
+          (.rightClick (:api @(.state this)) (.getID unit) (.getID closest-mineral))))))))
 
 
 
