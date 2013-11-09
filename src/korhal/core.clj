@@ -16,9 +16,9 @@
 (defn swap-key [curr-val k v]
   (merge curr-val {k v}))
 
-(defmacro swap-keys [swap-atom & forms]
-  (for [pair (partition 2 forms)]
-    `(swap! ~swap-atom swap-key ~@pair)))
+(defn swap-keys [swap-atom & forms]
+  (doseq [[k v] (partition 2 forms)]
+    (swap! swap-atom swap-key k v)))
 
 (defn dist [a b]
   (Math/sqrt (+ (Math/pow (- (.getX a) (.getX b)) 2) (Math/pow (- (.getY a) (.getY b)) 2))))
@@ -46,21 +46,49 @@
   (swap-keys (.state this)
     :claimed []
     :pool-drone -1
-    :supply-cap 0))
+    :spawning-pool-started false
+    :overlord-spawned false))
 
 (defn korhal-gameUpdate [this]
 
-  ;; spawn a drone
+  ;; spawn drones
   (doseq [larva (my-larvas)]
-    (when (>= (my-minerals) 50)
+    (when (and (>= (my-minerals) 50) (< (count (my-drones)) 6))
       (morph larva :drone)))
 
   ;; collect minerals
   (doseq [drone (my-drones)]
-    (when (and (is-idle? drone) (not (= (get-id drone) (:pool-drone @(.state this)))))
+    (when (and (is-idle? drone)
+               (not (= (get-id drone) (:pool-drone @(.state this)))))
       (let [minerals (filter is-mineral? (neutral-units))
             closest-mineral (first (filter #(< (dist drone %) 300) minerals))]
-        (right-click drone closest-mineral)))))
+        (right-click drone closest-mineral))))
+
+  ;; build a spawning pool
+  (when (and (>= (my-minerals) 200) (< (:pool-drone @(.state this)) 0))
+    (let [pool-drone (first (my-drones))
+          overlord (first (my-overlords))]
+      (swap-keys (.state this)
+                 :pool-drone (get-id pool-drone)
+                 :spawning-pool-started true)
+      (build pool-drone (get-tile-x overlord) (get-tile-y overlord) :spawning-pool)))
+
+  ;; spawn overlords
+  (when (and (>= (my-supply-used) (- (my-supply-total) 3))
+             (>= (my-minerals) 300)
+             (not (:overlord-spawned @(.state this)))
+             (:spawning-pool-started @(.state this)))
+      (morph (first (my-larvas)) :overlord)
+      (swap-keys (.state this) :overlord-spawned true))
+
+  ;; spawn zerglings
+  (when (>= (my-minerals) 50)
+    (morph (first (my-larvas)) :zergling))
+
+  ;; attack
+  (doseq [zergling (my-zerglings)]
+    (when (is-idle? zergling)
+      (attack zergling (first (enemy-units))))))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])

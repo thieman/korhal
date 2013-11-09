@@ -8,7 +8,10 @@
 
 (def type-lookup
   {:drone 'Zerg_Drone
-   :larva 'Zerg_Larva})
+   :larva 'Zerg_Larva
+   :overlord 'Zerg_Overlord
+   :zergling 'Zerg_Zergling
+   :spawning-pool 'Zerg_Spawning_Pool})
 
 ;; common calls to get state vars and collections
 
@@ -21,6 +24,8 @@
 (defn my-supply-total [] (.. api getSelf getSupplyTotal))
 
 (defn my-units [] (.getMyUnits api))
+
+(defn enemy-units [] (.getEnemyUnits api))
 
 (defn neutral-units [] (.getNeutralUnits api))
 
@@ -35,7 +40,22 @@
 (defn right-click [selected target]
   (.rightClick api (.getID selected) (.getID target)))
 
+(defn get-tile-x [obj] (.getTileX obj))
+
+(defn get-tile-y [obj] (.getTileY obj))
+
 ;; unit commands
+
+(defn attack [unit target]
+  (.attack api (.getID unit) (.getX target) (.getY target)))
+
+(defn build [builder tile-x tile-y to-build]
+  (println (.getID builder))
+  (println (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-lookup)))))
+  (println tile-x)
+  (println tile-y)
+  (.build api (.getID builder) tile-x tile-y
+          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-lookup))))))
 
 (defn morph [unit morph-to]
   (.morph api
@@ -65,8 +85,12 @@
 (def-type-predicates
   mineral Resource_Mineral_Field
   larva Zerg_Larva
-  drone Zerg_Drone)
+  drone Zerg_Drone
+  overlord Zerg_Overlord
+  zergling Zerg_Zergling)
 
 (def-my-unit-groups
   drone Zerg_Drone
-  larva Zerg_Larva)
+  larva Zerg_Larva
+  overlord Zerg_Overlord
+  zergling Zerg_Zergling)
