@@ -67,11 +67,12 @@
   ;; build a spawning pool
   (when (and (>= (my-minerals) 200) (< (:pool-drone @(.state this)) 0))
     (let [pool-drone (first (my-drones))
-          overlord (first (my-overlords))]
+          overlord (first (my-overlords))
+          build-x (if (< (get-tile-x overlord) 40) (+ (get-tile-x overlord) 2) (- (get-tile-x overlord) 2))]
       (swap-keys (.state this)
                  :pool-drone (get-id pool-drone)
                  :spawning-pool-started true)
-      (build pool-drone (get-tile-x overlord) (get-tile-y overlord) :spawning-pool)))
+      (build pool-drone build-x (get-tile-y overlord) :spawning-pool)))
 
   ;; spawn overlords
   (when (and (>= (my-supply-used) (- (my-supply-total) 3))

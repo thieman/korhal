@@ -50,8 +50,6 @@
   (.attack api (.getID unit) (.getX target) (.getY target)))
 
 (defn build [builder tile-x tile-y to-build]
-  (println (.getID builder))
-  (println (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-lookup)))))
   (println tile-x)
   (println tile-y)
   (.build api (.getID builder) tile-x tile-y
