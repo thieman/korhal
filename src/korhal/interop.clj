@@ -1,12 +1,23 @@
 (ns korhal.interop
-  (:require [korhal.interop-types :refer [unit-types unit-type-fn-maps unit-fn-maps]])
+  (:require [korhal.interop-types :refer [unit-types unit-type-fn-maps unit-fn-maps
+                                          base-location-fn-maps player-fn-maps]])
   (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
-           (jnibwapi.types.UnitType$UnitTypes)))
+           (jnibwapi.types.UnitType$UnitTypes)
+           (java.awt.Point)))
 
-(declare get-type)
+(declare get-type pixel-x pixel-y tile-x tile-y start-location?)
 
 (def ^:dynamic api nil)
 (defn bind-api [binding] (alter-var-root (var api) #(identity %2) binding))
+
+(defn dynamic-dot-form [instance method] `(. ~instance ~method))
+
+;; type conversions
+
+(defn to-java-point [obj grid-type]
+  (condp = grid-type
+    :pixel (java.awt.Point. (pixel-x obj) (pixel-y obj))
+    :tile (java.awt.Point. (tile-x obj) (tile-y obj))))
 
 ;; type definitions
 
@@ -30,6 +41,8 @@
 
 ;; common calls to get state vars and collections
 
+(defn get-self [] (. api getSelf))
+
 (defn my-minerals [] (.. api getSelf getMinerals))
 
 (defn my-gas [] (.. api getSelf getGas))
@@ -52,21 +65,67 @@
   (filter #(= (.getTypeID %) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser))
           (.getNeutralUnits api)))
 
+;; map data
+
+(defn map-width [] (.. api getMap getMapWidth))
+
+(defn map-height [] (.. api getMap getMapHeight))
+
+(defn map-name [] (.. api getMap getMapName))
+
+(defn region-map [] (.. api getMap getRegionMap))
+
+(defn walkable-data [] (.. api getMap getWalkableData))
+
+(defn buildable-data [] (.. api getMap getBuildableData))
+
+(defn chokepoints [] (.. api getMap getChokePoints))
+
+(defn regions [] (.. api getMap getRegions))
+
+(defn polygon [region-id] (.. api getMap getPolygon region-id))
+
+(defn base-locations [] (.. api getMap getBaseLocations))
+
+(defn my-start-location [] (.getStartLocation (. api getSelf)))
+
+(defn enemy-start-locations []
+  (let [bases (base-locations)
+        enemy-base? (fn [base] (and (not (= (to-java-point base :tile) (my-start-location)))
+                                    (start-location? base)))]
+    (filter enemy-base? bases)))
+
+;; generate player methods
+
+(defmacro define-player-fns []
+  (cons `do
+        (for [[clj-name java-name] (partition 2 player-fn-maps)]
+          `(defn ~clj-name [player#] (. player# ~java-name)))))
+
+(define-player-fns)
+
+;; generate base location methods
+
+(defmacro define-base-location-fns []
+  (cons `do
+        (for [[clj-name java-name] (partition 2 base-location-fn-maps)]
+          `(defn ~clj-name [loc#] (. loc# ~java-name)))))
+
+(define-base-location-fns)
+
 ;; generate single unit functions
 
 (defmacro define-unit-type-fns []
-  (let [dynamic-dot-form (fn [instance method] `(. ~instance ~method))]
-    (cons `do
-          (for [[clj-name java-name] (partition 2 unit-type-fn-maps)]
-            `(defn ~clj-name [unit#] (. (get-type unit#) ~java-name))))))
+  (cons `do
+        (for [[clj-name java-name] (partition 2 unit-type-fn-maps)]
+          `(defn ~clj-name [unit#] (. (get-type unit#) ~java-name)))))
 
 (define-unit-type-fns)
 
 (defmacro define-unit-fns []
-  (let [dynamic-dot-form (fn [instance method] `(. ~instance ~method))]
-    (cons `do
-          (for [[clj-name java-name] (partition 2 unit-fn-maps)]
-            `(defn ~clj-name [unit#] (. unit# ~java-name))))))
+  (cons `do
+        (for [[clj-name java-name] (partition 2 unit-fn-maps)]
+          `(defn ~clj-name [unit#] (. unit# ~java-name)))))
 
 (define-unit-fns)
 
@@ -79,10 +138,24 @@
 (defn right-click [selected target]
   (.rightClick api (.getID selected) (.getID target)))
 
+(defn pixel-x [obj] (.getX obj))
+
+(defn pixel-y [obj] (.getY obj))
+
+(defn tile-x [obj]
+  (if (instance? BaseLocation obj)
+    (.getTx obj)
+    (.getTileX obj)))
+
+(defn tile-y [obj]
+  (if (instance? BaseLocation obj)
+    (.getTy obj)
+    (.getTileY obj)))
+
 ;; unit commands
 
 (defn attack [unit target]
-  (.attack api (.getID unit) (.getX target) (.getY target)))
+  (.attack api (.getID unit) (pixel-x target) (pixel-y target)))
 
 (defn build [builder tile-x tile-y to-build]
   (.build api (.getID builder) tile-x tile-y
@@ -117,4 +190,7 @@
     (swap! swap-atom swap-key k v)))
 
 (defn dist [a b]
-  (Math/sqrt (+ (Math/pow (- (.getX a) (.getX b)) 2) (Math/pow (- (.getY a) (.getY b)) 2))))
+  (Math/sqrt (+ (Math/pow (- (pixel-x a) (pixel-x b)) 2) (Math/pow (- (pixel-y a) (pixel-y b)) 2))))
+
+(defn dist-tile [a b]
+  (Math/sqrt (+ (Math/pow (- (tile-x a) (tile-x b)) 2) (Math/pow (- (tile-y a) (tile-y b)) 2))))

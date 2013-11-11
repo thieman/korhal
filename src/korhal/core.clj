@@ -29,7 +29,6 @@
   (println "Game Started")
   (doto (:api @(.state this))
     (.enableUserInput)
-    (.enablePerfectInformation)
     (.setGameSpeed 0)
     (.loadMapData true))
   (swap-keys (.state this)
@@ -74,9 +73,11 @@
     (morph (first (my-larvas)) :zergling))
 
   ;; attack
-  (doseq [zergling (my-zerglings)]
-    (when (idle? zergling)
-      (attack zergling (first (enemy-units))))))
+  (let [idle-zerglings (filter idle? (my-zerglings))]
+    (when (seq idle-zerglings)
+      (let [enemy-base (first (enemy-start-locations))]
+        (doseq [zergling idle-zerglings]
+          (attack zergling enemy-base))))))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])

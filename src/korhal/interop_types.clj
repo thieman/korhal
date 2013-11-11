@@ -175,10 +175,6 @@
   ['replay-id 'getReplayID
    'player-id 'getPlayerID
    'type-id 'getTypeID
-   'pixel-x 'getX
-   'pixel-y 'getY
-   'tile-x 'getTileX
-   'tile-y 'getTileY
    'angle 'getAngle
    'velocity-x 'getVelocityX
    'velocity-y 'getVelocityY
@@ -288,3 +284,14 @@
    'unpowered? 'isUnpowered
    'upgrading? 'isUpgrading
    'visible? 'isVisible])
+
+(def player-fn-maps
+  ['start-location 'getStartLocation])
+
+(def base-location-fn-maps
+  ['region-id 'getRegionID
+   'get-base-minerals 'getMinerals
+   'get-base-gas 'getGas
+   'island? 'isIsland
+   'mineral-only? 'isMineralOnly
+   'start-location? 'isStartLocation])
