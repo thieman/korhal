@@ -2,6 +2,8 @@
   (:import (jnibwapi.model.Unit)
            (jnibwapi.types.UnitType$UnitTypes)))
 
+(declare get-type)
+
 (def ^:dynamic api nil)
 (defn bind-api [binding] (alter-var-root (var api) #(identity %2) binding))
 
@@ -12,6 +14,16 @@
    'drone 'Zerg_Drone
    'overlord 'Zerg_Overlord
    'zergling 'Zerg_Zergling])
+
+(defn gen-type-id-lookup []
+  (intern *ns*
+          (symbol 'type-ids)
+          (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
+                             (eval (symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
+                   (take-nth 2 (rest unit-types)))
+               (flatten)
+               (apply hash-map))))
+(gen-type-id-lookup)
 
 (def type-lookup
   {:mineral 'Resource_Mineral_Field
@@ -46,13 +58,87 @@
   (filter #(= (.getTypeID %) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser))
           (.getNeutralUnits api)))
 
-;; targeted predicates
+;; generate single unit functions
 
 (defn is-idle? [obj] (.isIdle obj))
+
+(defmacro define-unit-type-fns []
+  (let [dynamic-dot-form (fn [instance method] `(. ~instance ~method))
+        unit-maps ['get-race 'getRace
+                   'max-hit-points 'maxHitPoints
+                   'max-shields 'maxShields
+                   'max-energy 'maxEnergy
+                   'armor 'armor
+                   'mineral-price 'mineralPrice
+                   'gas-price 'gasPrice
+                   'build-time 'buildTime
+                   'supply-required 'supplyRequired
+                   'supply-provided 'supplyProvided
+                   'space-required 'spaceRequired
+                   'space-provided 'spaceProvided
+                   'build-score 'buildScore
+                   'destroy-score 'destroyScore
+                   'size 'size
+                   'tile-width 'tileWidth
+                   'tile-height 'tileHeight
+                   'dimension-left 'dimensionLeft
+                   'dimension-up 'dimensionUp
+                   'dimension-right 'dimensionRight
+                   'dimension-down 'dimensionDown
+                   'seek-range 'seekRange
+                   'sight-range 'sightRange
+                   'ground-weapon 'groundWeapon
+                   'max-grounds-hits 'maxGroundHits
+                   'air-weapon 'airWeapon
+                   'max-air-hits 'maxAirHits
+                   'top-speed 'topSpeed
+                   'acceleration 'acceleration
+                   'halt-distance 'haltDistance
+                   'turn-radius? 'turnRadius
+                   'can-produce? 'canProduce
+                   'can-attack? 'canAttack
+                   'can-move? 'canMove
+                   'is-flyer? 'isFlyer
+                   'regenerates-hp? 'regeneratesHP
+                   'has-permanent-cloak? 'hasPermanentCloak
+                   'is-invincible? 'isInvincible
+                   'is-organic? 'isOrganic
+                   'is-mechanical? 'isMechanical
+                   'is-robotic? 'isRobotic
+                   'is-detector? 'isDetector
+                   'is-resource-container? 'isResourceContainer
+                   'is-resource-depot? 'isResourceDepot
+                   'is-refinery? 'isRefinery
+                   'is-worker? 'isWorker
+                   'requires-psi? 'requiresPsi
+                   'requires-creep? 'requiresCreep
+                   'is-two-units-in-one-egg? 'isTwoUnitsInOneEgg
+                   'is-burrowable? 'isBurrowable
+                   'is-cloakable? 'isCloakable
+                   'is-building? 'isBuilding
+                   'is-addon? 'isAddon
+                   'is-flying-building? 'isFlyingBuilding
+                   'is-neutral? 'isNeutral
+                   'is-hero? 'isHero
+                   'is-powerup? 'isPowerup
+                   'is-beacon? 'isBeacon
+                   'is-flag-beacon? 'isFlagBeacon
+                   'is-special-building? 'isSpecialBuilding
+                   'is-spell? 'isSpell
+                   'produces-larva? 'producesLarva
+                   'is-mineral-field? 'isMineralField
+                   'can-build-addon? 'canBuildAddon]]
+    (cons `do
+          (for [[clj-name java-name] (partition 2 unit-maps)]
+            `(defn ~clj-name [unit#] (. (get-type unit#) ~java-name))))))
+
+(define-unit-type-fns)
 
 ;; common API commands
 
 (defn get-id [obj] (.getID obj))
+
+(defn get-type [unit] (.getUnitType api (.getTypeID unit)))
 
 (defn right-click [selected target]
   (.rightClick api (.getID selected) (.getID target)))
