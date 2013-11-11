@@ -1,8 +1,7 @@
 (ns korhal.core
   (:require [korhal.interop :refer :all])
   (:import (jnibwapi.JNIBWAPI)
-           (jnibwapi.BWAPIEventListener)
-           (jnibwapi.model.Unit)))
+           (jnibwapi.BWAPIEventListener)))
 
 (gen-class
  :name "korhal.core"
@@ -43,7 +42,7 @@
 
   ;; spawn drones
   (doseq [larva (my-larvas)]
-    (when (and (>= (my-minerals) 50) (< (count (my-drones)) 6))
+    (when (and (>= (my-minerals) 50) (= (count (my-drones)) 4))
       (morph larva :drone)))
 
   ;; collect minerals
@@ -64,7 +63,7 @@
 
   ;; spawn overlords
   (when (and (>= (my-supply-used) (- (my-supply-total) 3))
-             (>= (my-minerals) 300)
+             (>= (my-minerals) 100)
              (not (:overlord-spawned @(.state this)))
              (:spawning-pool-started @(.state this)))
       (morph (first (my-larvas)) :overlord)
