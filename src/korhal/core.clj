@@ -13,16 +13,6 @@
  :constructors {[] []}
  :prefix "korhal-")
 
-(defn swap-key [curr-val k v]
-  (merge curr-val {k v}))
-
-(defn swap-keys [swap-atom & forms]
-  (doseq [[k v] (partition 2 forms)]
-    (swap! swap-atom swap-key k v)))
-
-(defn dist [a b]
-  (Math/sqrt (+ (Math/pow (- (.getX a) (.getX b)) 2) (Math/pow (- (.getY a) (.getY b)) 2))))
-
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
         api (jnibwapi.JNIBWAPI. ai)]

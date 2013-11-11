@@ -10,12 +10,119 @@
 ;; type definitions
 
 (def unit-types
-  ['larva 'Zerg_Larva
+  ['marine 'Terran_Marine
+   'ghost 'Terran_Ghost
+   'vulture 'Terran_Vulture
+   'goliath-turret 'Undefined4
+   'siege-tank-tank-mode 'Terran_Siege_Tank_Tank_Mode
+   'siege-tank-turret-tank-mode 'Undefined6
+   'scv 'Terran_SCV
+   'wraith 'Terran_Wraith
+   'science-vessel 'Terran_Science_Vessel
+   'dropship 'Terran_Dropship
+   'battlecruiser 'Terran_Battlecruiser
+   'spider-mine 'Terran_Vulture_Spider_Mine
+   'nuclear-missile 'Terran_Nuclear_Missile
+   'siege-tank-siege-mode 'Terran_Siege_Tank_Siege_Mode
+   'siege-tank-turret-siege-mode 'Undefined31
+   'firebat 'Terran_Firebat
+   'scanner-sweep 'Spell_Scanner_Sweep
+   'medic 'Terran_Medic
+   'larva 'Zerg_Larva
+   'egg 'Zerg_Egg
+   'zergling 'Zerg_Zergling
+   'hydralisk 'Zerg_Hydralisk
+   'ultralisk 'Zerg_Ultralisk
+   'broodling 'Zerg_Broodling
    'drone 'Zerg_Drone
    'overlord 'Zerg_Overlord
-   'zergling 'Zerg_Zergling])
+   'mutalisk 'Zerg_Mutalisk
+   'guardian 'Zerg_Guardian
+   'queen 'Zerg_Queen
+   'defiler 'Zerg_Defiler
+   'scourge 'Zerg_Scourge
+   'infested-terran 'Zerg_Infested_Terran
+   'valkyrie 'Terran_Valkyrie
+   'cocoon 'Zerg_Cocoon
+   'corsair 'Protoss_Corsair
+   'dark-templar 'Protoss_Dark_Templar
+   'devourer 'Zerg_Devourer
+   'dark-archon 'Protoss_Dark_Archon
+   'probe 'Protoss_Probe
+   'zealot 'Protoss_Zealot
+   'dragoon 'Protoss_Dragoon
+   'high-templar 'Protoss_High_Templar
+   'archon 'Protoss_Archon
+   'shuttle 'Protoss_Shuttle
+   'scout 'Protoss_Scout
+   'arbiter 'Protoss_Arbiter
+   'carrier 'Protoss_Carrier
+   'interceptor 'Protoss_Interceptor
+   'reaver 'Protoss_Reaver
+   'observer 'Protoss_Observer
+   'scarab 'Protoss_Scarab
+   'rhynadon 'Critter_Rhynadon
+   'bengalaas 'Critter_Bengalaas
+   'scantid 'Critter_Scantid
+   'kakaru 'Critter_Kakaru
+   'ragnasaur 'Critter_Ragnasaur
+   'ursadon 'Critter_Ursadon
+   'lurker-egg 'Zerg_Lurker_Egg
+   'lurker 'Zerg_Lurker
+   'disruption-web 'Spell_Disruption_Web
+   'command-center 'Terran_Command_Center
+   'comsat-station 'Terran_Comsat_Station
+   'nuclear-silo 'Terran_Nuclear_Silo
+   'supply-depot 'Terran_Supply_Depot
+   'refinery 'Terran_Refinery
+   'barracks 'Terran_Barracks
+   'academy 'Terran_Academy
+   'factory 'Terran_Factory
+   'starport 'Terran_Starport
+   'control-tower 'Terran_Control_Tower
+   'science-facility 'Terran_Science_Facility
+   'covert-ops 'Terran_Covert_Ops
+   'physics-lab 'Terran_Physics_Lab
+   'machine-shop 'Terran_Machine_Shop
+   'engineering-bay 'Terran_Engineering_Bay
+   'armory 'Terran_Armory
+   'missile-turret 'Terran_Missile_Turret
+   'bunker 'Terran_Bunker
+   'infested-command-center 'Zerg_Infested_Command_Center
+   'hatchery 'Zerg_Hatchery
+   'lair 'Zerg_Lair
+   'hive 'Zerg_Hive
+   'nydus-canal 'Zerg_Nydus_Canal
+   'hydralisk-den 'Zerg_Hydralisk_Den
+   'defiler-mound 'Zerg_Defiler_Mound
+   'greater-spire 'Zerg_Greater_Spire
+   'queens-nest 'Zerg_Queens_Nest
+   'evolution-chamber 'Zerg_Evolution_Chamber
+   'ultralisk-cavern 'Zerg_Ultralisk_Cavern
+   'spire 'Zerg_Spire
+   'spawning-pool 'Zerg_Spawning_Pool
+   'creep-colony 'Zerg_Creep_Colony
+   'spore-colony 'Zerg_Spore_Colony
+   'sunken-colony 'Zerg_Sunken_Colony
+   'extractor 'Zerg_Extractor
+   'nexus 'Protoss_Nexus
+   'robotics-facility 'Protoss_Robotics_Facility
+   'pylon 'Protoss_Pylon
+   'assimilator 'Protoss_Assimilator
+   'observatory 'Protoss_Observatory
+   'gateway 'Protoss_Gateway
+   'photon-cannon 'Protoss_Photon_Cannon
+   'citadel-of-adun 'Protoss_Citadel_of_Adun
+   'cybernetics-core 'Protoss_Cybernetics_Core
+   'templar-archives 'Protoss_Templar_Archives
+   'forge 'Protoss_Forge
+   'stargate 'Protoss_Stargate
+   'fleet-beacon 'Protoss_Fleet_Beacon
+   'arbiter-tribunal 'Protoss_Arbiter_Tribunal
+   'robotics-support-bay 'Protoss_Robotics_Support_Bay
+   'shield-battery 'Protoss_Shield_Battery])
 
-(defn gen-type-id-lookup []
+(defn gen-type-ids []
   (intern *ns*
           (symbol 'type-ids)
           (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
@@ -23,16 +130,15 @@
                    (take-nth 2 (rest unit-types)))
                (flatten)
                (apply hash-map))))
-(gen-type-id-lookup)
+(gen-type-ids)
 
-(def type-lookup
-  {:mineral 'Resource_Mineral_Field
-   :geyser 'Resource_Vespene_Geyser
-   :drone 'Zerg_Drone
-   :larva 'Zerg_Larva
-   :overlord 'Zerg_Overlord
-   :zergling 'Zerg_Zergling
-   :spawning-pool 'Zerg_Spawning_Pool})
+(defn gen-type-kw-lookup []
+  (intern *ns*
+          (symbol 'type-kw-lookup)
+          (merge {:mineral 'Resource_Mineral_Field :geyser 'Resource_Vespene_Geyser}
+                 (zipmap (map keyword (take-nth 2 unit-types)) (take-nth 2 (rest unit-types))))))
+
+(gen-type-kw-lookup)
 
 ;; common calls to get state vars and collections
 
@@ -264,12 +370,12 @@
 
 (defn build [builder tile-x tile-y to-build]
   (.build api (.getID builder) tile-x tile-y
-          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-lookup))))))
+          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-kw-lookup))))))
 
 (defn morph [unit morph-to]
   (.morph api
           (.getID unit)
-          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(morph-to type-lookup))))))
+          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(morph-to type-kw-lookup))))))
 
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]
@@ -284,3 +390,15 @@
     (intern *ns*
             (symbol (str "my-" n "s"))
             (fn [] (filter type-predicate (.getMyUnits api))))))
+
+;; utility functions
+
+(defn swap-key [curr-val k v]
+  (merge curr-val {k v}))
+
+(defn swap-keys [swap-atom & forms]
+  (doseq [[k v] (partition 2 forms)]
+    (swap! swap-atom swap-key k v)))
+
+(defn dist [a b]
+  (Math/sqrt (+ (Math/pow (- (.getX a) (.getX b)) 2) (Math/pow (- (.getY a) (.getY b)) 2))))
