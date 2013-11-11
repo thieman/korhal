@@ -60,81 +60,195 @@
 
 ;; generate single unit functions
 
-(defn is-idle? [obj] (.isIdle obj))
-
 (defmacro define-unit-type-fns []
   (let [dynamic-dot-form (fn [instance method] `(. ~instance ~method))
-        unit-maps ['get-race 'getRace
-                   'max-hit-points 'maxHitPoints
-                   'max-shields 'maxShields
-                   'max-energy 'maxEnergy
-                   'armor 'armor
-                   'mineral-price 'mineralPrice
-                   'gas-price 'gasPrice
-                   'build-time 'buildTime
-                   'supply-required 'supplyRequired
-                   'supply-provided 'supplyProvided
-                   'space-required 'spaceRequired
-                   'space-provided 'spaceProvided
-                   'build-score 'buildScore
-                   'destroy-score 'destroyScore
-                   'size 'size
-                   'tile-width 'tileWidth
-                   'tile-height 'tileHeight
-                   'dimension-left 'dimensionLeft
-                   'dimension-up 'dimensionUp
-                   'dimension-right 'dimensionRight
-                   'dimension-down 'dimensionDown
-                   'seek-range 'seekRange
-                   'sight-range 'sightRange
-                   'ground-weapon 'groundWeapon
-                   'max-grounds-hits 'maxGroundHits
-                   'air-weapon 'airWeapon
-                   'max-air-hits 'maxAirHits
-                   'top-speed 'topSpeed
-                   'acceleration 'acceleration
-                   'halt-distance 'haltDistance
-                   'turn-radius? 'turnRadius
-                   'can-produce? 'canProduce
-                   'can-attack? 'canAttack
-                   'can-move? 'canMove
-                   'is-flyer? 'isFlyer
-                   'regenerates-hp? 'regeneratesHP
-                   'has-permanent-cloak? 'hasPermanentCloak
-                   'is-invincible? 'isInvincible
-                   'is-organic? 'isOrganic
-                   'is-mechanical? 'isMechanical
-                   'is-robotic? 'isRobotic
-                   'is-detector? 'isDetector
-                   'is-resource-container? 'isResourceContainer
-                   'is-resource-depot? 'isResourceDepot
-                   'is-refinery? 'isRefinery
-                   'is-worker? 'isWorker
-                   'requires-psi? 'requiresPsi
-                   'requires-creep? 'requiresCreep
-                   'is-two-units-in-one-egg? 'isTwoUnitsInOneEgg
-                   'is-burrowable? 'isBurrowable
-                   'is-cloakable? 'isCloakable
-                   'is-building? 'isBuilding
-                   'is-addon? 'isAddon
-                   'is-flying-building? 'isFlyingBuilding
-                   'is-neutral? 'isNeutral
-                   'is-hero? 'isHero
-                   'is-powerup? 'isPowerup
-                   'is-beacon? 'isBeacon
-                   'is-flag-beacon? 'isFlagBeacon
-                   'is-special-building? 'isSpecialBuilding
-                   'is-spell? 'isSpell
-                   'produces-larva? 'producesLarva
-                   'is-mineral-field? 'isMineralField
-                   'can-build-addon? 'canBuildAddon]]
+        unit-maps ['get-name 'getName
+                   'race-id 'getRaceID
+                   'what-build-id 'getWhatBuildID
+                   'armor-upgrade-id 'getArmorUpgradeID
+                   'max-hit-points 'getMaxHitPoints
+                   'max-shields 'getMaxShields
+                   'max-energy 'getMaxEnergy
+                   'armor 'getArmor
+                   'mineral-price 'getMineralPrice
+                   'gas-price 'getGasPrice
+                   'build-time 'getBuildTime
+                   'supply-required 'getSupplyRequired
+                   'supply-provided 'getSupplyProvided
+                   'space-required 'getSpaceRequired
+                   'space-provided 'getSpaceProvided
+                   'build-score 'getBuildScore
+                   'destroy-score 'getDestroyScore
+                   'size-id 'getSizeID
+                   'tile-width 'getTileWidth
+                   'tile-height 'getTileHeight
+                   'dimension-left 'getDimensionLeft
+                   'dimension-up 'getDimensionUp
+                   'dimension-right 'getDimensionRight
+                   'dimension-down 'getDimensionDown
+                   'seek-range 'getSeekRange
+                   'sight-range 'getSightRange
+                   'ground-weapon-id 'getGroundWeaponID
+                   'max-ground-hits 'getMaxGroundHits
+                   'air-weapon-id 'getAirWeaponID
+                   'max-air-hits 'getMaxAirHits
+                   'top-speed 'getTopSpeed
+                   'acceleration 'getAcceleration
+                   'halt-distance 'getHaltDistance
+                   'turn-radius 'getTurnRadius
+                   'produce-capable? 'isProduceCapable
+                   'attack-capable? 'isAttackCapable
+                   'can-move? 'isCanMove
+                   'flyer? 'isFlyer
+                   'regenerates? 'isRegenerates
+                   'spellcaster? 'isSpellcaster
+                   'invincible? 'isInvincible
+                   'organic? 'isOrganic
+                   'mechanical? 'isMechanical
+                   'robotic? 'isRobotic
+                   'detector? 'isDetector
+                   'resource-container? 'isResourceContainer
+                   'refinery? 'isRefinery
+                   'worker? 'isWorker
+                   'requires-psi? 'isRequiresPsi
+                   'requires-creep? 'isRequiresCreep
+                   'burrowable? 'isBurrowable
+                   'cloakable? 'isCloakable
+                   'building? 'isBuilding
+                   'addon? 'isAddon
+                   'flying-building? 'isFlyingBuilding
+                   'spell? 'isSpell]]
     (cons `do
           (for [[clj-name java-name] (partition 2 unit-maps)]
             `(defn ~clj-name [unit#] (. (get-type unit#) ~java-name))))))
 
 (define-unit-type-fns)
 
-;; common API commands
+(defmacro define-unit-fns []
+  (let [dynamic-dot-form (fn [instance method] `(. ~instance ~method))
+        unit-maps ['replay-id 'getReplayID
+                   'player-id 'getPlayerID
+                   'type-id 'getTypeID
+                   'pixel-x 'getX
+                   'pixel-y 'getY
+                   'tile-x 'getTileX
+                   'tile-y 'getTileY
+                   'angle 'getAngle
+                   'velocity-x 'getVelocityX
+                   'velocity-y 'getVelocityY
+                   'hit-points 'getHitPoints
+                   'shields 'getShields
+                   'energy 'getEnergy
+                   'resources 'getResources
+                   'resource-group 'getResourceGroup
+                   'last-command-frame 'getLastCommandFrame
+                   'last-command-id 'getLastCommandID
+                   'initial-x 'getInitialX
+                   'initial-y 'getInitialY
+                   'initial-tile-x 'getInitialTileX
+                   'initial-tile-y 'getInitialTileY
+                   'initial-hit-points 'getInitialHitPoints
+                   'initial-resources 'getInitialResources
+                   'kill-count 'getKillCount
+                   'acid-spore-count 'getAcidSporeCount
+                   'interceptor-count 'getInterceptorCount
+                   'scarab-count 'getScarabCount
+                   'spider-mine-count 'getSpiderMineCount
+                   'ground-weapon-cooldown 'getGroundWeaponCooldown
+                   'air-weapon-cooldown 'getAirWeaponCooldown
+                   'spell-cooldown 'getSpellCooldown
+                   'defense-matrix-points 'getDefenseMatrixPoints
+                   'defense-matrix-timer 'getDefenseMatrixTimer
+                   'ensnare-timer 'getEnsnareTimer
+                   'irradiate-timer 'getIrradiateTimer
+                   'lockdown-timer 'getLockdownTimer
+                   'maelstrom-timer 'getMaelstromTimer
+                   'order-timer 'getOrderTimer
+                   'plague-timer 'getPlagueTimer
+                   'remove-timer 'getRemoveTimer
+                   'statis-timer 'getStasisTimer
+                   'stim-timer 'getStimTimer
+                   'build-type-id 'getBuildTypeID
+                   'training-queue-size 'getTrainingQueueSize
+                   'researching-tech-id 'getResearchingTechID
+                   'upgrading-upgrade-id 'getUpgradingUpgradeID
+                   'remaining-build-timer 'getRemainingBuildTimer
+                   'remaining-train-time 'getRemainingTrainTime
+                   'remaining-research-time 'getRemainingResearchTime
+                   'remaining-upgrade-time 'getRemainingUpgradeTime
+                   'build-unit-id 'getBuildUnitID
+                   'target-unit-id 'getTargetUnitID
+                   'target-x 'getTargetX
+                   'target-y 'getTargetY
+                   'order-id 'getOrderID
+                   'order-target-id 'getOrderTargetID
+                   'secondary-order-id 'getSecondaryOrderID
+                   'rally-x 'getRallyX
+                   'rally-y 'getRallyY
+                   'rally-unit-id 'getRallyUnitID
+                   'addon-id 'getAddOnID
+                   'transport-id 'getTransportID
+                   'num-loaded-units 'getNumLoadedUnits
+                   'num-larva 'getNumLarva
+                   'is-exists? 'isExists
+                   'nuke-ready? 'isNukeReady
+                   'accelerating? 'isAccelerating
+                   'attacking? 'isAttacking
+                   'attack-frame? 'isAttackFrame
+                   'being-constructed? 'isBeingConstructed
+                   'being-gathered? 'isBeingGathered
+                   'being-healed? 'isBeingHealed
+                   'blind? 'isBlind
+                   'braking? 'isBraking
+                   'burrowed? 'isBurrowed
+                   'carrying-gas? 'isCarryingGas
+                   'carrying-minerals? 'isCarryingMinerals
+                   'cloaked? 'isCloaked
+                   'completed? 'isCompleted
+                   'constructing? 'isConstructing
+                   'defense-matrixed? 'isDefenseMatrixed
+                   'detected? 'isDetected
+                   'ensnared? 'isEnsnared
+                   'following? 'isFollowing
+                   'gathering-gas? 'isGatheringGas
+                   'gathering-minerals? 'isGatheringMinerals
+                   'hallucination? 'isHallucination
+                   'holding-position? 'isHoldingPosition
+                   'idle? 'isIdle
+                   'interruptible? 'isInterruptable
+                   'invincible? 'isInvincible
+                   'irradiated? 'isIrradiated
+                   'lifted? 'isLifted
+                   'loaded? 'isLoaded
+                   'locked-down? 'isLockedDown
+                   'maelstrommed? 'isMaelstrommed
+                   'morphing? 'isMorphing
+                   'moving? 'isMoving
+                   'parasited? 'isParasited
+                   'patrolling? 'isPatrolling
+                   'plagued? 'isPlagued
+                   'repairing? 'isRepairing
+                   'selected? 'isSelected
+                   'sieged? 'isSieged
+                   'starting-attack? 'isStartingAttack
+                   'statised? 'isStasised
+                   'stimmed? 'isStimmed
+                   'stuck? 'isStuck
+                   'training? 'isTraining
+                   'under-attack? 'isUnderAttack
+                   'under-dark-swarm? 'isUnderDarkSwarm
+                   'under-disruption-web? 'isUnderDisruptionWeb
+                   'under-storm? 'isUnderStorm
+                   'unpowered? 'isUnpowered
+                   'upgrading? 'isUpgrading
+                   'visible? 'isVisible]]
+    (cons `do
+          (for [[clj-name java-name] (partition 2 unit-maps)]
+            `(defn ~clj-name [unit#] (. unit# ~java-name))))))
+
+(define-unit-fns)
+
+;; common API commands shared among multiple types
 
 (defn get-id [obj] (.getID obj))
 
@@ -142,10 +256,6 @@
 
 (defn right-click [selected target]
   (.rightClick api (.getID selected) (.getID target)))
-
-(defn get-tile-x [obj] (.getTileX obj))
-
-(defn get-tile-y [obj] (.getTileY obj))
 
 ;; unit commands
 

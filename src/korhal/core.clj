@@ -58,7 +58,7 @@
 
   ;; collect minerals
   (doseq [drone (my-drones)]
-    (when (and (is-idle? drone)
+    (when (and (idle? drone)
                (not (= (get-id drone) (:pool-drone @(.state this)))))
       (right-click drone (first (filter #(< (dist drone %) 300) (minerals))))))
 
@@ -66,11 +66,11 @@
   (when (and (>= (my-minerals) 200) (< (:pool-drone @(.state this)) 0))
     (let [pool-drone (first (my-drones))
           overlord (first (my-overlords))
-          build-x (if (< (get-tile-x overlord) 40) (+ (get-tile-x overlord) 2) (- (get-tile-x overlord) 2))]
+          build-x (if (< (tile-x overlord) 40) (+ (tile-x overlord) 2) (- (tile-x overlord) 2))]
       (swap-keys (.state this)
                  :pool-drone (get-id pool-drone)
                  :spawning-pool-started true)
-      (build pool-drone build-x (get-tile-y overlord) :spawning-pool)))
+      (build pool-drone build-x (tile-y overlord) :spawning-pool)))
 
   ;; spawn overlords
   (when (and (>= (my-supply-used) (- (my-supply-total) 3))
@@ -86,7 +86,7 @@
 
   ;; attack
   (doseq [zergling (my-zerglings)]
-    (when (is-idle? zergling)
+    (when (idle? zergling)
       (attack zergling (first (enemy-units))))))
 
 (defn korhal-gameEnded [this])
