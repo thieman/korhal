@@ -1,13 +1,22 @@
 (ns korhal.interop
-  (:import (jnibwapi.types.UnitType$UnitTypes)))
+  (:import (jnibwapi.model.Unit)
+           (jnibwapi.types.UnitType$UnitTypes)))
 
 (def ^:dynamic api nil)
 (defn bind-api [binding] (alter-var-root (var api) #(identity %2) binding))
 
-;; type lookups
+;; type definitions
+
+(def unit-types
+  ['larva 'Zerg_Larva
+   'drone 'Zerg_Drone
+   'overlord 'Zerg_Overlord
+   'zergling 'Zerg_Zergling])
 
 (def type-lookup
-  {:drone 'Zerg_Drone
+  {:mineral 'Resource_Mineral_Field
+   :geyser 'Resource_Vespene_Geyser
+   :drone 'Zerg_Drone
    :larva 'Zerg_Larva
    :overlord 'Zerg_Overlord
    :zergling 'Zerg_Zergling
@@ -28,6 +37,14 @@
 (defn enemy-units [] (.getEnemyUnits api))
 
 (defn neutral-units [] (.getNeutralUnits api))
+
+(defn minerals []
+  (filter #(= (.getTypeID %) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field))
+          (.getNeutralUnits api)))
+
+(defn geysers []
+  (filter #(= (.getTypeID %) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser))
+          (.getNeutralUnits api)))
 
 ;; targeted predicates
 
@@ -50,8 +67,6 @@
   (.attack api (.getID unit) (.getX target) (.getY target)))
 
 (defn build [builder tile-x tile-y to-build]
-  (println tile-x)
-  (println tile-y)
   (.build api (.getID builder) tile-x tile-y
           (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-lookup))))))
 
@@ -60,35 +75,16 @@
           (.getID unit)
           (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(morph-to type-lookup))))))
 
-;; TODO: clean up these macros and reduce duplication through higher-order fn
+;; type predicates, e.g. is-drone?
+(doseq [[n t] (partition 2 unit-types)]
+  (let [class-type (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" t))))]
+    (intern *ns*
+            (symbol (str "is-" n "?"))
+            (fn [unit] (= (.getTypeID unit) class-type)))))
 
-(defn def-type-predicate [clj-name java-name]
-  `(defn ~(symbol (str "is-" clj-name "?")) [unit#]
-     (= (.getTypeID unit#) (.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" java-name))))))
-
-(defn def-my-unit-group [clj-name java-name]
-  `(defn ~(symbol (str "my-" clj-name "s")) []
-     (filter ~(symbol (str "is-" clj-name "?")) (.getMyUnits api))))
-
-(defmacro def-type-predicates [& forms]
-  (cons `do
-        (for [[clj-name java-name] (partition 2 forms)]
-          (def-type-predicate clj-name java-name))))
-
-(defmacro def-my-unit-groups [& forms]
-  (cons `do
-        (for [[clj-name java-name] (partition 2 forms)]
-          (def-my-unit-group clj-name java-name))))
-
-(def-type-predicates
-  mineral Resource_Mineral_Field
-  larva Zerg_Larva
-  drone Zerg_Drone
-  overlord Zerg_Overlord
-  zergling Zerg_Zergling)
-
-(def-my-unit-groups
-  drone Zerg_Drone
-  larva Zerg_Larva
-  overlord Zerg_Overlord
-  zergling Zerg_Zergling)
+;; own unit type collections, e.g. my-drones
+(doseq [[n _] (partition 2 unit-types)]
+  (let [type-predicate (eval (symbol (str *ns* "/is-" n "?")))]
+    (intern *ns*
+            (symbol (str "my-" n "s"))
+            (fn [] (filter type-predicate (.getMyUnits api))))))

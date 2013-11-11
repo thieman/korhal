@@ -37,7 +37,7 @@
   (.loadTypeData (:api @(.state this))))
 
 (defn korhal-gameStarted [this]
-  (println "Here we go!")
+  (println "Game Started")
   (doto (:api @(.state this))
     (.enableUserInput)
     (.enablePerfectInformation)
@@ -60,9 +60,7 @@
   (doseq [drone (my-drones)]
     (when (and (is-idle? drone)
                (not (= (get-id drone) (:pool-drone @(.state this)))))
-      (let [minerals (filter is-mineral? (neutral-units))
-            closest-mineral (first (filter #(< (dist drone %) 300) minerals))]
-        (right-click drone closest-mineral))))
+      (right-click drone (first (filter #(< (dist drone %) 300) (minerals))))))
 
   ;; build a spawning pool
   (when (and (>= (my-minerals) 200) (< (:pool-drone @(.state this)) 0))
