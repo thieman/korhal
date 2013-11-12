@@ -1,4 +1,5 @@
 (ns korhal.core
+  (:refer-clojure :exclude [load])
   (:require [korhal.interop :refer :all])
   (:import (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))

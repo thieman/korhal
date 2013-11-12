@@ -1,4 +1,5 @@
 (ns korhal.interop
+  (:refer-clojure :exclude [load])
   (:require [korhal.interop-types :refer [unit-types upgrade-types tech-types
                                           unit-type-fn-maps unit-fn-maps
                                           base-location-fn-maps player-fn-maps]])
@@ -180,9 +181,6 @@
 
 (defn get-type [unit] (.getUnitType api (.getTypeID unit)))
 
-(defn right-click [selected target]
-  (.rightClick api (.getID selected) (.getID target)))
-
 (defn pixel-x [obj] (.getX obj))
 
 (defn pixel-y [obj] (.getY obj))
@@ -230,6 +228,118 @@
 
 (defn morph [unit morph-to]
   (.morph api (.getID unit) (.getID (morph-to unit-type-kw-lookup))))
+
+(defn research [unit to-research]
+  (.research api (.getID unit) (.getID (to-research tech-type-kw-lookup))))
+
+(defn upgrade [unit to-upgrade]
+  (.upgrade api (.getID unit) (.getID (to-upgrade upgrade-type-kw-lookup))))
+
+(defn set-rally-point
+  ([rally-unit target-unit-or-point]
+     (cond
+      (instance? java.awt.Point target-unit-or-point) (set-rally-point rally-unit
+                                                                       (.x target-unit-or-point)
+                                                                       (.y target-unit-or-point))
+      :else (.setRallyPoint api (.getID rally-unit) (.getID target-unit-or-point))))
+  ([rally-unit px py] (.setRallyPoint api (.getID rally-unit) px py)))
+
+(defn move
+  ([move-unit target-unit-or-point]
+     (cond
+      (instance? java.awt.Point target-unit-or-point) (move move-unit
+                                                            (.x target-unit-or-point)
+                                                            (.y target-unit-or-point))
+      :else (.move api (.getID move-unit) (.getX target-unit-or-point) (.getY target-unit-or-point))))
+  ([move-unit px py] (.move api (.getID move-unit) px py)))
+
+(defn patrol
+  ([patrol-unit target-unit-or-point]
+     (cond
+      (instance? java.awt.Point target-unit-or-point) (patrol patrol-unit
+                                                              (.x target-unit-or-point)
+                                                              (.y target-unit-or-point))
+      :else (.patrol api (.getID patrol-unit) (.getX target-unit-or-point) (.getY target-unit-or-point))))
+  ([patrol-unit px py] (.patrol api (.getID patrol-unit) px py)))
+
+(defn hold-position [unit] (.holdPosition api (.getID unit)))
+
+(defn stop [unit] (.stop api (.getID unit)))
+
+(defn follow [follow-unit target-unit] (.follow api (.getID follow-unit) (.getID target-unit)))
+
+(defn gather [gather-unit target-unit] (.gather api (.getID gather-unit) (.getID target-unit)))
+
+(defn return-cargo [unit] (.returnCargo api unit))
+
+(defn repair [repair-unit target-unit] (.repair api (.getID repair-unit) (.getID target-unit)))
+
+(defn burrow [unit] (.burrow api (.getID unit)))
+
+(defn unburrow [unit] (.unburrow api (.getID unit)))
+
+(defn cloak [unit] (.cloak api (.getID unit)))
+
+(defn decloak [unit] (.decloak api (.getID unit)))
+
+(defn siege [unit] (.siege api (.getID unit)))
+
+(defn unsiege [unit] (.unsiege api (.getID unit)))
+
+(defn lift [unit] (.lift api (.getID unit)))
+
+(defn land
+  ([unit point] (land unit (.x point) (.y point)))
+  ([unit tx ty] (.land api (.getID unit) tx ty)))
+
+(defn load [loading-unit target-unit] (.load api (.getID loading-unit) (.getID target-unit)))
+
+(defn unload [unloading-unit target-unit] (.unload api (.getID unloading-unit) (.getID target-unit)))
+
+(defn unload-all
+  ([unit] (.unloadAll api (.getID unit)))
+  ([unit point] (unload-all unit (.x point) (.y point)))
+  ([unit tx ty] (.unloadAll api (.getID unit) tx ty)))
+
+(defn right-click
+  ([unit target-unit-or-point]
+     (cond
+      (instance? java.awt.Point target-unit-or-point) (right-click unit
+                                                                   (.x target-unit-or-point)
+                                                                   (.y target-unit-or-point))
+      :else (.rightClick api (.getID unit) (.getID target-unit-or-point))))
+  ([unit px py] (.rightClick api (.getID unit) px py)))
+
+(defn halt-construction [unit] (.haltConstruction api (.getID unit)))
+
+(defn cancel-construction [unit] (.cancelConstrution api (.getID unit)))
+
+(defn cancel-addon [unit] (.cancelAddon api (.getID unit)))
+
+(defn cancel-train
+  ([unit] (.cancelTrain api (.getID unit))) ;; cancels last slot being used
+  ([unit slot] (.cancelTrain api (.getID unit) slot)))
+
+(defn cancel-morph [unit] (.cancelMorph api (.getID unit)))
+
+(defn cancel-research [unit] (.cancelResearch api (.getID unit)))
+
+(defn cancel-upgrade [unit] (.cancelUpgrade api (.getID unit)))
+
+(defn use-tech
+  ([unit tech] (.useTech api (.getID unit) (.getID tech)))
+  ([unit tech target-unit-or-point]
+     (cond
+      (instance? java.awt.Point target-unit-or-point) (use-tech unit
+                                                                tech
+                                                                (.x target-unit-or-point)
+                                                                (.y target-unit-or-point))
+      :else (.useTech api (.getID unit) (.getID tech) (.getID target-unit-or-point))))
+  ([unit tech px py] (.useTech api (.getID unit) (.getID tech) px py)))
+
+(defn place-cop
+  ([unit point] (place-cop unit (.x point) (.y point)))
+  ([unit tx ty] (.placeCOP api (.getID unit) tx ty)))
 
 ;; utility functions
 
