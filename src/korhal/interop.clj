@@ -34,8 +34,10 @@
 (defn gen-type-kw-lookup []
   (intern *ns*
           (symbol 'type-kw-lookup)
-          (merge {:mineral 'Resource_Mineral_Field :geyser 'Resource_Vespene_Geyser}
-                 (zipmap (map keyword (take-nth 2 unit-types)) (take-nth 2 (rest unit-types))))))
+          (merge {:mineral jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field
+                  :geyser jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser}
+                 (zipmap (map keyword (take-nth 2 unit-types))
+                         (map #(eval `(. jnibwapi.types.UnitType$UnitTypes ~%)) (take-nth 2 (rest unit-types)))))))
 
 (gen-type-kw-lookup)
 
@@ -87,7 +89,7 @@
 
 (defn base-locations [] (.. api getMap getBaseLocations))
 
-(defn my-start-location [] (.getStartLocation (. api getSelf)))
+(defn my-start-location [] (.. api getSelf getStartLocation))
 
 (defn enemy-start-locations []
   (let [bases (base-locations)
@@ -103,6 +105,14 @@
           `(defn ~clj-name [player#] (. player# ~java-name)))))
 
 (define-player-fns)
+
+(defn has-researched [player tech] (.hasResearched player (.getID tech)))
+
+(defn is-researching [player tech] (.isResearching player (.getID tech)))
+
+(defn upgrade-level [player upgrade] (.upgradeLevel player (.getID upgrade)))
+
+(defn is-upgrading [player upgrade] (.isUpgrading player (.getID upgrade)))
 
 ;; generate base location methods
 
@@ -159,12 +169,12 @@
 
 (defn build [builder tile-x tile-y to-build]
   (.build api (.getID builder) tile-x tile-y
-          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(to-build type-kw-lookup))))))
+          (.getID (to-build type-kw-lookup))))
 
 (defn morph [unit morph-to]
   (.morph api
           (.getID unit)
-          (.getID (eval `(. jnibwapi.types.UnitType$UnitTypes ~(morph-to type-kw-lookup))))))
+          (.getID (morph-to type-kw-lookup))))
 
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]

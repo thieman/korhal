@@ -286,7 +286,14 @@
    'visible? 'isVisible])
 
 (def player-fn-maps
-  ['start-location 'getStartLocation])
+  ['start-location 'getStartLocation
+   'self? 'isSelf
+   'ally? 'isAlly
+   'enemy? 'isEnemy
+   'neutral? 'isNeutral
+   'observer? 'isObserver
+   'player-color 'getColor
+   'player-name 'getName])
 
 (def base-location-fn-maps
   ['region-id 'getRegionID
