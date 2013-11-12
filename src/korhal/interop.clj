@@ -1,11 +1,23 @@
 (ns korhal.interop
   (:refer-clojure :exclude [load])
   (:require [korhal.interop-types :refer [unit-types upgrade-types tech-types
+                                          unit-command-types race-types unit-size-types
+                                          weapon-types bullet-types damage-types
+                                          explosion-types order-types
                                           unit-type-fn-maps unit-fn-maps
                                           base-location-fn-maps player-fn-maps]])
   (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
            (jnibwapi.types.UnitType$UnitTypes)
            (jnibwapi.types.UpgradeType$UpgradeTypes)
+           (jnibwapi.types.TechType$TechTypes)
+           (jnibwapi.types.UnitCommandType$UnitCommandTypes)
+           (jnibwapi.types.RaceType$RaceTypes)
+           (jnibwapi.types.UnitSizeType$UnitSizeTypes)
+           (jnibwapi.types.WeaponType$WeaponTypes)
+           (jnibwapi.types.BulletType$BulletTypes)
+           (jnibwapi.types.DamageType$DamageTypes)
+           (jnibwapi.types.ExplosionType$ExplosionTypes)
+           (jnibwapi.types.OrderType$OrderTypes)
            (java.awt.Point)))
 
 (declare get-type pixel-x pixel-y tile-x tile-y start-location?)
@@ -24,34 +36,48 @@
 
 ;; type definitions
 
-(defn gen-unit-type-ids []
-  (intern *ns*
-          (symbol 'unit-type-ids)
-          (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
-                             (eval (symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
-                   (take-nth 2 (rest unit-types)))
-               (flatten)
-               (apply hash-map))))
-(gen-unit-type-ids)
+;; unit type kw lookup is a special case to add in the minerals and geysers
+(def unit-type-kw-lookup
+  (merge {:mineral jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field
+          :geyser jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser}
+         (zipmap (map keyword (take-nth 2 unit-types))
+                 (map #(eval `(. jnibwapi.types.UnitType$UnitTypes ~%)) (take-nth 2 (rest unit-types))))))
 
-(defn gen-unit-type-kw-lookup []
-  (intern *ns*
-          (symbol 'unit-type-kw-lookup)
-          (merge {:mineral jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field
-                  :geyser jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser}
-                 (zipmap (map keyword (take-nth 2 unit-types))
-                         (map #(eval `(. jnibwapi.types.UnitType$UnitTypes ~%)) (take-nth 2 (rest unit-types)))))))
-(gen-unit-type-kw-lookup)
+(defmacro gen-type-ids-map [inject-sym java-type coll]
+  `(def ~inject-sym
+     (->> (map #(vector (eval `(.getID ~(symbol (str ~java-type "/" %))))
+                        (eval (symbol (str ~java-type "/" %))))
+               (take-nth 2 (rest ~coll)))
+          (flatten)
+          (apply hash-map))))
 
-(defn gen-upgrade-type-ids []
-  (intern *ns*
-          (symbol 'upgrade-type-ids)
-          (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.UpgradeType$UpgradeTypes/" %))))
-                             (eval (symbol (str "jnibwapi.types.UpgradeType$UpgradeTypes/" %))))
-                   (take-nth 2 (rest upgrade-types)))
-               (flatten)
-               (apply hash-map))))
-(gen-upgrade-type-ids)
+(defmacro gen-type-kw-map [inject-sym java-type coll]
+  `(def ~inject-sym
+     (zipmap (map keyword (take-nth 2 ~coll))
+             (map #(eval `(. ~~java-type ~%)) (take-nth 2 (rest ~coll))))))
+
+(gen-type-ids-map unit-type-ids 'jnibwapi.types.UnitType$UnitTypes unit-types)
+(gen-type-ids-map upgrade-type-ids 'jnibwapi.types.UpgradeType$UpgradeTypes upgrade-types)
+(gen-type-ids-map tech-type-ids 'jnibwapi.types.TechType$TechTypes tech-types)
+(gen-type-ids-map unit-command-type-ids 'jnibwapi.types.UnitCommandType$UnitCommandTypes unit-command-types)
+(gen-type-ids-map race-type-ids 'jnibwapi.types.RaceType$RaceTypes race-types)
+(gen-type-ids-map unit-size-type-ids 'jnibwapi.types.UnitSizeType$UnitSizeTypes unit-size-types)
+(gen-type-ids-map weapon-type-ids 'jnibwapi.types.WeaponType$WeaponTypes weapon-types)
+(gen-type-ids-map bullet-type-ids 'jnibwapi.types.BulletType$BulletTypes bullet-types)
+(gen-type-ids-map damage-type-ids 'jnibwapi.types.DamageType$DamageTypes damage-types)
+(gen-type-ids-map explosion-type-ids 'jnibwapi.types.ExplosionType$ExplosionTypes explosion-types)
+(gen-type-ids-map order-type-ids 'jnibwapi.types.OrderType$OrderTypes order-types)
+
+(gen-type-kw-map upgrade-type-kw-lookup 'jnibwapi.types.UpgradeType$UpgradeTypes upgrade-types)
+(gen-type-kw-map tech-type-kw-lookup 'jnibwapi.types.TechType$TechTypes tech-types)
+(gen-type-kw-map unit-command-type-kw-lookup 'jnibwapi.types.UnitCommandType$UnitCommandTypes unit-command-types)
+(gen-type-kw-map race-type-kw-lookup 'jnibwapi.types.RaceType$RaceTypes race-types)
+(gen-type-kw-map unit-size-type-kw-lookup 'jnibwapi.types.UnitSizeType$UnitSizeTypes unit-size-types)
+(gen-type-kw-map weapon-type-kw-lookup 'jnibwapi.types.WeaponType$WeaponTypes weapon-types)
+(gen-type-kw-map bullet-type-kw-lookup 'jnibwapi.types.BulletType$BulletTypes bullet-types)
+(gen-type-kw-map damage-type-kw-lookup 'jnibwapi.types.DamageType$DamageTypes damage-types)
+(gen-type-kw-map explosion-type-kw-lookup 'jnibwapi.types.ExplosionType$ExplosionTypes explosion-types)
+(gen-type-kw-map order-type-kw-lookup 'jnibwapi.types.OrderType$OrderTypes order-types)
 
 (defn gen-upgrade-type-kw-lookup []
   (intern *ns*
@@ -460,6 +486,10 @@
 (defn last-error [] (.getLastError api))
 
 (defn remaining-latency-frames [] (.getRemainingLatencyFrames api))
+
+(defn units-on-tile
+  ([point] (units-on-tile (.x point) (.y point)))
+  ([tx ty] (.getUnitsOnTile api tx ty)))
 
 ;; utility functions supplemental to JNIBWAPI
 
