@@ -18,20 +18,19 @@
         api (jnibwapi.JNIBWAPI. ai)]
     (swap! (.state ai) swap-key :api api)
     (bind-api! api)
-    (.start (:api @(.state ai)))))
+    (start)))
 
 (defn korhal-init []
   [[] (atom {})])
 
 (defn korhal-connected [this]
-  (.loadTypeData (:api @(.state this))))
+  (load-type-data))
 
 (defn korhal-gameStarted [this]
   (println "Game Started")
-  (doto (:api @(.state this))
-    (.enableUserInput)
-    (.setGameSpeed 0)
-    (.loadMapData true))
+  (enable-user-input)
+  (set-game-speed 0)
+  (load-map-data true)
   (swap-keys (.state this)
     :claimed []
     :pool-drone -1

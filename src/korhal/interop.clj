@@ -105,6 +105,10 @@
 
 ;; map data
 
+(defn get-map [] (.getMap api))
+
+(defn load-map-data [boolean] (.loadMapData api boolean))
+
 (defn map-width [] (.. api getMap getMapWidth))
 
 (defn map-height [] (.. api getMap getMapHeight))
@@ -341,7 +345,123 @@
   ([unit point] (place-cop unit (.x point) (.y point)))
   ([unit tx ty] (.placeCOP api (.getID unit) tx ty)))
 
-;; utility functions
+;; API utility and drawing commands
+
+(defn start [] (.start api))
+
+(defn load-type-data [] (.loadTypeData api))
+
+(defn replay-frame-total [] (.getReplayFrameTotal api))
+
+(defn draw-health [boolean] (.drawHealth api boolean))
+
+(defn draw-targets [boolean] (.drawTargets api boolean))
+
+(defn draw-ids [boolean] (.drawIDs api boolean))
+
+(defn enable-user-input [] (.enableUserInput api))
+
+(defn enable-perfect-information [] (.enablePerfectInformation api))
+
+(defn set-game-speed [speed] (.setGameSpeed api speed))
+
+(defn set-frame-skip [frame-skip] (.setFrameSkip api frame-skip))
+
+(defn leave-game [] (.leaveGame api))
+
+(defn draw-box [left top right bottom color fill screen-coords]
+  (.drawBox api left top right bottom color fill screen-coords))
+
+(defn draw-circle [px py radius color fill screen-coords]
+  (.drawCircle api px py radius color fill screen-coords))
+
+(defn draw-line
+  ([p1 p2 color screen-coords] (.drawLine api p1 p2 color screen-coords))
+  ([x1 y1 x2 y2 color screen-coords] (.drawLine api x1 y1 x2 y2 color screen-coords)))
+
+(defn draw-dot [px py color screen-coords]
+  (.drawDot api px py color screen-coords))
+
+(defn draw-text
+  ([point msg screen-coords] (.drawText api point msg screen-coords))
+  ([px py msg screen-coords] (.drawText api px py msg screen-coords)))
+
+;; extended API commands
+
+(defn tile-visible?
+  ([point] (tile-visible? (.x point) (.y point)))
+  ([tx ty] (.isVisible api tx ty)))
+
+(defn tile-explored?
+  ([point] (tile-explored? (.x point) (.y point)))
+  ([tx ty] (.isExplored api tx ty)))
+
+(defn tile-buildable?
+  ([point include-buildings] (tile-buildable? (.x point) (.y point) include-buildings))
+  ([tx ty include-buildings] (.isBuildable api tx ty include-buildings)))
+
+(defn has-creep?
+  ([point] (has-creep? (.x point) (.y point)))
+  ([tx ty] (.hasCreep api tx ty)))
+
+(defn- has-power?*
+  ([tx ty] (.hasPower api tx ty))
+  ([tx ty unit] (.hasPower api tx ty (.getTypeID unit)))
+  ([tx ty tile-width tile-height] (.hasPower api tx ty tile-width tile-height))
+  ([tx ty tile-width tile-height unit] (.hasPower api tx ty tile-width tile-height (.getTypeID unit))))
+
+(defn has-power? [point-or-coord & rest-args]
+  (cond
+   (instance? java.awt.Point point-or-coord) (apply has-power?*
+                                                    (.x point-or-coord)
+                                                    (.y point-or-coord)
+                                                    rest-args)
+   :else (apply has-power?* point-or-coord rest)))
+
+(defn has-power-precise?
+  ([point] (has-power-precise? (.x point) (.y point)))
+  ([px py] (.hasPowerPrecise api px py)))
+
+(defn has-path?
+  ([unit target-unit] (.hasPath api (.getID unit) (.getID target-unit)))
+  ([unit to-x to-y] (.hasPath api (.getID unit) to-x to-y))
+  ([from-x from-y to-x to-y] (.hasPath api from-x from-y to-x to-y)))
+
+(defn has-loaded-unit? [unit maybe-loaded-unit]
+  (.hasLoadedUnit api (.getID unit) (.getID maybe-loaded-unit)))
+
+(defn can-build-here?
+  ([tx ty unit-to-build check-explored] (.canBuildHere api tx ty (.getTypeID unit-to-build) check-explored))
+  ([unit tx ty unit-to-build check-explored] (.canBuildHere api (.getID unit) tx ty
+                                                            (.getTypeID unit-to-build) check-explored)))
+
+(defn can-make?
+  ([unit-to-make] (.canMake api (.getTypeID unit-to-make)))
+  ([unit unit-to-make] (.canMake api (.getID unit) (.getTypeID unit-to-make))))
+
+(defn can-research?
+  ([tech] (.canResearch api (.getTypeID tech)))
+  ([unit tech] (.canResearch api (.getID unit) (.getTypeID tech))))
+
+(defn can-upgrade?
+  ([upgrade] (.canUpgrade api (.getTypeID upgrade)))
+  ([unit upgrade] (.canUpgrade api (.getID unit) (.getTypeID upgrade))))
+
+(defn print-text [msg] (.printText api msg))
+
+(defn send-text [msg] (.sendText api msg))
+
+(defn set-command-optimization-level [level] (.setCommandOptimizationLevel api level))
+
+(defn replay? [] (.isReplay api))
+
+(defn visible-to-player? [unit player] (.isVisibleToPlayer api (.getID unit) (.getID player)))
+
+(defn last-error [] (.getLastError api))
+
+(defn remaining-latency-frames [] (.getRemainingLatencyFrames api))
+
+;; utility functions supplemental to JNIBWAPI
 
 (defn swap-key [curr-val k v]
   (merge curr-val {k v}))
