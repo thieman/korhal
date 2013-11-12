@@ -1,8 +1,10 @@
 (ns korhal.interop
-  (:require [korhal.interop-types :refer [unit-types unit-type-fn-maps unit-fn-maps
+  (:require [korhal.interop-types :refer [unit-types upgrade-types tech-types
+                                          unit-type-fn-maps unit-fn-maps
                                           base-location-fn-maps player-fn-maps]])
   (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
            (jnibwapi.types.UnitType$UnitTypes)
+           (jnibwapi.types.UpgradeType$UpgradeTypes)
            (java.awt.Point)))
 
 (declare get-type pixel-x pixel-y tile-x tile-y start-location?)
@@ -21,25 +23,58 @@
 
 ;; type definitions
 
-(defn gen-type-ids []
+(defn gen-unit-type-ids []
   (intern *ns*
-          (symbol 'type-ids)
+          (symbol 'unit-type-ids)
           (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
                              (eval (symbol (str "jnibwapi.types.UnitType$UnitTypes/" %))))
                    (take-nth 2 (rest unit-types)))
                (flatten)
                (apply hash-map))))
-(gen-type-ids)
+(gen-unit-type-ids)
 
-(defn gen-type-kw-lookup []
+(defn gen-unit-type-kw-lookup []
   (intern *ns*
-          (symbol 'type-kw-lookup)
+          (symbol 'unit-type-kw-lookup)
           (merge {:mineral jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field
                   :geyser jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser}
                  (zipmap (map keyword (take-nth 2 unit-types))
                          (map #(eval `(. jnibwapi.types.UnitType$UnitTypes ~%)) (take-nth 2 (rest unit-types)))))))
+(gen-unit-type-kw-lookup)
 
-(gen-type-kw-lookup)
+(defn gen-upgrade-type-ids []
+  (intern *ns*
+          (symbol 'upgrade-type-ids)
+          (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.UpgradeType$UpgradeTypes/" %))))
+                             (eval (symbol (str "jnibwapi.types.UpgradeType$UpgradeTypes/" %))))
+                   (take-nth 2 (rest upgrade-types)))
+               (flatten)
+               (apply hash-map))))
+(gen-upgrade-type-ids)
+
+(defn gen-upgrade-type-kw-lookup []
+  (intern *ns*
+          (symbol 'upgrade-type-kw-lookup)
+          (zipmap (map keyword (take-nth 2 upgrade-types))
+                  (map #(eval `(. jnibwapi.types.UpgradeType$UpgradeTypes ~%)) (take-nth 2 (rest upgrade-types))))))
+(gen-upgrade-type-kw-lookup)
+
+(defn gen-tech-type-ids []
+  (intern *ns*
+          (symbol 'tech-type-ids)
+          (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.TechType$TechTypes/" %))))
+                             (eval (symbol (str "jnibwapi.types.TechType$TechTypes/" %))))
+                   (take-nth 2 (rest tech-types)))
+               (flatten)
+               (apply hash-map))))
+(gen-tech-type-ids)
+
+(defn gen-tech-type-kw-lookup []
+  (intern *ns*
+          (symbol 'tech-type-kw-lookup)
+          (zipmap (map keyword (take-nth 2 tech-types))
+                  (map #(eval `(. jnibwapi.types.TechType$TechTypes ~%)) (take-nth 2 (rest tech-types))))))
+(gen-tech-type-kw-lookup)
 
 ;; common calls to get state vars and collections
 
@@ -185,16 +220,16 @@
 (defn build
   ([builder point to-build] (build builder (.x point) (.y point) to-build))
   ([builder tile-x tile-y to-build] (.build api (.getID builder) tile-x tile-y
-                                            (.getID (to-build type-kw-lookup)))))
+                                            (.getID (to-build unit-type-kw-lookup)))))
 
 (defn build-addon [building to-build]
-  (.buildAddon api (.getID building) (.getID (to-build type-kw-lookup))))
+  (.buildAddon api (.getID building) (.getID (to-build unit-type-kw-lookup))))
 
 (defn train [building to-train]
-  (.train api (.getID building) (.getID (to-train type-kw-lookup))))
+  (.train api (.getID building) (.getID (to-train unit-type-kw-lookup))))
 
 (defn morph [unit morph-to]
-  (.morph api (.getID unit) (.getID (morph-to type-kw-lookup))))
+  (.morph api (.getID unit) (.getID (morph-to unit-type-kw-lookup))))
 
 ;; utility functions
 

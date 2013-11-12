@@ -113,6 +113,94 @@
    'robotics-support-bay 'Protoss_Robotics_Support_Bay
    'shield-battery 'Protoss_Shield_Battery])
 
+(def upgrade-types
+  ['infantry-armor 'Terran_Infantry_Armor
+   'vehicle-plating 'Terran_Vehicle_Plating
+   'ship-plating 'Terran_Ship_Plating
+   'carapace 'Zerg_Carapace
+   'flyer-carapace 'Zerg_Flyer_Carapace
+   'ground-armor 'Protoss_Ground_Armor
+   'air-armor 'Protoss_Air_Armor
+   'infantry-weapons 'Terran_Infantry_Weapons
+   'vehicle-weapons 'Terran_Vehicle_Weapons
+   'ship-weapons 'Terran_Ship_Weapons
+   'melee-attacks 'Zerg_Melee_Attacks
+   'missile-attacks 'Zerg_Missile_Attacks
+   'flyer-attacks 'Zerg_Flyer_Attacks
+   'ground-weapons 'Protoss_Ground_Weapons
+   'air-weapons 'Protoss_Air_Weapons
+   'plasma-shields 'Protoss_Plasma_Shields
+   'u-238-shells 'U_238_Shells
+   'ion-thrusters 'Ion_Thrusters
+   'titan-reactor 'Titan_Reactor
+   'ocular-implants 'Ocular_Implants
+   'moebius-reactor 'Moebius_Reactor
+   'apollo-reactor 'Apollo_Reactor
+   'colossus-reactor 'Colossus_Reactor
+   'ventral-sacs 'Ventral_Sacs
+   'antennae 'Antennae
+   'pneumatized-carapace 'Pneumatized_Carapace
+   'metabolic-boost 'Metabolic_Boost
+   'adrenal-glands 'Adrenal_Glands
+   'muscular-augments 'Muscular_Augments
+   'grooved-spines 'Grooved_Spines
+   'gamete-meiosis 'Gamete_Meiosis
+   'metasynaptic-node 'Metasynaptic_Node
+   'singularity-charge 'Singularity_Charge
+   'leg-enhancements 'Leg_Enhancements
+   'scarab-damage 'Scarab_Damage
+   'reaver-capacity 'Reaver_Capacity
+   'gravitic-drive 'Gravitic_Drive
+   'sensor-array 'Sensor_Array
+   'gravitic-boosters 'Gravitic_Boosters
+   'khaydarin-amulet 'Khaydarin_Amulet
+   'apial-sensors 'Apial_Sensors
+   'gravitic-thrusters 'Gravitic_Thrusters
+   'carrier-capacity 'Carrier_Capacity
+   'khaydarin-core 'Khaydarin_Core
+   'argus-jewel 'Argus_Jewel
+   'argus-talisman 'Argus_Talisman
+   'caduceus-reactor 'Caduceus_Reactor
+   'chitinous-plating 'Chitinous_Plating
+   'anabolic-synthesis 'Anabolic_Synthesis
+   'charon-boosters 'Charon_Boosters])
+
+(def tech-types
+  ['stim-packs 'Stim_Packs
+   'lockdown 'Lockdown
+   'emp-shockwave 'EMP_Shockwave
+   'spider-mines 'Spider_Mines
+   'scanner-sweep 'Scanner_Sweep
+   'tank-siege-mode 'Tank_Siege_Mode
+   'defensive-matrix 'Defensive_Matrix
+   'irradiate 'Irradiate
+   'yamato-gun 'Yamato_Gun
+   'cloaking-field 'Cloaking_Field
+   'personnel-cloaking 'Personnel_Cloaking
+   'burrowing 'Burrowing
+   'infestation 'Infestation
+   'spawn-broodlings 'Spawn_Broodlings
+   'dark-swarm 'Dark_Swarm
+   'plague 'Plague
+   'consume 'Consume
+   'ensnare 'Ensnare
+   'parasite 'Parasite
+   'psionic-storm 'Psionic_Storm
+   'hallucination 'Hallucination
+   'recall 'Recall
+   'statis-field 'Stasis_Field
+   'archon-warp 'Archon_Warp
+   'restoration 'Restoration
+   'disruption-web 'Disruption_Web
+   'mind-control 'Mind_Control
+   'dark-archon-meld 'Dark_Archon_Meld
+   'feedback 'Feedback
+   'optical-flare 'Optical_Flare
+   'maelstrom 'Maelstrom
+   'lurker-aspect 'Lurker_Aspect
+   'healing 'Healing
+   'nuclear-strike 'Nuclear_Strike])
+
 (def unit-type-fn-maps
   ['get-name 'getName
    'race-id 'getRaceID
