@@ -1,6 +1,7 @@
 (ns korhal.core
   (:refer-clojure :exclude [load])
-  (:require [korhal.interop :refer :all])
+  (:require [korhal.interop :refer :all]
+            [korhal.util :refer [swap-key swap-keys plural]])
   (:import (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
 
@@ -40,7 +41,7 @@
 (defn korhal-gameUpdate [this]
 
   ;; spawn drones
-  (doseq [larva (my-larvas)]
+  (doseq [larva (my-larvae)]
     (when (and (>= (my-minerals) 50) (= (count (my-drones)) 4))
       (morph larva :drone)))
 
@@ -65,12 +66,12 @@
              (>= (my-minerals) 100)
              (not (:overlord-spawned @(.state this)))
              (:spawning-pool-started @(.state this)))
-      (morph (first (my-larvas)) :overlord)
+      (morph (first (my-larvae)) :overlord)
       (swap-keys (.state this) :overlord-spawned true))
 
   ;; spawn zerglings
   (when (>= (my-minerals) 50)
-    (morph (first (my-larvas)) :zergling))
+    (morph (first (my-larvae)) :zergling))
 
   ;; attack
   (let [idle-zerglings (filter idle? (my-zerglings))]
