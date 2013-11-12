@@ -16,7 +16,7 @@
   (let [ai (korhal.core.)
         api (jnibwapi.JNIBWAPI. ai)]
     (swap! (.state ai) swap-key :api api)
-    (bind-api api)
+    (bind-api! api)
     (.start (:api @(.state ai)))))
 
 (defn korhal-init []
@@ -77,7 +77,7 @@
     (when (seq idle-zerglings)
       (let [enemy-base (first (enemy-start-locations))]
         (doseq [zergling idle-zerglings]
-          (attack zergling enemy-base))))))
+          (attack zergling (pixel-x enemy-base) (pixel-y enemy-base)))))))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])

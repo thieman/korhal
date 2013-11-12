@@ -7,14 +7,14 @@
 
 (declare get-type pixel-x pixel-y tile-x tile-y start-location?)
 
-(def ^:dynamic api nil)
-(defn bind-api [binding] (alter-var-root (var api) #(identity %2) binding))
+(def api nil)
+(defn bind-api! [binding] (alter-var-root #'api #(identity %2) binding))
 
 (defn dynamic-dot-form [instance method] `(. ~instance ~method))
 
 ;; type conversions
 
-(defn to-java-point [obj grid-type]
+(defn java-point [obj grid-type]
   (condp = grid-type
     :pixel (java.awt.Point. (pixel-x obj) (pixel-y obj))
     :tile (java.awt.Point. (tile-x obj) (tile-y obj))))
@@ -93,7 +93,7 @@
 
 (defn enemy-start-locations []
   (let [bases (base-locations)
-        enemy-base? (fn [base] (and (not (= (to-java-point base :tile) (my-start-location)))
+        enemy-base? (fn [base] (and (not (= (java-point base :tile) (my-start-location)))
                                     (start-location? base)))]
     (filter enemy-base? bases)))
 
@@ -162,20 +162,6 @@
     (.getTy obj)
     (.getTileY obj)))
 
-;; unit commands
-
-(defn attack [unit target]
-  (.attack api (.getID unit) (pixel-x target) (pixel-y target)))
-
-(defn build [builder tile-x tile-y to-build]
-  (.build api (.getID builder) tile-x tile-y
-          (.getID (to-build type-kw-lookup))))
-
-(defn morph [unit morph-to]
-  (.morph api
-          (.getID unit)
-          (.getID (morph-to type-kw-lookup))))
-
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]
   (let [class-type (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" t))))]
@@ -189,6 +175,26 @@
     (intern *ns*
             (symbol (str "my-" n "s"))
             (fn [] (filter type-predicate (.getMyUnits api))))))
+
+;; API unit commands
+
+(defn attack
+  ([attacking-unit target-unit] (.attack api (.getID attacking-unit) (.getID target-unit)))
+  ([attacking-unit px py] (.attack api (.getID attacking-unit) px py)))
+
+(defn build
+  ([builder point to-build] (build builder (.x point) (.y point) to-build))
+  ([builder tile-x tile-y to-build] (.build api (.getID builder) tile-x tile-y
+                                            (.getID (to-build type-kw-lookup)))))
+
+(defn build-addon [building to-build]
+  (.buildAddon api (.getID building) (.getID (to-build type-kw-lookup))))
+
+(defn train [building to-train]
+  (.train api (.getID building) (.getID (to-train type-kw-lookup))))
+
+(defn morph [unit morph-to]
+  (.morph api (.getID unit) (.getID (morph-to type-kw-lookup))))
 
 ;; utility functions
 
