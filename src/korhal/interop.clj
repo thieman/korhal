@@ -38,7 +38,7 @@
 ;; type definitions
 
 ;; unit type kw lookup is a special case to add in the minerals and geysers
-(def unit-type-kw-lookup
+(def unit-type-kws
   (merge {:mineral jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field
           :geyser jnibwapi.types.UnitType$UnitTypes/Resource_Vespene_Geyser}
          (zipmap (map keyword (take-nth 2 unit-types))
@@ -69,40 +69,16 @@
 (gen-type-ids-map explosion-type-ids 'jnibwapi.types.ExplosionType$ExplosionTypes explosion-types)
 (gen-type-ids-map order-type-ids 'jnibwapi.types.OrderType$OrderTypes order-types)
 
-(gen-type-kw-map upgrade-type-kw-lookup 'jnibwapi.types.UpgradeType$UpgradeTypes upgrade-types)
-(gen-type-kw-map tech-type-kw-lookup 'jnibwapi.types.TechType$TechTypes tech-types)
-(gen-type-kw-map unit-command-type-kw-lookup 'jnibwapi.types.UnitCommandType$UnitCommandTypes unit-command-types)
-(gen-type-kw-map race-type-kw-lookup 'jnibwapi.types.RaceType$RaceTypes race-types)
-(gen-type-kw-map unit-size-type-kw-lookup 'jnibwapi.types.UnitSizeType$UnitSizeTypes unit-size-types)
-(gen-type-kw-map weapon-type-kw-lookup 'jnibwapi.types.WeaponType$WeaponTypes weapon-types)
-(gen-type-kw-map bullet-type-kw-lookup 'jnibwapi.types.BulletType$BulletTypes bullet-types)
-(gen-type-kw-map damage-type-kw-lookup 'jnibwapi.types.DamageType$DamageTypes damage-types)
-(gen-type-kw-map explosion-type-kw-lookup 'jnibwapi.types.ExplosionType$ExplosionTypes explosion-types)
-(gen-type-kw-map order-type-kw-lookup 'jnibwapi.types.OrderType$OrderTypes order-types)
-
-(defn gen-upgrade-type-kw-lookup []
-  (intern *ns*
-          (symbol 'upgrade-type-kw-lookup)
-          (zipmap (map keyword (take-nth 2 upgrade-types))
-                  (map #(eval `(. jnibwapi.types.UpgradeType$UpgradeTypes ~%)) (take-nth 2 (rest upgrade-types))))))
-(gen-upgrade-type-kw-lookup)
-
-(defn gen-tech-type-ids []
-  (intern *ns*
-          (symbol 'tech-type-ids)
-          (->> (map #(vector (eval `(.getID ~(symbol (str "jnibwapi.types.TechType$TechTypes/" %))))
-                             (eval (symbol (str "jnibwapi.types.TechType$TechTypes/" %))))
-                   (take-nth 2 (rest tech-types)))
-               (flatten)
-               (apply hash-map))))
-(gen-tech-type-ids)
-
-(defn gen-tech-type-kw-lookup []
-  (intern *ns*
-          (symbol 'tech-type-kw-lookup)
-          (zipmap (map keyword (take-nth 2 tech-types))
-                  (map #(eval `(. jnibwapi.types.TechType$TechTypes ~%)) (take-nth 2 (rest tech-types))))))
-(gen-tech-type-kw-lookup)
+(gen-type-kw-map upgrade-type-kws 'jnibwapi.types.UpgradeType$UpgradeTypes upgrade-types)
+(gen-type-kw-map tech-type-kws 'jnibwapi.types.TechType$TechTypes tech-types)
+(gen-type-kw-map unit-command-type-kws 'jnibwapi.types.UnitCommandType$UnitCommandTypes unit-command-types)
+(gen-type-kw-map race-type-kws 'jnibwapi.types.RaceType$RaceTypes race-types)
+(gen-type-kw-map unit-size-type-kws 'jnibwapi.types.UnitSizeType$UnitSizeTypes unit-size-types)
+(gen-type-kw-map weapon-type-kws 'jnibwapi.types.WeaponType$WeaponTypes weapon-types)
+(gen-type-kw-map bullet-type-kws 'jnibwapi.types.BulletType$BulletTypes bullet-types)
+(gen-type-kw-map damage-type-kws 'jnibwapi.types.DamageType$DamageTypes damage-types)
+(gen-type-kw-map explosion-type-kws 'jnibwapi.types.ExplosionType$ExplosionTypes explosion-types)
+(gen-type-kw-map order-type-kws 'jnibwapi.types.OrderType$OrderTypes order-types)
 
 ;; common calls to get state vars and collections
 
@@ -253,22 +229,22 @@
 (defn build
   ([builder point to-build] (build builder (.x point) (.y point) to-build))
   ([builder tile-x tile-y to-build] (.build api (.getID builder) tile-x tile-y
-                                            (.getID (to-build unit-type-kw-lookup)))))
+                                            (.getID (to-build unit-type-kws)))))
 
 (defn build-addon [building to-build]
-  (.buildAddon api (.getID building) (.getID (to-build unit-type-kw-lookup))))
+  (.buildAddon api (.getID building) (.getID (to-build unit-type-kws))))
 
 (defn train [building to-train]
-  (.train api (.getID building) (.getID (to-train unit-type-kw-lookup))))
+  (.train api (.getID building) (.getID (to-train unit-type-kws))))
 
 (defn morph [unit morph-to]
-  (.morph api (.getID unit) (.getID (morph-to unit-type-kw-lookup))))
+  (.morph api (.getID unit) (.getID (morph-to unit-type-kws))))
 
 (defn research [unit to-research]
-  (.research api (.getID unit) (.getID (to-research tech-type-kw-lookup))))
+  (.research api (.getID unit) (.getID (to-research tech-type-kws))))
 
 (defn upgrade [unit to-upgrade]
-  (.upgrade api (.getID unit) (.getID (to-upgrade upgrade-type-kw-lookup))))
+  (.upgrade api (.getID unit) (.getID (to-upgrade upgrade-type-kws))))
 
 (defn set-rally-point
   ([rally-unit target-unit-or-point]
