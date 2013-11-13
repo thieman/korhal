@@ -2,17 +2,20 @@
   (:refer-clojure :exclude [load])
   (:require [korhal.interop :refer :all]
             [korhal.util :refer [swap-key swap-keys plural]])
-  (:import (jnibwapi.JNIBWAPI)
+  (:import (clojure.lang.IDeref)
+           (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
 
 (gen-class
  :name "korhal.core"
- :implements [jnibwapi.BWAPIEventListener]
+ :implements [jnibwapi.BWAPIEventListener clojure.lang.IDeref]
  :state state
  :init init
  :main true
  :constructors {[] []}
  :prefix "korhal-")
+
+(defn korhal-deref [this] @(.state this))
 
 (defn korhal-main [& args]
   (let [ai (korhal.core.)
@@ -31,12 +34,7 @@
   (println "Game Started")
   (enable-user-input)
   (set-game-speed 0)
-  (load-map-data true)
-  (swap-keys (.state this)
-    :claimed []
-    :pool-drone -1
-    :spawning-pool-started false
-    :overlord-spawned false))
+  (load-map-data true))
 
 (defn korhal-gameUpdate [this]
 
