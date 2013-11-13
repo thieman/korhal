@@ -1,7 +1,11 @@
 (ns korhal.core
   (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
-            [korhal.tools.util :refer [swap-key swap-keys plural]])
+            [korhal.tools.util :refer [swap-key swap-keys plural]]
+            [korhal.tools.contract :refer [available-minerals available-gas
+                                           contract-build contract-worker-died
+                                           contracted-max-supply clear-contracts cancel-contracts
+                                           show-contract-display clear-contract-atoms]])
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
@@ -33,35 +37,80 @@
 (defn korhal-gameStarted [this]
   (println "Game Started")
   (enable-user-input)
-  (set-game-speed 0)
-  (load-map-data true))
+  (set-game-speed 5)
+  (load-map-data true)
+  (draw-targets true)
+  (draw-ids true)
+  (show-contract-display true)
+  (clear-contract-atoms))
 
 (defn korhal-gameUpdate [this]
 
+  (clear-contracts)
+
   ;; train scvs
   (doseq [cc (filter #(zero? (training-queue-size %)) (my-command-centers))]
-    (train cc :scv))
+    (when (>= (available-minerals) 50)
+      (train cc :scv)))
 
   ;; collect minerals
   (doseq [idle-scv (filter idle? (my-scvs))]
-    (let [close-minerals (filter #(< (dist idle-scv %) 300) (minerals))]
-      (right-click idle-scv (nth close-minerals (rand-int (count close-minerals)))))))
+    (let [closest-mineral (apply min-key (partial dist idle-scv) (minerals))]
+      (cancel-contracts idle-scv)
+      (right-click idle-scv closest-mineral)))
+
+  ;; build supply depots
+  (when (and (>= (+ (my-supply-used) 200) (contracted-max-supply))
+             (>= (available-minerals) 100))
+    (let [cc (first (my-command-centers))
+          builder (first (filter gathering-minerals? (my-scvs)))]
+      (loop [attempt 0]
+        (when-not (>= attempt 5)
+          (let [tx (+ (tile-x cc) (* (Math/pow -1 (rand-int 2)) (rand-int 20)))
+                ty (+ (tile-y cc) (* (Math/pow -1 (rand-int 2)) (rand-int 20)))]
+            (if (can-build? tx ty :supply-depot true)
+              (contract-build builder tx ty :supply-depot)
+              (recur (inc attempt)))))))))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
 (defn korhal-matchEnded [this winner])
 (defn korhal-sendText [this text])
-(defn korhal-receiveText [this text])
+
+(defn korhal-receiveText [this text]
+  (println (str "RECEIVED: " text)))
+
 (defn korhal-nukeDetect [this x y])
-(defn korhal-playerLeft [this playerID])
-(defn korhal-unitCreate [this unitID])
-(defn korhal-unitDestroy [this unitID])
-(defn korhal-unitDiscover [this unitID])
-(defn korhal-unitEvade [this unitID])
-(defn korhal-unitHide [this unitID])
-(defn korhal-unitMorph [this unitID])
-(defn korhal-unitShow [this unitID])
-(defn korhal-unitRenegade [this unitID])
-(defn korhal-saveGame [this gameName])
-(defn korhal-unitComplete [this unitID])
-(defn korhal-playerDropped [this playerID])
+(defn korhal-playerLeft [this player-id])
+
+(defn korhal-unitCreate [this unit-id]
+  (println (str "CREATED: " unit-id)))
+
+(defn korhal-unitDestroy [this unit-id]
+  (println (str "DESTROYED: " unit-id))
+  (contract-worker-died unit-id))
+
+(defn korhal-unitDiscover [this unit-id]
+  (println (str "DISCOVERED: " unit-id)))
+
+(defn korhal-unitEvade [this unit-id]
+  (println (str "EVADED: " unit-id)))
+
+(defn korhal-unitHide [this unit-id]
+  (println (str "HIDE: " unit-id)))
+
+(defn korhal-unitMorph [this unit-id]
+  (println (str "MORPH: " unit-id)))
+
+(defn korhal-unitShow [this unit-id]
+  (println (str "SHOW: " unit-id)))
+
+(defn korhal-unitRenegade [this unit-id]
+  (println (str "RENEGADE: " unit-id)))
+
+(defn korhal-saveGame [this game-name])
+
+(defn korhal-unitComplete [this unit-id]
+  (println (str "COMPLETE: " unit-id)))
+
+(defn korhal-playerDropped [this player-id])

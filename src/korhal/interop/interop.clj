@@ -21,7 +21,7 @@
            (jnibwapi.types.OrderType$OrderTypes)
            (java.awt.Point)))
 
-(declare get-type pixel-x pixel-y tile-x tile-y start-location?)
+(declare get-type pixel-x pixel-y tile-x tile-y start-location? can-build-here? get-type-id)
 
 (def api nil)
 (defn bind-api! [binding] (alter-var-root #'api #(identity %2) binding))
@@ -87,10 +87,6 @@
 (defn my-minerals [] (.. api getSelf getMinerals))
 
 (defn my-gas [] (.. api getSelf getGas))
-
-(defn my-supply-used [] (.. api getSelf getSupplyUsed))
-
-(defn my-supply-total [] (.. api getSelf getSupplyTotal))
 
 (defn my-units [] (.getMyUnits api))
 
@@ -171,7 +167,8 @@
 (defmacro define-unit-type-fns []
   (cons `do
         (for [[clj-name java-name] (partition 2 unit-type-fn-maps)]
-          `(defn ~clj-name [unit#] (. (get-type unit#) ~java-name)))))
+          `(defn ~clj-name [unit-or-unit-type#]
+               (. (get-type unit-or-unit-type#) ~java-name)))))
 
 (define-unit-type-fns)
 
@@ -182,11 +179,33 @@
 
 (define-unit-fns)
 
+;; supply functions are dumb and return double the supply to accommodate
+;; 0.5 supply zerglings while still using an int type
+;; Clojure isn't statically typed, so we don't have to put up with that shit
+
+(defn my-supply-used [] (/ (.. api getSelf getSupplyUsed) 2))
+
+(defn my-supply-total [] (/ (.. api getSelf getSupplyTotal) 2))
+
+(defn supply-provided [unit]
+  (/ (. (get-type unit) getSupplyProvided) 2))
+
+(defn supply-required [unit]
+  (/ (. (get-type unit) getSupplyRequired) 2))
+
 ;; common API commands shared among multiple types
 
 (defn get-id [obj] (.getID obj))
 
-(defn get-type [unit] (.getUnitType api (.getTypeID unit)))
+(defn get-type [unit-or-unit-type]
+  (if (instance? Unit unit-or-unit-type)
+    (.getUnitType api (.getTypeID unit-or-unit-type))
+    (.getUnitType api (.getID unit-or-unit-type))))
+
+(defn get-type-id [unit-or-unit-type]
+  (if (instance? Unit unit-or-unit-type)
+    (.getTypeID unit-or-unit-type)
+    (.getID unit-or-unit-type)))
 
 (defn pixel-x [obj] (.getX obj))
 
@@ -220,6 +239,10 @@
 (def my-citadels-of-adun my-citadel-of-aduns)
 (def my-nexuses my-nexus)
 
+(defn get-unit-by-id [unit-id] (first (filter #(= unit-id (get-id %)) (my-units))))
+
+(defn my-buildings [] (filter building? (my-units)))
+
 ;; API unit commands
 
 (defn attack
@@ -228,8 +251,15 @@
 
 (defn build
   ([builder point to-build] (build builder (.x point) (.y point) to-build))
-  ([builder tile-x tile-y to-build] (.build api (.getID builder) tile-x tile-y
-                                            (.getID (to-build unit-type-kws)))))
+  ([builder tx ty to-build] (.build api (.getID builder) tx ty
+                                    (.getID (to-build unit-type-kws)))))
+
+(defn can-build? [tx ty to-build check-explored]
+  (let [build-type (to-build unit-type-kws)
+        coords (for [tx (range tx (+ tx (tile-width build-type)))
+                     ty (range ty (+ ty (tile-height build-type)))]
+                 [tx ty])]
+    (every? #(can-build-here? (first %) (second %) build-type check-explored) coords)))
 
 (defn build-addon [building to-build]
   (.buildAddon api (.getID building) (.getID (to-build unit-type-kws))))
@@ -372,6 +402,8 @@
 
 (defn set-game-speed [speed] (.setGameSpeed api speed))
 
+(defn frame-count [] (.getFrameCount api))
+
 (defn set-frame-skip [frame-skip] (.setFrameSkip api frame-skip))
 
 (defn leave-game [] (.leaveGame api))
@@ -390,8 +422,8 @@
   (.drawDot api px py color screen-coords))
 
 (defn draw-text
-  ([point msg screen-coords] (.drawText api point msg screen-coords))
-  ([px py msg screen-coords] (.drawText api px py msg screen-coords)))
+  ([point msg screen-coords] (.drawText api point (str msg) screen-coords))
+  ([px py msg screen-coords] (.drawText api px py (str msg) screen-coords)))
 
 ;; extended API commands
 
@@ -413,9 +445,9 @@
 
 (defn- has-power?*
   ([tx ty] (.hasPower api tx ty))
-  ([tx ty unit] (.hasPower api tx ty (.getTypeID unit)))
+  ([tx ty unit] (.hasPower api tx ty (get-type-id unit)))
   ([tx ty tile-width tile-height] (.hasPower api tx ty tile-width tile-height))
-  ([tx ty tile-width tile-height unit] (.hasPower api tx ty tile-width tile-height (.getTypeID unit))))
+  ([tx ty tile-width tile-height unit] (.hasPower api tx ty tile-width tile-height (get-type-id unit))))
 
 (defn has-power? [point-or-coord & rest-args]
   (cond
@@ -438,21 +470,21 @@
   (.hasLoadedUnit api (.getID unit) (.getID maybe-loaded-unit)))
 
 (defn can-build-here?
-  ([tx ty unit-to-build check-explored] (.canBuildHere api tx ty (.getTypeID unit-to-build) check-explored))
+  ([tx ty unit-to-build check-explored] (.canBuildHere api tx ty (get-type-id unit-to-build) check-explored))
   ([unit tx ty unit-to-build check-explored] (.canBuildHere api (.getID unit) tx ty
-                                                            (.getTypeID unit-to-build) check-explored)))
+                                                            (get-type-id unit-to-build) check-explored)))
 
 (defn can-make?
-  ([unit-to-make] (.canMake api (.getTypeID unit-to-make)))
-  ([unit unit-to-make] (.canMake api (.getID unit) (.getTypeID unit-to-make))))
+  ([unit-to-make] (.canMake api (get-type-id unit-to-make)))
+  ([unit unit-to-make] (.canMake api (.getID unit) (get-type-id unit-to-make))))
 
 (defn can-research?
-  ([tech] (.canResearch api (.getTypeID tech)))
-  ([unit tech] (.canResearch api (.getID unit) (.getTypeID tech))))
+  ([tech] (.canResearch api (get-type-id tech)))
+  ([unit tech] (.canResearch api (.getID unit) (get-type-id tech))))
 
 (defn can-upgrade?
-  ([upgrade] (.canUpgrade api (.getTypeID upgrade)))
-  ([unit upgrade] (.canUpgrade api (.getID unit) (.getTypeID upgrade))))
+  ([upgrade] (.canUpgrade api (get-type-id upgrade)))
+  ([unit upgrade] (.canUpgrade api (.getID unit) (get-type-id upgrade))))
 
 (defn print-text [msg] (.printText api msg))
 
