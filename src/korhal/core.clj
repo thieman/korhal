@@ -69,7 +69,8 @@
           (let [tx (+ (tile-x cc) (* (Math/pow -1 (rand-int 2)) (rand-int 20)))
                 ty (+ (tile-y cc) (* (Math/pow -1 (rand-int 2)) (rand-int 20)))]
             (if (can-build? tx ty :supply-depot true)
-              (contract-build builder tx ty :supply-depot)
+              (do (cancel-contracts builder)
+                  (contract-build builder tx ty :supply-depot))
               (recur (inc attempt)))))))))
 
 (defn korhal-gameEnded [this])
