@@ -1,0 +1,1 @@
+(ns korhal.tools.contract)

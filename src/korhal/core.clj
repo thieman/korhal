@@ -1,7 +1,7 @@
 (ns korhal.core
   (:refer-clojure :exclude [load])
-  (:require [korhal.interop :refer :all]
-            [korhal.util :refer [swap-key swap-keys plural]])
+  (:require [korhal.interop.interop :refer :all]
+            [korhal.tools.util :refer [swap-key swap-keys plural]])
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))

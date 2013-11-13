@@ -1,12 +1,12 @@
-(ns korhal.interop
+(ns korhal.interop.interop
   (:refer-clojure :exclude [load])
-  (:require [korhal.interop-types :refer [unit-types upgrade-types tech-types
-                                          unit-command-types race-types unit-size-types
-                                          weapon-types bullet-types damage-types
-                                          explosion-types order-types
-                                          unit-type-fn-maps unit-fn-maps
-                                          base-location-fn-maps player-fn-maps]]
-            [korhal.util :refer [swap-key swap-keys plural]])
+  (:require [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
+                                                  unit-command-types race-types unit-size-types
+                                                  weapon-types bullet-types damage-types
+                                                  explosion-types order-types
+                                                  unit-type-fn-maps unit-fn-maps
+                                                  base-location-fn-maps player-fn-maps]]
+            [korhal.tools.util :refer [swap-key swap-keys plural]])
   (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
            (jnibwapi.types.UnitType$UnitTypes)
            (jnibwapi.types.UpgradeType$UpgradeTypes)

@@ -1,4 +1,4 @@
-(ns korhal.interop-types)
+(ns korhal.interop.interop-types)
 
 (def unit-types
   ['marine 'Terran_Marine

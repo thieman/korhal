@@ -1,4 +1,4 @@
-(ns korhal.util)
+(ns korhal.tools.util)
 
 (defn swap-key [curr-val k v]
   (merge curr-val {k v}))
