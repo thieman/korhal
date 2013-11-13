@@ -39,45 +39,14 @@
 
 (defn korhal-gameUpdate [this]
 
-  ;; spawn drones
-  (doseq [larva (my-larvas)]
-    (when (and (>= (my-minerals) 50) (= (count (my-drones)) 4))
-      (morph larva :drone)))
+  ;; train scvs
+  (doseq [cc (filter #(zero? (training-queue-size %)) (my-command-centers))]
+    (train cc :scv))
 
   ;; collect minerals
-  (doseq [drone (my-drones)]
-    (when (and (idle? drone)
-               (not (= (get-id drone) (:pool-drone @(.state this)))))
-      (right-click drone (first (filter #(< (dist drone %) 300) (minerals))))))
-
-  ;; build a spawning pool
-  (when (and (>= (my-minerals) 200) (< (:pool-drone @(.state this)) 0))
-    (let [pool-drone (first (my-drones))
-          overlord (first (my-overlords))
-          build-x (if (< (tile-x overlord) 40) (+ (tile-x overlord) 2) (- (tile-x overlord) 2))]
-      (swap-keys (.state this)
-                 :pool-drone (get-id pool-drone)
-                 :spawning-pool-started true)
-      (build pool-drone build-x (tile-y overlord) :spawning-pool)))
-
-  ;; spawn overlords
-  (when (and (>= (my-supply-used) (- (my-supply-total) 3))
-             (>= (my-minerals) 100)
-             (not (:overlord-spawned @(.state this)))
-             (:spawning-pool-started @(.state this)))
-      (morph (first (my-larvas)) :overlord)
-      (swap-keys (.state this) :overlord-spawned true))
-
-  ;; spawn zerglings
-  (when (>= (my-minerals) 50)
-    (morph (first (my-larvas)) :zergling))
-
-  ;; attack
-  (let [idle-zerglings (filter idle? (my-zerglings))]
-    (when (seq idle-zerglings)
-      (let [enemy-base (first (enemy-start-locations))]
-        (doseq [zergling idle-zerglings]
-          (attack zergling (pixel-x enemy-base) (pixel-y enemy-base)))))))
+  (doseq [idle-scv (filter idle? (my-scvs))]
+    (let [close-minerals (filter #(< (dist idle-scv %) 300) (minerals))]
+      (right-click idle-scv (nth close-minerals (rand-int (count close-minerals)))))))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
