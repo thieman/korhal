@@ -5,7 +5,8 @@
                                           weapon-types bullet-types damage-types
                                           explosion-types order-types
                                           unit-type-fn-maps unit-fn-maps
-                                          base-location-fn-maps player-fn-maps]])
+                                          base-location-fn-maps player-fn-maps]]
+            [korhal.util :refer [swap-key swap-keys plural]])
   (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
            (jnibwapi.types.UnitType$UnitTypes)
            (jnibwapi.types.UpgradeType$UpgradeTypes)
@@ -233,11 +234,15 @@
             (fn [unit] (= (.getTypeID unit) class-type)))))
 
 ;; own unit type collections, e.g. my-drones
-(doseq [[n _] (partition 2 unit-types)]
-  (let [type-predicate (eval (symbol (str *ns* "/is-" n "?")))]
-    (intern *ns*
-            (symbol (str "my-" n "s"))
-            (fn [] (filter type-predicate (.getMyUnits api))))))
+(doseq [[n t] (partition 2 unit-types)]
+  (when (not (re-seq #"^Critter" (str t)))
+    (let [type-predicate (eval (symbol (str *ns* "/is-" n "?")))]
+      (intern *ns*
+              (symbol (str "my-" (plural n)))
+              (fn [] (filter type-predicate (.getMyUnits api)))))))
+
+(def my-citadels-of-adun my-citadel-of-aduns)
+(def my-nexuses my-nexus)
 
 ;; API unit commands
 
@@ -492,13 +497,6 @@
   ([tx ty] (.getUnitsOnTile api tx ty)))
 
 ;; utility functions supplemental to JNIBWAPI
-
-(defn swap-key [curr-val k v]
-  (merge curr-val {k v}))
-
-(defn swap-keys [swap-atom & forms]
-  (doseq [[k v] (partition 2 forms)]
-    (swap! swap-atom swap-key k v)))
 
 (defn dist [a b]
   (Math/sqrt (+ (Math/pow (- (pixel-x a) (pixel-x b)) 2) (Math/pow (- (pixel-y a) (pixel-y b)) 2))))
