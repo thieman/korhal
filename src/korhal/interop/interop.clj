@@ -479,9 +479,9 @@
   ([upgrade] (.canUpgrade api (get-type-id upgrade)))
   ([unit upgrade] (.canUpgrade api (.getID unit) (get-type-id upgrade))))
 
-(defn print-text [msg] (.printText api msg))
+(defn print-text [msg] (.printText api (str msg)))
 
-(defn send-text [msg] (.sendText api msg))
+(defn send-text [msg] (.sendText api (str msg)))
 
 (defn set-command-optimization-level [level] (.setCommandOptimizationLevel api level))
 

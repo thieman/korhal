@@ -1,4 +1,5 @@
-(ns korhal.macro.build-order)
+(ns korhal.macro.build-order
+  (:require [korhal.interop.interop :refer [print-text]]))
 
 (def build-orders
   [:double-rax-mnm
@@ -40,7 +41,7 @@
    22 :machine-shop
    22 :supply-depot
    :train :vulture
-   :wait 25
+   25 :wait
    :research :ion-thrusters
    :continuous :vulture
    27 :machine-shop
@@ -86,7 +87,10 @@
    27 :siege-tank-tank-mode
    29 :engineering-bay])
 
-(defn get-build-order [build-order-kw] (eval (symbol (name build-order-kw))))
+(defn get-build-order [build-order-kw]
+  (let [bo (eval `(symbol (name ~build-order-kw)))]
+    (print-text (str "Build order: " (name bo)))
+    bo))
 
 (defn get-random-build-order []
   (get-build-order (nth build-orders (rand-int (count build-orders)))))
