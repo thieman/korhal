@@ -1,6 +1,7 @@
 (ns korhal.core
   (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
+            [korhal.macro.engine :refer [start-macro-engine run-macro-engine]]
             [korhal.tools.util :refer [swap-key swap-keys plural]]
             [korhal.tools.contract :refer [available-minerals available-gas
                                            contract-build contracted-max-supply
@@ -43,36 +44,12 @@
   (draw-targets true)
   (draw-ids true)
   (show-contract-display true)
-  (clear-contract-atoms))
+  (clear-contract-atoms)
+  (start-macro-engine))
 
 (defn korhal-gameUpdate [this]
-
   (clear-contracts)
-
-  ;; train scvs
-  (doseq [cc (filter #(zero? (training-queue-size %)) (my-command-centers))]
-    (when (>= (available-minerals) 50)
-      (train cc :scv)))
-
-  ;; collect minerals
-  (doseq [idle-scv (filter idle? (my-scvs))]
-    (let [closest-mineral (apply min-key (partial dist idle-scv) (minerals))]
-      (cancel-contracts idle-scv)
-      (right-click idle-scv closest-mineral)))
-
-  ;; build supply depots
-  (when (and (>= (+ (my-supply-used) 200) (contracted-max-supply))
-             (>= (available-minerals) 100))
-    (let [cc (first (my-command-centers))
-          builder (first (filter gathering-minerals? (my-scvs)))]
-      (loop [attempt 0]
-        (when-not (>= attempt 5)
-          (let [tx (+ (tile-x cc) (* (Math/pow -1 (rand-int 2)) (rand-int 20)))
-                ty (+ (tile-y cc) (* (Math/pow -1 (rand-int 2)) (rand-int 20)))]
-            (if (can-build? tx ty :supply-depot true)
-              (do (cancel-contracts builder)
-                  (contract-build builder tx ty :supply-depot))
-              (recur (inc attempt)))))))))
+  (run-macro-engine))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
