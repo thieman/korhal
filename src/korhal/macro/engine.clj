@@ -3,7 +3,8 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.build-order :refer [get-build-order get-random-build-order]]
             [korhal.tools.contract :refer [available-minerals available-gas
-                                           contract-build contracted-max-supply
+                                           contract-build contract-train
+                                           contracted-max-supply
                                            clear-contracts cancel-contracts
                                            show-contract-display clear-contract-atoms
                                            can-build?]]))
@@ -23,7 +24,7 @@
 (defn- train-scvs []
   (doseq [cc (filter #(zero? (training-queue-size %)) (my-command-centers))]
     (when (>= (available-minerals) 50)
-      (train cc :scv))))
+      (contract-train cc :scv))))
 
 (defn- ensure-enough-depots []
   (when (and (>= (+ (my-supply-used) 200) (contracted-max-supply))
