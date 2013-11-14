@@ -1,7 +1,8 @@
 (ns korhal.tools.contract
   (:refer-clojure :exclude [load])
   (:require [clojure.set :refer [union]]
-            [korhal.interop.interop :refer :all]))
+            [korhal.interop.interop :refer :all])
+  (:import (jnibwapi.model Unit)))
 
 (def contract-display (atom false))
 (def current-contract-id (atom 0))
@@ -36,37 +37,31 @@
    (commute contracted update-in [:minerals] + (mineral-price build-type))
    (commute contracted update-in [:gas] + (gas-price build-type))
    (commute contracted update-in [:supply] + (supply-provided build-type))
-   (commute contracted update-in [:buildings] conj {:id (get-contract-id) :builder builder :type build-type}))
-  (println (str "added contract from worker " (get-id builder))))
+   (commute contracted update-in [:buildings] conj {:id (get-contract-id) :builder builder :type build-type})))
 
 (defn- decontract-building [builder build-type]
   (let [is-decontract-map? (fn [v] (and (= (:builder v) builder)
                                         (= (:type v) build-type)))
         to-cancel (first (filter is-decontract-map? (:buildings @contracted)))]
-    (println builder)
-    (println build-type)
     (when to-cancel
       (dosync
        (let [matches-id? (fn [v] (= (:id v) (:id to-cancel)))]
          (commute contracted update-in [:minerals] - (mineral-price build-type))
          (commute contracted update-in [:gas] - (gas-price build-type))
          (commute contracted update-in [:supply] - (supply-provided build-type))
-         (commute contracted update-in [:buildings] #(remove matches-id? %))
-         (println (str "removed contract from worker " (get-id builder))))))))
+         (commute contracted update-in [:buildings] #(remove matches-id? %)))))))
 
 (defn contract-build
   ([builder point to-build] (contract-build builder (.x point) (.y point) to-build))
   ([builder tile-x tile-y to-build]
-     (let [build-type (to-build unit-type-kws)]
-       (contract-building builder (get-type build-type))
+     (let [build-type (get-type (to-build unit-type-kws))]
+       (contract-building builder build-type)
        (build builder tile-x tile-y to-build))))
 
-(defn contract-worker-died [unit-id]
-  (doseq [building (filter #(= unit-id (get-id (:builder %))) (:buildings @contracted))]
-    (decontract-building (:builder building) (:type building))))
-
-(defn cancel-contracts [unit]
-  (contract-worker-died (get-id unit)))
+(defn cancel-contracts [unit-or-unit-id]
+  (let [unit-id (if (instance? Unit unit-or-unit-id) (get-id unit-or-unit-id) unit-or-unit-id)]
+    (doseq [building (filter #(= unit-id (get-id (:builder %))) (:buildings @contracted))]
+      (decontract-building (:builder building) (:type building)))))
 
 (defn- clear-on-new-buildings []
   (doseq [new-building (filter #((complement contains?) (:building-ids @contracted) (get-id %)) (my-buildings))]

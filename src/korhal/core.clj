@@ -3,8 +3,8 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.tools.util :refer [swap-key swap-keys plural]]
             [korhal.tools.contract :refer [available-minerals available-gas
-                                           contract-build contract-worker-died
-                                           contracted-max-supply clear-contracts cancel-contracts
+                                           contract-build contracted-max-supply
+                                           clear-contracts cancel-contracts
                                            show-contract-display clear-contract-atoms]])
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
@@ -89,7 +89,7 @@
 
 (defn korhal-unitDestroy [this unit-id]
   (println (str "DESTROYED: " unit-id))
-  (contract-worker-died unit-id))
+  (cancel-contracts unit-id))
 
 (defn korhal-unitDiscover [this unit-id]
   (println (str "DISCOVERED: " unit-id)))
