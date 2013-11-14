@@ -239,7 +239,7 @@
 (def my-citadels-of-adun my-citadel-of-aduns)
 (def my-nexuses my-nexus)
 
-(defn get-unit-by-id [unit-id] (first (filter #(= unit-id (get-id %)) (my-units))))
+(defn get-unit-by-id [unit-id] (.getUnit api unit-id))
 
 (defn my-buildings [] (filter building? (my-units)))
 

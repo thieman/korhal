@@ -89,6 +89,7 @@
   (println (str "CREATED: " unit-id)))
 
 (defn korhal-unitDestroy [this unit-id]
+  ;; NOTE: destroyed units are no longer available through the API
   (println (str "DESTROYED: " unit-id))
   (cancel-contracts unit-id))
 

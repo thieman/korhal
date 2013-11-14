@@ -8,9 +8,11 @@
 
 (ns korhal.tools.contract
   (:refer-clojure :exclude [load])
-  (:require [clojure.set :refer [union]]
+  (:require [clojure.set :refer [intersection]]
             [korhal.interop.interop :refer :all])
   (:import (jnibwapi.model Unit)))
+
+(declare building-tiles reserved-tiles)
 
 (def contract-display (atom false))
 (def current-contract-id (atom 0))
@@ -21,7 +23,7 @@
 
 (defn show-contract-display [bool] (reset! contract-display bool))
 
-(defn get-contract-id []
+(defn- get-contract-id []
   (let [curr-val @current-contract-id]
     (swap! current-contract-id inc)
     curr-val))
@@ -48,12 +50,15 @@
 
 (defn- contract-building
   "Add a new building to the ref of contracted buildings."
-  [builder build-type]
+  [builder build-type tiles]
   (dosync
    (commute contracted update-in [:minerals] + (mineral-price build-type))
    (commute contracted update-in [:gas] + (gas-price build-type))
    (commute contracted update-in [:supply] + (supply-provided build-type))
-   (commute contracted update-in [:buildings] conj {:id (get-contract-id) :builder builder :type build-type})))
+   (commute contracted update-in [:buildings] conj {:id (get-contract-id)
+                                                    :builder builder
+                                                    :type build-type
+                                                    :tiles tiles})))
 
 (defn- decontract-building
   "Remove the first building matching this builder and build-type from
@@ -78,10 +83,10 @@
   to make sure the building placement is valid before calling this
   function."
   ([builder point to-build] (contract-build builder (.x point) (.y point) to-build))
-  ([builder tile-x tile-y to-build]
+  ([builder tx ty to-build]
      (let [build-type (get-type (to-build unit-type-kws))]
-       (contract-building builder build-type)
-       (build builder tile-x tile-y to-build))))
+       (contract-building builder build-type (building-tiles tx ty build-type))
+       (build builder tx ty to-build))))
 
 (defn cancel-contracts [unit-or-unit-id]
   "Cancel all contracts associated with a given unit."
@@ -106,13 +111,25 @@
   (when @contract-display (draw-contract-display))
   (clear-on-new-buildings))
 
+(defn- building-tiles
+  "Given a start tile and a building type, return a vector of all
+  tiles the building will be placed on."
+  [tx ty build-type]
+  (for [tx (range tx (+ tx (tile-width build-type)))
+        ty (range ty (+ ty (tile-height build-type)))]
+    [tx ty]))
+
+(defn- reserved-tiles
+  "Return a set of all tiles reserved by currently contracted buildings."
+  []
+  (set (apply concat (map :tiles (:buildings @contracted)))))
+
 (defn can-build?
   "Checks whether a given building type fits in a specified
   location. Also takes into account buildings that are contracted to
   be built but do not yet exist on the map."
   [tx ty to-build check-explored]
   (let [build-type (to-build unit-type-kws)
-        coords (for [tx (range tx (+ tx (tile-width build-type)))
-                     ty (range ty (+ ty (tile-height build-type)))]
-                 [tx ty])]
-    (every? #(can-build-here? (first %) (second %) build-type check-explored) coords)))
+        tiles (building-tiles tx ty build-type)]
+    (when (not (seq (intersection (set tiles) (reserved-tiles))))
+      (every? #(can-build-here? (first %) (second %) build-type check-explored) tiles))))
