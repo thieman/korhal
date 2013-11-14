@@ -90,7 +90,7 @@
   function."
   ([builder point to-build] (contract-build builder (.x point) (.y point) to-build))
   ([builder tx ty to-build]
-     (let [build-type (get-type (to-build unit-type-kws))]
+     (let [build-type (get-unit-type (to-build unit-type-kws))]
        (contract-building builder build-type (building-tiles tx ty build-type))
        (build builder tx ty to-build))))
 
@@ -102,25 +102,25 @@
 (defn contract-train
   "Replaces the train function from the standard API."
   [building to-train]
-  (add-unit-costs-to-frame (get-type (to-train unit-type-kws)))
+  (add-unit-costs-to-frame (get-unit-type (to-train unit-type-kws)))
   (train building to-train))
 
 (defn contract-morph
   "Replaces the morph function from the standard API."
   [unit morph-to]
-  (add-unit-costs-to-frame (get-type (morph-to unit-type-kws)))
+  (add-unit-costs-to-frame (get-unit-type (morph-to unit-type-kws)))
   (morph unit morph-to))
 
 (defn contract-research
   "Replaces the research function from the standard API."
   [unit to-research]
-  (add-unit-costs-to-frame (get-type (to-research unit-type-kws)))
+  (add-unit-costs-to-frame (get-tech-type (to-research tech-type-kws)))
   (research unit to-research))
 
 (defn contract-upgrade
   "Replaces the upgrade function from the standard API."
   [unit to-upgrade]
-  (add-unit-costs-to-frame (get-type (to-upgrade unit-type-kws)))
+  (add-unit-costs-to-frame (get-upgrade-type (to-upgrade upgrade-type-kws)))
   (upgrade unit to-upgrade))
 
 (defn cancel-contracts [unit-or-unit-id]
@@ -143,7 +143,7 @@
     ;; special case, do not decontract the CC you start with
     (when-not (<= (frame-count) 1)
       (decontract-building (get-unit-by-id (build-unit-id new-building))
-                           (get-type new-building)))
+                           (get-unit-type new-building)))
     (dosync
      (commute contracted update-in [:building-ids] merge {(get-id new-building) new-building}))))
 
@@ -174,3 +174,17 @@
         tiles (building-tiles tx ty build-type)]
     (when (not (seq (intersection (set tiles) (reserved-tiles))))
       (every? #(can-build-here? (first %) (second %) build-type check-explored) tiles))))
+
+(defn can-afford?
+  "Check whether there are enough resources to build a particular
+  unit, upgrade, or tech kw. Includes supply."
+  [to-buy]
+  (let [unit-type (if-not (keyword? to-buy)
+                    to-buy
+                    (cond
+                     (contains? unit-type-kws to-buy) (get-unit-type (to-buy unit-type-kws))
+                     (contains? upgrade-type-kws to-buy) (get-upgrade-type (to-buy upgrade-type-kws))
+                     (contains? tech-type-kws to-buy) (get-tech-type (to-buy tech-type-kws))))]
+    (and (>= (available-minerals) (mineral-price unit-type))
+         (>= (available-gas) (gas-price unit-type))
+         (>= (my-supply-total) (+ (my-supply-used) (supply-required unit-type))))))

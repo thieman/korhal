@@ -1,37 +1,30 @@
 (ns korhal.macro.build-order
   (:require [korhal.interop.interop :refer [print-text]]))
 
-(def build-orders
-  [:double-rax-mnm
-   :triple-raw-mnm
-   :triple-factory-vulture
-   :one-rax-fast-expand-marine-defense
-   :one-rax-fast-expand-no-defense])
-
 (def double-rax-mnm
   [9 :supply-depot
-   :with-builder :scout
+   11 :send-scout
    11 :barracks
    13 :barracks
    15 :supply-depot
-   :asap :refinery])
+   15 :refinery])
 
 (def triple-rax-mnm
   [9 :supply-depot
-   :with-builder :scout
+   11 :send-scout
    11 :barracks
    13 :barracks
    15 :supply-depot
-   :asap :refinery
-   :asap :engineering-bay
-   :asap :academy
+   15 :refinery
+   15 :engineering-bay
+   15 :academy
    :upgrade :infantry-weapons])
 
 (def triple-factory-vulture
   [9 :supply-depot
    11 :barracks
    12 :refinery
-   :with-builder :scout
+   13 :send-scout
    15 :supply-depot
    :train :marine
    18 :factory
@@ -43,7 +36,6 @@
    :train :vulture
    25 :wait
    :research :ion-thrusters
-   :continuous :vulture
    27 :machine-shop
    30 :supply-depot
    32 :factory
@@ -53,8 +45,8 @@
   [9 :supply-depot
    11 :barracks
    12 :refinery
-   :with-builder :scout
-   15 :depot
+   13 :send-scout
+   15 :supply-depot
    16 :wait
    :train :marine
    18 :factory
@@ -74,8 +66,8 @@
   [9 :supply-depot
    11 :barracks
    12 :refinery
-   :with-builder :scout
-   15 :depot
+   13 :send-scout
+   15 :supply-depot
    16 :wait
    :train :marine
    18 :factory
@@ -87,10 +79,27 @@
    27 :siege-tank-tank-mode
    29 :engineering-bay])
 
-(defn get-build-order [build-order-kw]
-  (let [bo (eval `(symbol (name ~build-order-kw)))]
-    (print-text (str "Build order: " (name bo)))
-    bo))
+(def test-order
+  [9 :supply-depot
+   11 :send-scout
+   11 :barracks
+   13 :barracks
+   14 :supply-depot
+   15 :refinery
+   :train :marine
+   16 :academy
+   :research :stim-packs
+   22 :command-center])
+
+(def build-orders
+  {:test-order test-order
+   :double-rax-mnm double-rax-mnm
+   :triple-rax-mnm triple-rax-mnm
+   :triple-factory-vulture triple-factory-vulture
+   :one-rax-fast-expand-marine-defense one-rax-fast-expand-marine-defense
+   :one-rax-fast-expand-no-defense one-rax-fast-expand-no-defense})
 
 (defn get-random-build-order []
-  (get-build-order (nth build-orders (rand-int (count build-orders)))))
+  (let [k (nth (keys build-orders) (rand-int (count build-orders)))]
+    (print-text (str "Build order: " (name k)))
+    (build-orders k)))

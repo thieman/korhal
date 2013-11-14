@@ -21,7 +21,7 @@
            (jnibwapi.types.OrderType$OrderTypes)
            (java.awt.Point)))
 
-(declare get-type pixel-x pixel-y tile-x tile-y start-location? can-build-here? get-type-id)
+(declare get-unit-type pixel-x pixel-y tile-x tile-y start-location? can-build-here? get-type-id)
 
 (def api nil)
 (defn bind-api! [binding] (alter-var-root #'api #(identity %2) binding))
@@ -168,7 +168,7 @@
   (cons `do
         (for [[clj-name java-name] (partition 2 unit-type-fn-maps)]
           `(defn ~clj-name [unit-or-unit-type#]
-               (. (get-type unit-or-unit-type#) ~java-name)))))
+               (. (get-unit-type unit-or-unit-type#) ~java-name)))))
 
 (define-unit-type-fns)
 
@@ -188,19 +188,20 @@
 (defn my-supply-total [] (/ (.. api getSelf getSupplyTotal) 2))
 
 (defn supply-provided [unit]
-  (/ (. (get-type unit) getSupplyProvided) 2))
-
-(defn supply-required [unit]
-  (/ (. (get-type unit) getSupplyRequired) 2))
+  (/ (. (get-unit-type unit) getSupplyProvided) 2))
 
 ;; common API commands shared among multiple types
 
 (defn get-id [obj] (.getID obj))
 
-(defn get-type [unit-or-unit-type]
+(defn get-unit-type [unit-or-unit-type]
   (if (instance? Unit unit-or-unit-type)
     (.getUnitType api (.getTypeID unit-or-unit-type))
     (.getUnitType api (.getID unit-or-unit-type))))
+
+(defn get-tech-type [tech] (.getTechType api (.getID tech)))
+
+(defn get-upgrade-type [upgrade] (.getUpgradeType api (.getID upgrade)))
 
 (defn get-type-id [unit-or-unit-type]
   (if (instance? Unit unit-or-unit-type)
@@ -220,6 +221,26 @@
   (if (instance? BaseLocation obj)
     (.getTy obj)
     (.getTileY obj)))
+
+(defn mineral-price [obj]
+  (cond
+   (instance? jnibwapi.types.UnitType obj) (.getMineralPrice obj)
+   (instance? jnibwapi.types.TechType obj) (.getMineralPrice obj)
+   (instance? jnibwapi.types.UpgradeType obj) (+ (.getMineralPriceBase obj)
+                                                 (* (upgrade-level (get-self) obj) (.getMineralPriceFactor obj)))))
+
+(defn gas-price [obj]
+  (cond
+   (instance? jnibwapi.types.UnitType obj) (.getGasPrice obj)
+   (instance? jnibwapi.types.TechType obj) (.getGasPrice obj)
+   (instance? jnibwapi.types.UpgradeType obj) (+ (.getGasPriceBase obj)
+                                                 (* (upgrade-level (get-self) obj) (.getGasPriceFactor obj)))))
+
+(defn supply-required [obj]
+  (cond
+   (instance? jnibwapi.types.UnitType obj) (/ (.getSupplyRequired obj) 2)
+   (instance? jnibwapi.types.TechType obj) 0
+   (instance? jnibwapi.types.UpgradeType obj) 0))
 
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]
@@ -241,7 +262,15 @@
 
 (defn get-unit-by-id [unit-id] (.getUnit api unit-id))
 
+(defn my-units-id [id] (filter #(= (.getTypeID %) id) (my-units)))
+
+(defn my-units-kw [kw] (filter #(= (.getTypeID %) (.getID (kw unit-type-kws))) (my-units)))
+
 (defn my-buildings [] (filter building? (my-units)))
+
+(defn my-buildings-id [id] (filter #(= (.getTypeID %) id) (my-buildings)))
+
+(defn my-buildings-kw [kw] (filter #(= (.getTypeID %) (.getID (kw unit-type-kws))) (my-buildings)))
 
 ;; API unit commands
 
@@ -496,6 +525,12 @@
 (defn units-on-tile
   ([point] (units-on-tile (.x point) (.y point)))
   ([tx ty] (.getUnitsOnTile api tx ty)))
+
+(defn what-upgrades [upgrade]
+  (.getUnitType api (.getWhatUpgradesTypeID upgrade)))
+
+(defn what-researches [tech]
+  (.getUnitType api (.getWhatResearchesTypeID tech)))
 
 ;; utility functions supplemental to JNIBWAPI
 
