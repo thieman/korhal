@@ -5,7 +5,8 @@
             [korhal.tools.contract :refer [available-minerals available-gas
                                            contract-build contracted-max-supply
                                            clear-contracts cancel-contracts
-                                           show-contract-display clear-contract-atoms]])
+                                           show-contract-display clear-contract-atoms
+                                           can-build?]])
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))

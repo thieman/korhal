@@ -254,13 +254,6 @@
   ([builder tx ty to-build] (.build api (.getID builder) tx ty
                                     (.getID (to-build unit-type-kws)))))
 
-(defn can-build? [tx ty to-build check-explored]
-  (let [build-type (to-build unit-type-kws)
-        coords (for [tx (range tx (+ tx (tile-width build-type)))
-                     ty (range ty (+ ty (tile-height build-type)))]
-                 [tx ty])]
-    (every? #(can-build-here? (first %) (second %) build-type check-explored) coords)))
-
 (defn build-addon [building to-build]
   (.buildAddon api (.getID building) (.getID (to-build unit-type-kws))))
 
