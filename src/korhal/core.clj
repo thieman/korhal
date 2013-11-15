@@ -3,6 +3,7 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [start-macro-engine]]
             [korhal.macro.engine :refer [run-macro-engine]]
+            [korhal.macro.state :refer [builder-to-constructor!]]
             [korhal.micro.engine :refer [start-micro-engine run-micro-engine
                                          micro-tag-new-unit!]]
             [korhal.tools.util :refer [swap-key swap-keys plural]]
@@ -72,7 +73,8 @@
   (let [unit (get-unit-by-id unit-id)]
     (when (my-unit? unit)
       (if (building? unit)
-        (contract-add-new-building unit)
+        (do (builder-to-constructor! unit)
+            (contract-add-new-building unit))
         (micro-tag-new-unit! unit)))))
 
 (defn korhal-unitDestroy [this unit-id]
@@ -88,6 +90,7 @@
 (defn korhal-unitMorph [this unit-id]
   (let [unit (get-unit-by-id unit-id)]
     (when ((every-pred my-unit? is-refinery?) unit)
+      (builder-to-constructor! unit)
       (contract-add-new-building unit))))
 
 (defn korhal-unitShow [this unit-id])

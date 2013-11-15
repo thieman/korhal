@@ -12,13 +12,25 @@
     (micro-tag-unit! scv {:role :early-scout})
     (pop-build-order!)))
 
+(defn- retry-build
+  ([builder tag] (retry-build builder tag 0))
+  ([builder tag jitter-amount]
+     (macro-tag-unit! builder (merge tag {:retry (inc (:retry tag))}))
+     (let [tx (+ (first (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))
+           ty (+ (second (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))]
+     (build builder tx ty (last (:args tag))))))
+
 (defn- restart-failed-builders
   "SCVs that are idle but should be building probably ran into a
   problem while trying to build. Restart them."
   []
   (doseq [idle-scv (filter idle? (my-scvs))]
-    (when (= :build (:role (get-macro-tag idle-scv)))
-      nil)))
+    (let [tag (get-macro-tag idle-scv)]
+      (when (= :build (:role tag))
+        (println (str "restarting failed builder " (get-id idle-scv)))
+        (if (not (:jitter tag))
+          (retry-build idle-scv tag)
+          (retry-build idle-scv tag (mod (:retry tag) 20)))))))
 
 (defn- mine-with-idle-scvs []
   (doseq [idle-scv (filter idle? (my-scvs))]

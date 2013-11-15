@@ -23,3 +23,11 @@
 (defn pop-build-order! []
   (dosync
    (commute macro-state update-in [:build-order] nnext)))
+
+(defn builder-to-constructor!
+  "When a new building is placed, updated the building SCV's macro tag
+  to show that it successfully placed the buliding and is now
+  constructing it."
+  [building]
+  (let [builder (get-unit-by-id (build-unit-id building))]
+    (macro-tag-unit! builder {:role :construct :building building})))

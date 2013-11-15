@@ -50,7 +50,7 @@
            tx (tile-x expo)
            ty (tile-y expo)]
        (when (and tx ty (can-afford? :command-center))
-         (let [builder (assign-spare-scv! expo {:role :build :args [tx ty :command-center]})]
+         (let [builder (assign-spare-scv! expo {:role :build :retry 0 :jitter false :args [tx ty :command-center]})]
            (cancel-contracts builder)
            (contract-build builder tx ty :command-center)
            (when pop? (pop-build-order!)))))))
@@ -63,7 +63,7 @@
        (when (and closest-geyser (can-afford? :refinery))
          (let [tx (tile-x closest-geyser)
                ty (tile-y closest-geyser)
-               builder (assign-spare-scv! {:role :build :args [tx ty :refinery]})]
+               builder (assign-spare-scv! {:role :build :retry 0 :jitter false :args [tx ty :refinery]})]
            (cancel-contracts builder)
            (contract-build builder tx ty :refinery)
            (when pop? (pop-build-order!)))))))
@@ -73,7 +73,7 @@
   ([kw pop?]
      (when (can-afford? kw)
        (when-let [[tx ty] (find-build-location kw)]
-         (let [builder (assign-spare-scv! {:role :build :args [tx ty kw]})]
+         (let [builder (assign-spare-scv! {:role :build :retry 0 :jitter true :args [tx ty kw]})]
            (cancel-contracts builder)
            (contract-build builder tx ty kw)
            (when pop? (pop-build-order!)))))))
