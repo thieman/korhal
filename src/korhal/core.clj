@@ -1,7 +1,8 @@
 (ns korhal.core
   (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
-            [korhal.macro.engine :refer [start-macro-engine run-macro-engine]]
+            [korhal.macro.state :refer [start-macro-engine]]
+            [korhal.macro.engine :refer [run-macro-engine]]
             [korhal.micro.engine :refer [start-micro-engine run-micro-engine]]
             [korhal.tools.util :refer [swap-key swap-keys plural]]
             [korhal.tools.contract :refer [available-minerals available-gas
