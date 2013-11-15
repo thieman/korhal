@@ -25,7 +25,7 @@
 (defn- micro-defender [unit]
   (let [unit-type (get-unit-type unit)
         base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))]
-    (move unit (center-x base-choke) (center-y base-choke))))
+    (attack unit (center-x base-choke) (center-y base-choke))))
 
 (defn micro-tag-new-unit! [unit]
   (let [unit-type (get-unit-type unit)]
@@ -37,7 +37,7 @@
   (doseq [unit (filter (complement building?) (my-units))]
     (condp = (:role (get-micro-tag unit))
       nil nil
-      :mineral (when (idle? unit)
+      :mineral (when ((every-pred completed? idle?) unit)
                   (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
                     (right-click unit closest-mineral)))
       :early-scout (micro-early-scout unit)

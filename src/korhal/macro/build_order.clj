@@ -88,8 +88,8 @@
    15 :refinery
    :train :marine
    16 :academy
-   :research :stim-packs
-   22 :command-center])
+   16 :barracks
+   :research :stim-packs])
 
 (def build-orders
   {:test-order test-order

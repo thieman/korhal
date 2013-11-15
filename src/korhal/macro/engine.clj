@@ -24,16 +24,16 @@
   "SCVs that are idle but should be building probably ran into a
   problem while trying to build. Restart them."
   []
-  (doseq [idle-scv (filter idle? (my-scvs))]
+  (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
     (let [tag (get-macro-tag idle-scv)]
       (when (= :build (:role tag))
-        (println (str "restarting failed builder " (get-id idle-scv)))
+        (println (str "Restarting failed builder " (get-id idle-scv)))
         (if (not (:jitter tag))
           (retry-build idle-scv tag)
           (retry-build idle-scv tag (mod (:retry tag) 20)))))))
 
 (defn- mine-with-idle-scvs []
-  (doseq [idle-scv (filter idle? (my-scvs))]
+  (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
     (cancel-contracts idle-scv)
     (macro-tag-unit! idle-scv {:role :mineral :available true})
     (micro-tag-unit! idle-scv {:role :mineral})))
@@ -45,6 +45,13 @@
   (doseq [cc (filter #(zero? (training-queue-size %)) (my-command-centers))]
     (when (can-afford? :scv)
       (contract-train cc :scv))))
+
+(defn- maybe-train-army
+  "Train army units from finished structures based on the desired unit
+  composition."
+  []
+  (doseq [barracks (filter can-build-now? (my-barracks))]
+    (train barracks :marine)))
 
 (defn process-build-order-step []
   (let [[directive kw] (first (partition 2 (:build-order @macro-state)))]
@@ -77,4 +84,5 @@
   (maybe-train-scvs)
   (if (seq (:build-order @macro-state))
     (process-build-order-step)
-    (do (ensure-enough-depots))))
+    (do (ensure-enough-depots)
+        (maybe-train-army))))
