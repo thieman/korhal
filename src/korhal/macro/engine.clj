@@ -71,7 +71,7 @@
           :upgrade (upgrade-kw kw))))))
 
 (defn- ensure-enough-depots []
-  (when (and (>= (+ (my-supply-used) 3) (contracted-max-supply))
+  (when (and (>= (+ (my-supply-used) 8) (contracted-max-supply))
              (can-afford? :supply-depot))
     (build-kw :supply-depot)))
 

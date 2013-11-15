@@ -22,10 +22,10 @@
   (let [enemy-base (first (enemy-start-locations))]
     (move unit (pixel-x enemy-base) (pixel-y enemy-base))))
 
-(defn- micro-defender [unit]
-  (let [unit-type (get-unit-type unit)
-        base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))]
-    (attack unit (center-x base-choke) (center-y base-choke))))
+(defn- micro-defender [unit base-choke]
+  (let [unit-type (get-unit-type unit)]
+    (when ((complement completed?) unit)
+      (right-click unit (center-x base-choke) (center-y base-choke)))))
 
 (defn micro-tag-new-unit! [unit]
   (let [unit-type (get-unit-type unit)]
@@ -34,12 +34,13 @@
       (micro-tag-unit! unit {:role :defend}))))
 
 (defn run-micro-engine []
-  (doseq [unit (filter (complement building?) (my-units))]
-    (condp = (:role (get-micro-tag unit))
-      nil nil
-      :mineral (when ((every-pred completed? idle?) unit)
-                  (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
-                    (right-click unit closest-mineral)))
-      :early-scout (micro-early-scout unit)
-      :defend (micro-defender unit)
-      :else nil)))
+  (let [base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))]
+    (doseq [unit (filter (complement building?) (my-units))]
+      (condp = (:role (get-micro-tag unit))
+        nil nil
+        :mineral (when ((every-pred completed? idle?) unit)
+                   (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
+                     (right-click unit closest-mineral)))
+        :early-scout (micro-early-scout unit)
+        :defend (micro-defender unit base-choke)
+        :else nil))))

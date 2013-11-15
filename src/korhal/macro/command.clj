@@ -75,6 +75,7 @@
      (when (can-afford? kw)
        (when-let [[tx ty] (find-build-location kw)]
          (let [builder (assign-spare-scv! {:role :build :retry 0 :jitter true :args [tx ty kw]})]
+           (println (str "Building with SCV " (get-id builder)))
            (cancel-contracts builder)
            (contract-build builder tx ty kw)
            (when pop? (pop-build-order!)))))))
