@@ -136,6 +136,12 @@
                                     (start-location? base)))]
     (filter enemy-base? bases)))
 
+;; chokepoint methods
+
+(defn center-x [choke] (.getCenterX choke))
+
+(defn center-y [choke] (.getCenterY choke))
+
 ;; generate player methods
 
 (defmacro define-player-fns []
@@ -542,3 +548,7 @@
 
 (defn dist-tile [a b]
   (Math/sqrt (+ (Math/pow (- (tile-x a) (tile-x b)) 2) (Math/pow (- (tile-y a) (tile-y b)) 2))))
+
+(defn dist-choke [unit-or-building choke]
+  (Math/sqrt (+ (Math/pow (- (pixel-x unit-or-building) (center-x choke)) 2)
+                (Math/pow (- (pixel-y unit-or-building) (center-y choke)) 2))))

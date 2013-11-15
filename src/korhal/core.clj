@@ -3,7 +3,8 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [start-macro-engine]]
             [korhal.macro.engine :refer [run-macro-engine]]
-            [korhal.micro.engine :refer [start-micro-engine run-micro-engine]]
+            [korhal.micro.engine :refer [start-micro-engine run-micro-engine
+                                         micro-tag-new-unit!]]
             [korhal.tools.util :refer [swap-key swap-keys plural]]
             [korhal.tools.contract :refer [available-minerals available-gas
                                            contract-build contracted-max-supply
@@ -69,8 +70,10 @@
 
 (defn korhal-unitCreate [this unit-id]
   (let [unit (get-unit-by-id unit-id)]
-    (when ((every-pred my-unit? building?) unit)
-      (contract-add-new-building unit))))
+    (when (my-unit? unit)
+      (if (building? unit)
+        (contract-add-new-building unit)
+        (micro-tag-new-unit! unit)))))
 
 (defn korhal-unitDestroy [this unit-id]
   ;; NOTE: destroyed units are no longer available through the API

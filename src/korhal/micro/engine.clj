@@ -22,6 +22,17 @@
   (let [enemy-base (first (enemy-start-locations))]
     (move unit (pixel-x enemy-base) (pixel-y enemy-base))))
 
+(defn- micro-defender [unit]
+  (let [unit-type (get-unit-type unit)
+        base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))]
+    (move unit (center-x base-choke) (center-y base-choke))))
+
+(defn micro-tag-new-unit! [unit]
+  (let [unit-type (get-unit-type unit)]
+    (condp = unit-type
+      (get-unit-type (:scv unit-type-kws)) nil
+      (micro-tag-unit! unit {:role :defend}))))
+
 (defn run-micro-engine []
   (doseq [unit (filter (complement building?) (my-units))]
     (condp = (:role (get-micro-tag unit))
@@ -30,4 +41,5 @@
                   (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
                     (right-click unit closest-mineral)))
       :early-scout (micro-early-scout unit)
+      :defend (micro-defender unit)
       :else nil)))
