@@ -79,7 +79,7 @@
    27 :siege-tank-tank-mode
    29 :engineering-bay])
 
-(def test-order
+#_(def test-order
   [9 :supply-depot
    11 :send-scout
    11 :barracks
@@ -90,6 +90,13 @@
    16 :academy
    16 :barracks
    :research :stim-packs])
+
+(def test-order
+  [9 :supply-depot
+   15 :barracks
+   15 :barracks
+   15 :barracks
+   15 :barracks])
 
 (def build-orders
   {:test-order test-order

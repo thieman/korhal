@@ -12,7 +12,8 @@
   tag. If a building is supplied, return the nearest available SCV to
   that building."
   ([tag]
-     (let [available? (fn [scv] (:available (get-macro-tag scv)))
+     (let [available? (fn [scv] (and (:available (get-macro-tag scv))
+                                     (completed? scv)))
            scv (first (filter available? (my-scvs)))]
        (macro-tag-unit! scv tag)
        scv))
