@@ -134,23 +134,20 @@
    (commute contracted assoc-in [:minerals-this-frame] 0)
    (commute contracted assoc-in [:gas-this-frame] 0)))
 
-(defn- clear-on-new-buildings []
-  "When a building is placed, we will be able to see it in the list of
-  my buildings. Since it has been placed, the cost has been deducted
-  from our available resources, so we no longer need the contract. We
-  clear out any contracts for buildings that already exist on the map."
-  (doseq [new-building (filter #((complement contains?) (:building-ids @contracted) (get-id %)) (my-buildings))]
-    ;; special case, do not decontract the CC you start with
-    (when-not (<= (frame-count) 1)
-      (decontract-building (get-unit-by-id (build-unit-id new-building))
-                           (get-unit-type new-building)))
+(defn contract-add-initial-cc []
+  (let [cc (first (my-command-centers))]
     (dosync
-     (commute contracted update-in [:building-ids] merge {(get-id new-building) new-building}))))
+     (commute contracted update-in [:building-ids] merge {(get-id cc) cc}))))
+
+(defn contract-add-new-building [new-building]
+  (decontract-building (get-unit-by-id (build-unit-id new-building))
+                       (get-unit-type new-building))
+  (dosync
+   (commute contracted update-in [:building-ids] merge {(get-id new-building) new-building})))
 
 (defn clear-contracts []
   (when @contract-display (draw-contract-display))
-  (clear-frame-resources)
-  (clear-on-new-buildings))
+  (clear-frame-resources))
 
 (defn- building-tiles
   "Given a start tile and a building type, return a vector of all

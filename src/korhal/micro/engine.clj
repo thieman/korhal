@@ -24,9 +24,9 @@
 
 (defn run-micro-engine []
   (doseq [unit (filter (complement building?) (my-units))]
-    (condp = (get-micro-tag unit)
+    (condp = (:role (get-micro-tag unit))
       nil nil
-      :minerals (when (idle? unit)
+      :mineral (when (idle? unit)
                   (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
                     (right-click unit closest-mineral)))
       :early-scout (micro-early-scout unit)

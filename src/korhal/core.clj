@@ -9,7 +9,8 @@
                                            contract-build contracted-max-supply
                                            clear-contracts cancel-contracts
                                            show-contract-display clear-contract-atoms
-                                           can-build?]])
+                                           can-build? contract-add-initial-cc
+                                           contract-add-new-building]])
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
@@ -47,6 +48,7 @@
   (draw-ids true)
   (show-contract-display true)
   (clear-contract-atoms)
+  (contract-add-initial-cc)
   (start-macro-engine)
   (start-micro-engine))
 
@@ -65,7 +67,10 @@
 (defn korhal-nukeDetect [this x y])
 (defn korhal-playerLeft [this player-id])
 
-(defn korhal-unitCreate [this unit-id])
+(defn korhal-unitCreate [this unit-id]
+  (let [unit (get-unit-by-id unit-id)]
+    (when ((every-pred my-unit? building?) unit)
+      (contract-add-new-building unit))))
 
 (defn korhal-unitDestroy [this unit-id]
   ;; NOTE: destroyed units are no longer available through the API
@@ -77,7 +82,10 @@
 
 (defn korhal-unitHide [this unit-id])
 
-(defn korhal-unitMorph [this unit-id])
+(defn korhal-unitMorph [this unit-id]
+  (let [unit (get-unit-by-id unit-id)]
+    (when ((every-pred my-unit? is-refinery?) unit)
+      (contract-add-new-building unit))))
 
 (defn korhal-unitShow [this unit-id])
 

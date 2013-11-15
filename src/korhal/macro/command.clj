@@ -8,21 +8,20 @@
                                            can-build? can-afford?]]))
 
 (defn assign-spare-scv!
-  "Get an available SCV from a mineral line and assign it a macro tag."
-  [tag]
-  (let [available? (fn [scv] (= (get-macro-tag scv) :minerals))
-        scv (first (filter available? (my-scvs)))]
-    (macro-tag-unit! scv tag)
-    scv))
-
-(defn assign-nearest-spare-scv!
-  "Get an available SCV from a mineral line and assign it a macro tag."
-  [building tag]
-  (let [available? (fn [scv] (= (get-macro-tag scv) :minerals))
-        available-scvs (filter available? (my-scvs))
-        scv (apply min-key (partial dist-tile building) available-scvs)]
-    (macro-tag-unit! scv tag)
-    scv))
+  "Get an available SCV from a mineral line and assign it a macro
+  tag. If a building is supplied, return the nearest available SCV to
+  that building."
+  ([tag]
+     (let [available? (fn [scv] (:available (get-macro-tag scv)))
+           scv (first (filter available? (my-scvs)))]
+       (macro-tag-unit! scv tag)
+       scv))
+  ([building tag]
+     (let [available? (fn [scv] (= (:role (get-macro-tag scv)) :mineral))
+           available-scvs (filter available? (my-scvs))
+           scv (apply min-key (partial dist-tile building) available-scvs)]
+       (macro-tag-unit! scv tag)
+       scv)))
 
 (defn can-build-now? [b]
   (and (zero? (training-queue-size b)) (completed? b)))
@@ -44,7 +43,6 @@
         nearest-base (apply min-key (partial dist-tile (first (my-command-centers))) bases)]
     (when nearest-base nearest-base)))
 
-
 (defn expand
   ([] (expand false))
   ([pop?]
@@ -52,7 +50,7 @@
            tx (tile-x expo)
            ty (tile-y expo)]
        (when (and tx ty (can-afford? :command-center))
-         (let [builder (assign-nearest-spare-scv! expo :building)]
+         (let [builder (assign-spare-scv! expo {:role :build :args [tx ty :command-center]})]
            (cancel-contracts builder)
            (contract-build builder tx ty :command-center)
            (when pop? (pop-build-order!)))))))
@@ -63,9 +61,11 @@
      (let [cc (first (my-command-centers))
            closest-geyser (apply min-key (partial dist cc) (geysers))]
        (when (and closest-geyser (can-afford? :refinery))
-         (let [builder (assign-spare-scv! :building)]
+         (let [tx (tile-x closest-geyser)
+               ty (tile-y closest-geyser)
+               builder (assign-spare-scv! {:role :build :args [tx ty :refinery]})]
            (cancel-contracts builder)
-           (contract-build builder (tile-x closest-geyser) (tile-y closest-geyser) :refinery)
+           (contract-build builder tx ty :refinery)
            (when pop? (pop-build-order!)))))))
 
 (defn build-kw
@@ -73,7 +73,7 @@
   ([kw pop?]
      (when (can-afford? kw)
        (when-let [[tx ty] (find-build-location kw)]
-         (let [builder (assign-spare-scv! :building)]
+         (let [builder (assign-spare-scv! {:role :build :args [tx ty kw]})]
            (cancel-contracts builder)
            (contract-build builder tx ty kw)
            (when pop? (pop-build-order!)))))))

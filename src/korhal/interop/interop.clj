@@ -147,11 +147,11 @@
 
 (defn has-researched [player tech] (.hasResearched player (.getID tech)))
 
-(defn is-researching [player tech] (.isResearching player (.getID tech)))
+(defn researching? [player tech] (.isResearching player (.getID tech)))
 
 (defn upgrade-level [player upgrade] (.upgradeLevel player (.getID upgrade)))
 
-(defn is-upgrading [player upgrade] (.isUpgrading player (.getID upgrade)))
+(defn upgrading? [player upgrade] (.isUpgrading player (.getID upgrade)))
 
 ;; generate base location methods
 
@@ -241,6 +241,9 @@
    (instance? jnibwapi.types.UnitType obj) (/ (.getSupplyRequired obj) 2)
    (instance? jnibwapi.types.TechType obj) 0
    (instance? jnibwapi.types.UpgradeType obj) 0))
+
+(defn my-unit? [unit]
+  (= (get-id (get-self)) (player-id unit)))
 
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]

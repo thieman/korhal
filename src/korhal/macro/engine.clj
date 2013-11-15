@@ -9,16 +9,22 @@
 
 (defn- send-early-game-scout []
   (when-let [scv (assign-spare-scv! nil)]
-    (micro-tag-unit! scv :early-scout)
+    (micro-tag-unit! scv {:role :early-scout})
     (pop-build-order!)))
 
-(defn- check-for-failed-builders [])
+(defn- restart-failed-builders
+  "SCVs that are idle but should be building probably ran into a
+  problem while trying to build. Restart them."
+  []
+  (doseq [idle-scv (filter idle? (my-scvs))]
+    (when (= :build (:role (get-macro-tag idle-scv)))
+      nil)))
 
 (defn- mine-with-idle-scvs []
   (doseq [idle-scv (filter idle? (my-scvs))]
     (cancel-contracts idle-scv)
-    (macro-tag-unit! idle-scv :minerals)
-    (micro-tag-unit! idle-scv :minerals)))
+    (macro-tag-unit! idle-scv {:role :mineral :available true})
+    (micro-tag-unit! idle-scv {:role :mineral})))
 
 (defn- maybe-train-scvs
   "Train SCVs if not already at maximum for number of expansions.
@@ -54,7 +60,7 @@
   "Issue commands based on the current state of the game and the macro
   engine. Should be called in each gameUpdate loop."
   []
-  (check-for-failed-builders)
+  (restart-failed-builders)
   (mine-with-idle-scvs)
   (maybe-train-scvs)
   (if (seq (:build-order @macro-state))
