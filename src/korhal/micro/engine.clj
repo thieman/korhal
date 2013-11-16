@@ -18,6 +18,17 @@
   (let [unit-id (if (instance? Unit unit-or-unit-id) (get-id unit-or-unit-id) unit-or-unit-id)]
     (get-in @micro-state [:tags unit-id])))
 
+(defn- micro-mineral-worker [unit]
+  (when ((every-pred completed? idle?) unit)
+    (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
+      (right-click unit closest-mineral))))
+
+(defn- micro-gas-worker [unit]
+  (when ((every-pred completed? idle?) unit)
+    (let [closest-refinery (apply min-key (partial dist unit) (my-refineries))]
+      (when (and closest-refinery (completed? closest-refinery))
+        (right-click unit closest-refinery)))))
+
 (defn- micro-early-scout [unit]
   (let [enemy-base (first (enemy-start-locations))]
     (move unit (pixel-x enemy-base) (pixel-y enemy-base))))
@@ -38,9 +49,8 @@
     (doseq [unit (filter (complement building?) (my-units))]
       (condp = (:role (get-micro-tag unit))
         nil nil
-        :mineral (when ((every-pred completed? idle?) unit)
-                   (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
-                     (right-click unit closest-mineral)))
+        :mineral (micro-mineral-worker unit)
+        :gas (micro-gas-worker unit)
         :early-scout (micro-early-scout unit)
         :defend (micro-defender unit base-choke)
         :else nil))))

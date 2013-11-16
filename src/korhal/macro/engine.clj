@@ -51,7 +51,8 @@
   composition."
   []
   (doseq [barracks (filter can-build-now? (my-barracks))]
-    (train barracks :marine)))
+    (when (can-afford? :marine)
+      (train barracks :marine))))
 
 (defn process-build-order-step []
   (let [[directive kw] (first (partition 2 (:build-order @macro-state)))]

@@ -65,6 +65,7 @@
          (let [tx (tile-x closest-geyser)
                ty (tile-y closest-geyser)
                builder (assign-spare-scv! {:role :build :retry 0 :jitter false :args [tx ty :refinery]})]
+           (doseq [i 2] (assign-spare-scv! {:role :gas}))
            (cancel-contracts builder)
            (contract-build builder tx ty :refinery)
            (when pop? (pop-build-order!)))))))
