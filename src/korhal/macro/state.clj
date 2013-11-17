@@ -1,7 +1,8 @@
 (ns korhal.macro.state
   (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
-            [korhal.macro.build-order :refer [build-orders]])
+            [korhal.macro.build-order :refer [build-orders]]
+            [korhal.micro.engine :refer [micro-tag-unit!]])
   (:import (jnibwapi.model Unit)))
 
 (def macro-state (ref {:build-order [] :tags {}}))
@@ -31,3 +32,13 @@
   [building]
   (let [builder (get-unit-by-id (build-unit-id building))]
     (macro-tag-unit! builder {:role :construct :building building})))
+
+(defn construction-completed!
+  "When a new building is completed, clear the building SCV's macro
+  tag to allow it to be used for other tasks by the macro and micro
+  engines."
+  [building]
+  (let [builder (first (filter #(= building (:building (get-macro-tag %))) (my-scvs)))]
+    (when (is-refinery? building)
+      (micro-tag-unit! builder {:role :gas :assigned building}))
+    (macro-tag-unit! builder nil)))

@@ -54,6 +54,7 @@
        (when (and tx ty (can-afford? :command-center))
          (let [builder (assign-spare-scv! expo {:role :build :retry 0 :jitter false :args [tx ty :command-center]})]
            (cancel-contracts builder)
+           (micro-tag-unit! builder nil)
            (contract-build builder tx ty :command-center)
            (when pop? (pop-build-order!)))))))
 
@@ -67,6 +68,7 @@
                ty (tile-y closest-geyser)
                builder (assign-spare-scv! {:role :build :retry 0 :jitter false :args [tx ty :refinery]})]
            (cancel-contracts builder)
+           (micro-tag-unit! builder nil)
            (contract-build builder tx ty :refinery)
            (when pop? (pop-build-order!)))))))
 
@@ -78,6 +80,7 @@
          (let [builder (assign-spare-scv! {:role :build :retry 0 :jitter true :args [tx ty kw]})]
            (println (str "Building with SCV " (get-id builder)))
            (cancel-contracts builder)
+           (micro-tag-unit! builder nil)
            (contract-build builder tx ty kw)
            (when pop? (pop-build-order!)))))))
 

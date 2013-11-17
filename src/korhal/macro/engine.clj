@@ -18,7 +18,7 @@
      (macro-tag-unit! builder (merge tag {:retry (inc (:retry tag))}))
      (let [tx (+ (first (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))
            ty (+ (second (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))]
-     (build builder tx ty (last (:args tag))))))
+       (build builder tx ty (last (:args tag))))))
 
 (defn- restart-failed-builders
   "SCVs that are idle but should be building probably ran into a
@@ -30,13 +30,28 @@
         (println (str "Restarting failed builder " (get-id idle-scv)))
         (if (not (:jitter tag))
           (retry-build idle-scv tag)
-          (retry-build idle-scv tag (mod (:retry tag) 20)))))))
+          (retry-build idle-scv tag (Math/floor (/ (:retry tag) 20))))))))
 
 (defn- mine-with-idle-scvs []
   (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
-    (cancel-contracts idle-scv)
-    (macro-tag-unit! idle-scv {:available true})
-    (micro-tag-unit! idle-scv {:role :mineral})))
+    (when-not (get-macro-tag idle-scv)
+      (cancel-contracts idle-scv)
+      (macro-tag-unit! idle-scv {:available true})
+      (micro-tag-unit! idle-scv {:role :mineral}))))
+
+(defn- mine-with-unassigned-gas-scvs
+  "We have to do this because 1. SCVs automatically start mining gas
+  once they finish a refinery, 2. the unitComplete callback is bugged
+  and does not get fired when a refinery finishes, and 3. interfacing
+  with SCVs currently inside of a refinery seems pretty wonky in
+  general. We put any unassigned SCVs that happen to be gathering gas
+  into a mineral line, then separately assign gas SCVs in a different
+  function."
+  []
+  (doseq [gas-scv (filter gathering-gas? (my-scvs))]
+    (when (not= :gas (:role (get-micro-tag gas-scv)))
+      (macro-tag-unit! gas-scv {:available true})
+      (micro-tag-unit! gas-scv {:role :mineral}))))
 
 (defn- maybe-train-scvs
   "Train SCVs if not already at maximum for number of expansions.
@@ -83,11 +98,16 @@
         (fn [refinery scv]
           (and (completed? scv) (= refinery (:assigned (get-micro-tag scv)))))]
   (doseq [refinery (filter completed? (my-refineries))]
-    (let [num-assigned (count (filter (partial assigned-to-refinery refinery) (my-scvs)))
-          num-to-assign (max 0 (- 3 num-assigned))]
-      (dotimes [n num-to-assign]
-        (let [scv (assign-spare-scv! nil)]
-          (micro-tag-unit! scv {:role :gas :assigned refinery})))))))
+    (let [assigned (filter (partial assigned-to-refinery refinery) (my-scvs))
+          num-to-assign (max 0 (- 3 (count assigned)))]
+      (if (> (count assigned) 3)
+        (let [reassign (first (filter #(not= (order-id %) (get-id (:harvest-gas order-type-kws))) assigned))]
+          (micro-tag-unit! reassign nil)
+          (macro-tag-unit! reassign nil)
+          (stop reassign))
+        (dotimes [n num-to-assign]
+          (let [scv (assign-spare-scv! nil)]
+            (micro-tag-unit! scv {:role :gas :assigned refinery}))))))))
 
 (defn run-macro-engine
   "Issue commands based on the current state of the game and the macro
@@ -95,6 +115,7 @@
   []
   (restart-failed-builders)
   (mine-with-idle-scvs)
+  (mine-with-unassigned-gas-scvs)
   (assign-scvs-to-refineries)
   (maybe-train-scvs)
   (if (seq (:build-order @macro-state))

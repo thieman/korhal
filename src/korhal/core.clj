@@ -3,7 +3,8 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [start-macro-engine]]
             [korhal.macro.engine :refer [run-macro-engine]]
-            [korhal.macro.state :refer [builder-to-constructor!]]
+            [korhal.macro.state :refer [builder-to-constructor!
+                                        construction-completed!]]
             [korhal.micro.engine :refer [start-micro-engine run-micro-engine
                                          micro-tag-new-unit!]]
             [korhal.tools.util :refer [swap-key swap-keys plural]]
@@ -99,6 +100,12 @@
 
 (defn korhal-saveGame [this game-name])
 
-(defn korhal-unitComplete [this unit-id])
+(defn korhal-unitComplete
+  "BUG: This does NOT get called when a morphing unit (e.g. refinery)
+  completes!"
+  [this unit-id]
+  (let [unit (get-unit-by-id unit-id)]
+    (when ((every-pred my-unit? building?) unit)
+      (construction-completed! unit))))
 
 (defn korhal-playerDropped [this player-id])
