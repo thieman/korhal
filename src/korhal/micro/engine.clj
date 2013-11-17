@@ -19,14 +19,12 @@
     (get-in @micro-state [:tags unit-id])))
 
 (defn- micro-mineral-worker [unit]
-  (when ((every-pred completed? idle?) unit)
+  (when (and (completed? unit) (or (idle? unit) (gathering-gas? unit)))
     (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
       (right-click unit closest-mineral))))
 
 (defn- micro-gas-worker [unit]
-  (when (and (completed? unit)
-             (not (constructing? unit))
-             (or (idle? unit) (gathering-minerals? unit)))
+  (when (and (completed? unit) (or (idle? unit) (gathering-minerals? unit)))
     (let [closest-refinery (apply min-key (partial dist unit) (my-refineries))]
       (when (and closest-refinery (completed? closest-refinery))
         (right-click unit closest-refinery)))))

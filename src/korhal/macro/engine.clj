@@ -35,7 +35,7 @@
 (defn- mine-with-idle-scvs []
   (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
     (cancel-contracts idle-scv)
-    (macro-tag-unit! idle-scv {:role :mineral :available true})
+    (macro-tag-unit! idle-scv {:available true})
     (micro-tag-unit! idle-scv {:role :mineral})))
 
 (defn- maybe-train-scvs
@@ -52,7 +52,7 @@
   []
   (doseq [barracks (filter can-build-now? (my-barracks))]
     (when (can-afford? :marine)
-      (train barracks :marine))))
+      (contract-train barracks :marine))))
 
 (defn process-build-order-step []
   (let [[directive kw] (first (partition 2 (:build-order @macro-state)))]
@@ -76,12 +76,26 @@
              (can-afford? :supply-depot))
     (build-kw :supply-depot)))
 
+(defn- assign-scvs-to-refineries
+  "Ensure each functional refinery has three gas SCVs."
+  []
+  (let [assigned-to-refinery
+        (fn [refinery scv]
+          (and (completed? scv) (= refinery (:assigned (get-micro-tag scv)))))]
+  (doseq [refinery (filter completed? (my-refineries))]
+    (let [num-assigned (count (filter (partial assigned-to-refinery refinery) (my-scvs)))
+          num-to-assign (max 0 (- 3 num-assigned))]
+      (dotimes [n num-to-assign]
+        (let [scv (assign-spare-scv! nil)]
+          (micro-tag-unit! scv {:role :gas :assigned refinery})))))))
+
 (defn run-macro-engine
   "Issue commands based on the current state of the game and the macro
   engine. Should be called in each gameUpdate loop."
   []
   (restart-failed-builders)
   (mine-with-idle-scvs)
+  (assign-scvs-to-refineries)
   (maybe-train-scvs)
   (if (seq (:build-order @macro-state))
     (process-build-order-step)

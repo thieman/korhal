@@ -66,9 +66,6 @@
          (let [tx (tile-x closest-geyser)
                ty (tile-y closest-geyser)
                builder (assign-spare-scv! {:role :build :retry 0 :jitter false :args [tx ty :refinery]})]
-           (micro-tag-unit! builder {:role :gas})
-           (dotimes [n 2] (let [gas-scv (assign-spare-scv! {:role :gas})]
-                            (micro-tag-unit! gas-scv {:role :gas})))
            (cancel-contracts builder)
            (contract-build builder tx ty :refinery)
            (when pop? (pop-build-order!)))))))
