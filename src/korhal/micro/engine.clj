@@ -24,7 +24,9 @@
       (right-click unit closest-mineral))))
 
 (defn- micro-gas-worker [unit]
-  (when ((every-pred completed? idle?) unit)
+  (when (and (completed? unit)
+             (not (constructing? unit))
+             (or (idle? unit) (gathering-minerals? unit)))
     (let [closest-refinery (apply min-key (partial dist unit) (my-refineries))]
       (when (and closest-refinery (completed? closest-refinery))
         (right-click unit closest-refinery)))))

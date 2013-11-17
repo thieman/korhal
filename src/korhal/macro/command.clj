@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
+            [korhal.micro.engine :refer [micro-tag-unit!]]
             [korhal.tools.contract :refer [contract-build contract-train
                                            contract-upgrade contract-research
                                            clear-contracts cancel-contracts
@@ -65,7 +66,9 @@
          (let [tx (tile-x closest-geyser)
                ty (tile-y closest-geyser)
                builder (assign-spare-scv! {:role :build :retry 0 :jitter false :args [tx ty :refinery]})]
-           (doseq [i 2] (assign-spare-scv! {:role :gas}))
+           (micro-tag-unit! builder {:role :gas})
+           (dotimes [n 2] (let [gas-scv (assign-spare-scv! {:role :gas})]
+                            (micro-tag-unit! gas-scv {:role :gas})))
            (cancel-contracts builder)
            (contract-build builder tx ty :refinery)
            (when pop? (pop-build-order!)))))))
