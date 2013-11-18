@@ -1,5 +1,4 @@
 (ns korhal.interop.interop
-  (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
                                                   unit-command-types race-types unit-size-types
                                                   weapon-types bullet-types damage-types
@@ -371,7 +370,7 @@
   ([unit point] (land unit (.x point) (.y point)))
   ([unit tx ty] (.land api (.getID unit) tx ty)))
 
-(defn load [loading-unit target-unit] (.load api (.getID loading-unit) (.getID target-unit)))
+(defn load* [loading-unit target-unit] (.load api (.getID loading-unit) (.getID target-unit)))
 
 (defn unload [unloading-unit target-unit] (.unload api (.getID unloading-unit) (.getID target-unit)))
 
@@ -396,7 +395,7 @@
 (defn cancel-addon [unit] (.cancelAddon api (.getID unit)))
 
 (defn cancel-train
-  ([unit] (.cancelTrain api (.getID unit))) ;; cancels last slot being used
+  ([unit] (.cancelTrain api (.getID unit) (dec (training-queue-size unit)))) ;; cancels last slot being used
   ([unit slot] (.cancelTrain api (.getID unit) slot)))
 
 (defn cancel-morph [unit] (.cancelMorph api (.getID unit)))

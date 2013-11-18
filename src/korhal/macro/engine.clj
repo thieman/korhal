@@ -1,12 +1,12 @@
 (ns korhal.macro.engine
-  (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.macro.command :refer :all]
             [korhal.micro.engine :refer [micro-tag-unit! get-micro-tag]]
             [korhal.tools.contract :refer [cancel-contracts contract-train
                                            can-afford? contracted-max-supply
-                                           contracted-addons]]))
+                                           contracted-addons]]
+            [korhal.tools.util :refer [profile]]))
 
 (defn- send-early-game-scout []
   (when-let [scv (assign-spare-scv! nil)]

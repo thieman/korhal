@@ -1,5 +1,4 @@
 (ns korhal.macro.state
-  (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.build-order :refer [build-orders]]
             [korhal.micro.engine :refer [micro-tag-unit!]])

@@ -1,5 +1,4 @@
 (ns korhal.micro.engine
-  (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all])
   (:import (jnibwapi.model Unit)))
 

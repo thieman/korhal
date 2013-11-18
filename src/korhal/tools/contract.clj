@@ -11,7 +11,6 @@
 ;; beginning of each loop.
 
 (ns korhal.tools.contract
-  (:refer-clojure :exclude [load])
   (:require [clojure.set :refer [intersection]]
             [korhal.interop.interop :refer :all])
   (:import (jnibwapi.model Unit)))

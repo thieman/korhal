@@ -8,4 +8,5 @@
   :main korhal.core
   :aot [korhal.core]
   :jvm-opts ["-Djava.library.path=jnibwapi/release"]
-  :dependencies [[org.clojure/clojure "1.5.1"]])
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.clojure/tools.nrepl "0.2.3"]])

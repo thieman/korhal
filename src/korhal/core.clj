@@ -1,6 +1,6 @@
 (ns korhal.core
-  (:refer-clojure :exclude [load])
-  (:require [korhal.interop.interop :refer :all]
+  (:require [clojure.tools.nrepl.server :as repl]
+            [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [start-macro-engine]]
             [korhal.macro.engine :refer [run-macro-engine]]
             [korhal.macro.state :refer [builder-to-constructor!
@@ -17,6 +17,22 @@
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
+
+(def repl-server (atom nil))
+(def repl-command (atom nil))
+(def repl-result (atom nil))
+
+(defmacro cmd
+  "This macro should be used from the REPL to call a command during
+  the gameUpdate loop."
+  [& body]
+  `(do (reset! repl-command (fn [] (do ~@body)))
+       (loop [result# nil]
+         (if result#
+           (let [to-display# (:result result#)]
+             (reset! repl-result nil)
+             to-display#)
+           (recur @repl-result)))))
 
 (gen-class
  :name "korhal.core"
@@ -53,16 +69,23 @@
   (clear-contract-atoms)
   (contract-add-initial-cc)
   (start-macro-engine)
-  (start-micro-engine))
+  (start-micro-engine)
+  (reset! repl-server (repl/start-server :port 7777)))
 
 (defn korhal-gameUpdate [this]
-  (profile
-   (clear-contracts)
-   (run-macro-engine)
-   (run-micro-engine)))
+  (when @repl-command
+    (reset! repl-result {:result (@repl-command)})
+    (reset! repl-command nil))
+  (clear-contracts)
+  (run-macro-engine)
+  (run-micro-engine))
 
-(defn korhal-gameEnded [this])
+(defn korhal-gameEnded [this]
+  (repl/stop-server @repl-server)
+  (reset! repl-server nil))
+
 (defn korhal-keyPressed [this keycode])
+
 (defn korhal-matchEnded [this winner])
 (defn korhal-sendText [this text])
 

@@ -1,5 +1,4 @@
 (ns korhal.macro.command
-  (:refer-clojure :exclude [load])
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.micro.engine :refer [micro-tag-unit!]]
@@ -81,7 +80,6 @@
      (when (can-afford? kw)
        (when-let [[tx ty] (find-build-location kw)]
          (let [builder (assign-spare-scv! {:role :build :retry 0 :jitter true :args [tx ty kw]})]
-           (println (str "Building with SCV " (get-id builder)))
            (cancel-contracts builder)
            (micro-tag-unit! builder nil)
            (contract-build builder tx ty kw)
