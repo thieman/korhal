@@ -92,7 +92,10 @@
   ([builder tx ty to-build]
      (let [build-type (get-unit-type (to-build unit-type-kws))]
        (contract-building builder build-type (building-tiles tx ty build-type))
-       (build builder tx ty to-build))))
+       (if (tile-explored? tx ty)
+         (build builder tx ty to-build)
+         (do (println (str "Moving " (get-id builder)))
+             (move builder (* 32 tx) (* 32 ty)))))))
 
 (defn add-unit-costs-to-frame [unit]
   (dosync

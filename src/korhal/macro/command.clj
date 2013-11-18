@@ -20,10 +20,11 @@
        scv))
   ([building tag]
      (let [available? (fn [scv] (= (:role (get-macro-tag scv)) :mineral))
-           available-scvs (filter available? (my-scvs))
-           scv (apply min-key (partial dist-tile building) available-scvs)]
-       (macro-tag-unit! scv tag)
-       scv)))
+           available-scvs (filter available? (my-scvs))]
+       (when (seq available-scvs)
+         (let [scv (apply min-key (partial dist-tile building) available-scvs)]
+           (macro-tag-unit! scv tag)
+           scv)))))
 
 (defn can-build-now? [b]
   (and (zero? (training-queue-size b)) (completed? b)))

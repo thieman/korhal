@@ -80,12 +80,7 @@
    29 :engineering-bay])
 
 (def test-order
-  [6 :refinery
-   9 :supply-depot
-   14 :supply-depot
-   14 :supply-depot
-   14 :barracks
-   14 :barracks])
+  [10 :command-center])
 
 (def build-orders
   {:test-order test-order
