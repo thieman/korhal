@@ -5,8 +5,7 @@
                                                   weapon-types bullet-types damage-types
                                                   explosion-types order-types
                                                   unit-type-fn-maps unit-fn-maps
-                                                  base-location-fn-maps player-fn-maps]]
-            [korhal.tools.util :refer [swap-key swap-keys plural]])
+                                                  base-location-fn-maps player-fn-maps]])
   (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
            (jnibwapi.types.UnitType$UnitTypes)
            (jnibwapi.types.UpgradeType$UpgradeTypes)
@@ -259,6 +258,14 @@
             (fn [unit] (= (.getTypeID unit) class-type)))))
 
 ;; own unit type collections, e.g. my-drones
+(defn plural [n]
+  (let [n-str (str n)
+        processed-str (cond (re-find #"[^a]y$" n-str) (str (apply str (butlast n-str)) "ies")
+                            (re-find #"[s]$" n-str) n-str
+                            (re-find #"larva$" n-str) (str n-str "e")
+                            :else (str n-str "s"))]
+    (if (symbol? n) (symbol processed-str) processed-str)))
+
 (doseq [[n t] (partition 2 unit-types)]
   (when (not (re-seq #"^Critter" (str t)))
     (let [type-predicate (eval (symbol (str *ns* "/is-" n "?")))]

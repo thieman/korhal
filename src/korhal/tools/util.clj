@@ -1,4 +1,5 @@
-(ns korhal.tools.util)
+(ns korhal.tools.util
+  (:require [korhal.interop.interop :refer [draw-text]]))
 
 (def execution-times (atom []))
 
@@ -9,14 +10,6 @@
   (doseq [[k v] (partition 2 forms)]
     (swap! swap-atom swap-key k v)))
 
-(defn plural [n]
-  (let [n-str (str n)
-        processed-str (cond (re-find #"[^a]y$" n-str) (str (apply str (butlast n-str)) "ies")
-                            (re-find #"[s]$" n-str) n-str
-                            (re-find #"larva$" n-str) (str n-str "e")
-                            :else (str n-str "s"))]
-    (if (symbol? n) (symbol processed-str) processed-str)))
-
 (defn add-execution-time [ms]
   (swap! execution-times conj ms)
   (let [times @execution-times]
@@ -26,3 +19,9 @@
 (defn get-average-execution-time []
   (let [times @execution-times]
     (int (/ (apply + times) (* 1000000 (count times))))))
+
+(defmacro profile [& body]
+  `(let [start-time# (System/nanoTime)]
+     ~@body
+     (add-execution-time (- (System/nanoTime) start-time#))
+     (draw-text 525 50 (str "Profiler (ms): " (get-average-execution-time)) true)))
