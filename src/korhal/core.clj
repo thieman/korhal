@@ -58,11 +58,11 @@
   (start-micro-engine))
 
 (defn korhal-gameUpdate [this]
-  (let [start-time (System/currentTimeMillis)]
+  (let [start-time (System/nanoTime)]
     (clear-contracts)
     (run-macro-engine)
     (run-micro-engine)
-    (add-execution-time (- (System/currentTimeMillis) start-time))
+    (add-execution-time (- (System/nanoTime) start-time))
     (draw-text 525 50 (str "AI time (ms): " (get-average-execution-time)) true)))
 
 (defn korhal-gameEnded [this])

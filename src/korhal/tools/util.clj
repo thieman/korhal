@@ -21,8 +21,8 @@
   (swap! execution-times conj ms)
   (let [times @execution-times]
     (when (> (count times) 50)
-      (swap! execution-times (partial drop (- (count times) 50))))))
+      (swap! execution-times (comp vec (partial drop (- (count times) 50)))))))
 
 (defn get-average-execution-time []
   (let [times @execution-times]
-    (int (/ (apply + times) (count times)))))
+    (int (/ (apply + times) (* 1000000 (count times))))))
