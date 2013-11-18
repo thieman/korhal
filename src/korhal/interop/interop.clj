@@ -1,6 +1,7 @@
 (ns korhal.interop.interop
   (:refer-clojure :exclude [load])
-  (:require [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
+  (:require [clojure.set :refer [map-invert]]
+            [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
                                                   unit-command-types race-types unit-size-types
                                                   weapon-types bullet-types damage-types
                                                   explosion-types order-types
@@ -457,6 +458,12 @@
   ([px py msg screen-coords] (.drawText api px py (str msg) screen-coords)))
 
 ;; extended API commands
+
+(defn supports-addon? [unit]
+  (let [unit-type (get-unit-type unit)
+        match-types (map (comp get-unit-type unit-type-kws)
+                         [:command-center :factory :starport :science-facility])]
+    (boolean (some #{unit-type} match-types))))
 
 (defn tile-visible?
   ([point] (tile-visible? (.x point) (.y point)))

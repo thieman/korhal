@@ -80,7 +80,25 @@
    29 :engineering-bay])
 
 (def test-order
-  [8 :command-center])
+  [9 :supply-depot
+   11 :barracks
+   12 :refinery
+   13 :send-scout
+   15 :supply-depot
+   16 :wait
+   :train :marine
+   18 :factory
+   19 :wait
+   :train :marine
+   21 :wait
+   :train :marine
+   23 :machine-shop
+   :train :marine
+   24 :supply-depot
+   26 :siege-tank-tank-mode
+   28 :wait
+   :research :tank-siege-mode
+   28 :command-center])
 
 (def build-orders
   {:test-order test-order

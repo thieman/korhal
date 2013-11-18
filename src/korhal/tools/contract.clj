@@ -88,15 +88,14 @@
   "Replaces the build function from the standard API. You should check
   to make sure the building placement is valid before calling this
   function."
-  ([builder point to-build] (contract-build builder (.x point) (.y point) to-build))
-  ([builder tx ty to-build]
+  ([builder tx ty to-build] (contract-build builder tx ty to-build true))
+  ([builder tx ty to-build accommodate-addon]
      (let [build-type (get-unit-type (to-build unit-type-kws))]
-       (contract-building builder build-type (building-tiles tx ty build-type))
-       (println builder)
+       (println (building-tiles tx ty build-type accommodate-addon))
+       (contract-building builder build-type (building-tiles tx ty build-type accommodate-addon))
        (if (tile-explored? tx ty)
          (build builder tx ty to-build)
-         (do (println (str "Moving " (get-id builder)))
-             (move builder (* 32 tx) (* 32 ty)))))))
+         (move builder (* 32 tx) (* 32 ty))))))
 
 (defn add-unit-costs-to-frame [unit]
   (dosync
@@ -156,10 +155,19 @@
 (defn- building-tiles
   "Given a start tile and a building type, return a vector of all
   tiles the building will be placed on."
-  [tx ty build-type]
-  (for [tx (range tx (+ tx (tile-width build-type)))
-        ty (range ty (+ ty (tile-height build-type)))]
-    [tx ty]))
+  ([tx ty build-type] (building-tiles tx ty build-type true))
+  ([tx ty build-type accommodate-addon]
+     (let [base-tiles (for [tx (range tx (+ tx (tile-width build-type)))
+                            ty (range ty (+ ty (tile-height build-type)))]
+                        [tx ty])]
+       (if (and accommodate-addon (supports-addon? build-type))
+         (let [max-x (apply max (map first base-tiles))
+               max-y (apply max (map second base-tiles))
+               addon-tiles (for [tx (range (+ 1 max-x) (+ 3 max-x))
+                                 ty (range (- max-y 1) (+ max-y 1))]
+                             [tx ty])]
+           (concat base-tiles addon-tiles))
+         base-tiles))))
 
 (defn- reserved-tiles
   "Return a set of all tiles reserved by currently contracted buildings."
@@ -170,11 +178,12 @@
   "Checks whether a given building type fits in a specified
   location. Also takes into account buildings that are contracted to
   be built but do not yet exist on the map."
-  [tx ty to-build check-explored]
-  (let [build-type (to-build unit-type-kws)
-        tiles (building-tiles tx ty build-type)]
-    (when (not (seq (intersection (set tiles) (reserved-tiles))))
-      (every? #(can-build-here? (first %) (second %) build-type check-explored) tiles))))
+  ([tx ty to-build check-explored] (can-build? tx ty to-build check-explored true))
+  ([tx ty to-build check-explored accommodate-addon]
+     (let [build-type (to-build unit-type-kws)
+           tiles (building-tiles tx ty build-type accommodate-addon)]
+       (when (not (seq (intersection (set tiles) (reserved-tiles))))
+         (every? #(can-build-here? (first %) (second %) build-type check-explored) tiles)))))
 
 (defn can-afford?
   "Check whether there are enough resources to build a particular
