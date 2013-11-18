@@ -7,7 +7,9 @@
                                         construction-completed!]]
             [korhal.micro.engine :refer [start-micro-engine run-micro-engine
                                          micro-tag-new-unit!]]
-            [korhal.tools.util :refer [swap-key swap-keys plural]]
+            [korhal.tools.util :refer [swap-key swap-keys plural
+                                       add-execution-time
+                                       get-average-execution-time]]
             [korhal.tools.contract :refer [available-minerals available-gas
                                            contract-build contracted-max-supply
                                            clear-contracts cancel-contracts
@@ -56,9 +58,12 @@
   (start-micro-engine))
 
 (defn korhal-gameUpdate [this]
-  (clear-contracts)
-  (run-macro-engine)
-  (run-micro-engine))
+  (let [start-time (System/currentTimeMillis)]
+    (clear-contracts)
+    (run-macro-engine)
+    (run-micro-engine)
+    (add-execution-time (- (System/currentTimeMillis) start-time))
+    (draw-text 525 50 (str "AI time (ms): " (get-average-execution-time)) true)))
 
 (defn korhal-gameEnded [this])
 (defn korhal-keyPressed [this keycode])
