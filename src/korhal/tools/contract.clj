@@ -44,6 +44,9 @@
   (let [unfinished-depot? (every-pred (complement completed?) is-supply-depot?)]
     (+ (my-supply-total) (:supply @contracted) (* 8 (count (filter unfinished-depot? (my-buildings)))))))
 
+(defn contracted-addons [building]
+  (filter #(= (:builder %) building) (:buildings @contracted)))
+
 (defn- draw-contract-display []
   (draw-text 380 20 "Contracted" true)
   (draw-text 450 20 (:minerals @contracted) true)
@@ -56,12 +59,13 @@
 
 (defn- contract-building
   "Add a new building to the ref of contracted buildings."
-  [builder build-type tiles]
+  [builder build-kw build-type tiles]
   (dosync
    (commute contracted update-in [:minerals] + (mineral-price build-type))
    (commute contracted update-in [:gas] + (gas-price build-type))
    (commute contracted update-in [:supply] + (supply-provided build-type))
    (commute contracted update-in [:buildings] conj {:id (get-contract-id)
+                                                    :kw build-kw
                                                     :builder builder
                                                     :type build-type
                                                     :tiles tiles})))
@@ -91,8 +95,7 @@
   ([builder tx ty to-build] (contract-build builder tx ty to-build true))
   ([builder tx ty to-build accommodate-addon]
      (let [build-type (get-unit-type (to-build unit-type-kws))]
-       (println (building-tiles tx ty build-type accommodate-addon))
-       (contract-building builder build-type (building-tiles tx ty build-type accommodate-addon))
+       (contract-building builder to-build build-type (building-tiles tx ty build-type accommodate-addon))
        (if (tile-explored? tx ty)
          (build builder tx ty to-build)
          (move builder (* 32 tx) (* 32 ty))))))
@@ -101,6 +104,13 @@
   (dosync
    (commute contracted update-in [:minerals-this-frame] + (mineral-price unit))
    (commute contracted update-in [:gas-this-frame] + (gas-price unit))))
+
+(defn contract-build-addon
+  "Replaces the build-addon function from the standard API."
+  [building to-build]
+  (let [build-type (get-unit-type (to-build unit-type-kws))]
+    (contract-building building to-build build-type (building-tiles building))
+    (build-addon building to-build)))
 
 (defn contract-train
   "Replaces the train function from the standard API."
@@ -155,6 +165,12 @@
 (defn- building-tiles
   "Given a start tile and a building type, return a vector of all
   tiles the building will be placed on."
+  ([building]
+     (let [start-x (+ (tile-x building) (tile-width building))
+           start-y (+ (tile-y building) (tile-height building) -2)]
+       (for [x (range start-x (+ start-x 2))
+             y (range start-y (+ start-y 2))]
+         [x y])))
   ([tx ty build-type] (building-tiles tx ty build-type true))
   ([tx ty build-type accommodate-addon]
      (let [base-tiles (for [tx (range tx (+ tx (tile-width build-type)))

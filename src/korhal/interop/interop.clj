@@ -1,7 +1,6 @@
 (ns korhal.interop.interop
   (:refer-clojure :exclude [load])
-  (:require [clojure.set :refer [map-invert]]
-            [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
+  (:require [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
                                                   unit-command-types race-types unit-size-types
                                                   weapon-types bullet-types damage-types
                                                   explosion-types order-types

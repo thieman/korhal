@@ -31,12 +31,12 @@
    :train :marine
    20 :factory
    :train :marine
-   22 :machine-shop
+   :addon :machine-shop
    22 :supply-depot
    :train :vulture
    25 :wait
    :research :ion-thrusters
-   27 :machine-shop
+   :addon :machine-shop
    30 :supply-depot
    32 :factory
    :research :spider-mines])
@@ -54,10 +54,11 @@
    :train :marine
    21 :wait
    :train :marine
-   23 :machine-shop
+   :addon :machine-shop
    :train :marine
    24 :supply-depot
-   26 :siege-tank-tank-mode
+   26 :wait
+   :train :siege-tank-tank-mode
    28 :wait
    :research :tank-siege-mode
    28 :command-center])
@@ -71,12 +72,13 @@
    16 :wait
    :train :marine
    18 :factory
-   21 :machine-shop
+   :addon :machine-shop
    23 :command-center
-   24 :siege-tank-tank-mode
+   24 :wait
+   :train :siege-tank-tank-mode
    26 :supply-depot
    :research :tank-siege-mode
-   27 :siege-tank-tank-mode
+   :train :siege-tank-tank-mode
    29 :engineering-bay])
 
 (def test-order
@@ -88,17 +90,14 @@
    16 :wait
    :train :marine
    18 :factory
-   19 :wait
-   :train :marine
-   21 :wait
-   :train :marine
-   23 :machine-shop
-   :train :marine
-   24 :supply-depot
-   26 :siege-tank-tank-mode
-   28 :wait
+   :addon :machine-shop
+   23 :command-center
+   24 :wait
+   :train :siege-tank-tank-mode
+   26 :supply-depot
    :research :tank-siege-mode
-   28 :command-center])
+   :train :siege-tank-tank-mode
+   29 :engineering-bay])
 
 (def build-orders
   {:test-order test-order

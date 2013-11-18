@@ -5,7 +5,8 @@
             [korhal.macro.command :refer :all]
             [korhal.micro.engine :refer [micro-tag-unit! get-micro-tag]]
             [korhal.tools.contract :refer [cancel-contracts contract-train
-                                           can-afford? contracted-max-supply]]))
+                                           can-afford? contracted-max-supply
+                                           contracted-addons]]))
 
 (defn- send-early-game-scout []
   (when-let [scv (assign-spare-scv! nil)]
@@ -20,14 +21,21 @@
            ty (+ (second (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))]
        (build builder tx ty (last (:args tag))))))
 
-(defn- restart-failed-builders
+(defn- retry-failed-addons
+  "Addons that could not be built should be retried."
+  []
+  (let [idle-building? (fn [b] (and (completed? b) (zero? (training-queue-size b))))]
+    (doseq [building (filter idle-building? (my-buildings))]
+      (when-let [addon (first (contracted-addons building))]
+        (build-addon building (:kw addon))))))
+
+(defn- restart-failed-building-scvs
   "SCVs that are idle but should be building probably ran into a
   problem while trying to build. Restart them."
   []
   (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
     (let [tag (get-macro-tag idle-scv)]
       (when (= :build (:role tag))
-        (println (str "Restarting failed builder " (get-id idle-scv)))
         (if (not (:jitter tag))
           (retry-build idle-scv tag)
           (retry-build idle-scv tag (Math/floor (/ (:retry tag) 20))))))))
@@ -82,6 +90,7 @@
                  (build-kw kw true))))
       (when (can-afford? kw)
         (condp = directive
+          :addon (addon-kw kw)
           :train (train-kw kw)
           :research (research-kw kw)
           :upgrade (upgrade-kw kw))))))
@@ -113,7 +122,8 @@
   "Issue commands based on the current state of the game and the macro
   engine. Should be called in each gameUpdate loop."
   []
-  (restart-failed-builders)
+  (retry-failed-addons)
+  (restart-failed-building-scvs)
   (mine-with-idle-scvs)
   (mine-with-unassigned-gas-scvs)
   (assign-scvs-to-refineries)

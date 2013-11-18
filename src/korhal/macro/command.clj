@@ -3,10 +3,10 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.micro.engine :refer [micro-tag-unit!]]
-            [korhal.tools.contract :refer [contract-build contract-train
-                                           contract-upgrade contract-research
-                                           clear-contracts cancel-contracts
-                                           can-build? can-afford?]]))
+            [korhal.tools.contract :refer [contract-build contract-build-addon
+                                           contract-train contract-upgrade
+                                           contract-research clear-contracts
+                                           cancel-contracts can-build? can-afford?]]))
 
 (defn- scv-available? [scv]
   (and (:available (get-macro-tag scv))
@@ -86,6 +86,15 @@
            (micro-tag-unit! builder nil)
            (contract-build builder tx ty kw)
            (when pop? (pop-build-order!)))))))
+
+(defn addon-kw [kw]
+  (let [unit-type (get-unit-type (kw unit-type-kws))
+        what-builds (what-build-id unit-type)
+        my-builders (my-buildings-id what-builds)
+        builder (first (filter can-build-now? my-builders))]
+    (when (and builder (can-afford? unit-type))
+      (contract-build-addon builder kw)
+      (pop-build-order!))))
 
 (defn train-kw [kw]
   (let [unit-type (get-unit-type (kw unit-type-kws))
