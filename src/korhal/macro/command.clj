@@ -8,19 +8,21 @@
                                            clear-contracts cancel-contracts
                                            can-build? can-afford?]]))
 
+(defn- scv-available? [scv]
+  (and (:available (get-macro-tag scv))
+       (completed? scv)))
+
 (defn assign-spare-scv!
   "Get an available SCV from a mineral line and assign it a macro
   tag. If a building is supplied, return the nearest available SCV to
   that building."
   ([tag]
-     (let [available? (fn [scv] (and (:available (get-macro-tag scv))
-                                     (completed? scv)))
-           scv (first (filter available? (my-scvs)))]
-       (macro-tag-unit! scv tag)
-       scv))
+     (let [scv (first (filter scv-available? (my-scvs)))]
+       (when scv
+         (macro-tag-unit! scv tag)
+         scv)))
   ([building tag]
-     (let [available? (fn [scv] (= (:role (get-macro-tag scv)) :mineral))
-           available-scvs (filter available? (my-scvs))]
+     (let [available-scvs (filter scv-available? (my-scvs))]
        (when (seq available-scvs)
          (let [scv (apply min-key (partial dist-tile building) available-scvs)]
            (macro-tag-unit! scv tag)

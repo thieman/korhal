@@ -92,6 +92,7 @@
   ([builder tx ty to-build]
      (let [build-type (get-unit-type (to-build unit-type-kws))]
        (contract-building builder build-type (building-tiles tx ty build-type))
+       (println builder)
        (if (tile-explored? tx ty)
          (build builder tx ty to-build)
          (do (println (str "Moving " (get-id builder)))

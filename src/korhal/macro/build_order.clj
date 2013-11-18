@@ -80,7 +80,7 @@
    29 :engineering-bay])
 
 (def test-order
-  [10 :command-center])
+  [8 :command-center])
 
 (def build-orders
   {:test-order test-order
