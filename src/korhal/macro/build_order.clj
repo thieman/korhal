@@ -35,7 +35,7 @@
    22 :supply-depot
    :train :vulture
    25 :wait
-   :research :ion-thrusters
+   :upgrade :ion-thrusters
    :addon :machine-shop
    30 :supply-depot
    32 :factory
@@ -81,14 +81,8 @@
    :train :siege-tank-tank-mode
    29 :engineering-bay])
 
-(def test-order
-  [9 :supply-depot
-   12 :barracks
-   14 :barracks])
-
 (def build-orders
-  {:test-order test-order
-   :double-rax-mnm double-rax-mnm
+  {:double-rax-mnm double-rax-mnm
    :triple-rax-mnm triple-rax-mnm
    :triple-factory-vulture triple-factory-vulture
    :one-rax-fast-expand-marine-defense one-rax-fast-expand-marine-defense

@@ -53,14 +53,17 @@
   (draw-targets true)
   (draw-ids true)
   (show-contract-display true)
-  (clear-contract-atoms)
-  (contract-add-initial-cc)
-  (start-strategy-engine!)
-  (start-macro-engine!)
-  (start-micro-engine!)
   (start-repl! 7777))
 
 (defn korhal-gameUpdate [this]
+  ;; we have to do this here instead of korhal-gameStarted because frame does not
+  ;; get reset to 0 until now when restarting a game
+  (when (zero? (frame-count))
+    (clear-contract-atoms)
+    (contract-add-initial-cc)
+    (start-strategy-engine!)
+    (start-macro-engine!)
+    (start-micro-engine!))
   (strategy-expire! :nukes 250) ;; estimated frames for a nuke to drop
   (clear-contracts)
   (execute-api-queue)

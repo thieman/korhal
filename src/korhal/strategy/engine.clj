@@ -23,13 +23,11 @@
 (defn run-strategy-engine []
   (let [enemy-base (first (enemy-start-locations))
         combat-units (filter (every-pred completed? combat-unit?) (my-units))]
-    (when (>= (count combat-units) 12)
-      (doseq [unit combat-units]
-        (micro-tag-unit! unit {:role :attack})))))
+    nil))
 
 (defn start-strategy-engine! []
   (dosync
-   (commute strategy-state assoc-in [:frame] 0)
+   (commute strategy-state assoc-in [:frame] 0) ;; BW does NOT reset the frame count when you restart a mission
    (commute strategy-state assoc-in [:run] true))
   (future (loop []
             (if (not (:run @strategy-state))
