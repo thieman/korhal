@@ -1,5 +1,6 @@
 (ns korhal.micro.engine
   (:require [korhal.interop.interop :refer :all]
+            [korhal.strategy.query :as strat]
             [korhal.tools.repl :refer [repl-control]]
             [korhal.tools.queue :refer [with-api]])
   (:import (jnibwapi.model Unit)))
@@ -31,11 +32,14 @@
     (with-api (move unit (pixel-x enemy-base) (pixel-y enemy-base)))))
 
 (defn- micro-defender [unit base-choke]
-  (let [unit-type (get-unit-type unit)]
-    (when (and (completed? unit)
-               (idle? unit)
-               (> (dist-choke unit base-choke) 200))
-      (with-api (right-click unit (center-x base-choke) (center-y base-choke))))))
+  (when (and (completed? unit)
+             (idle? unit)
+             (> (dist-choke unit base-choke) 200))
+    (with-api (right-click unit (center-x base-choke) (center-y base-choke)))))
+
+(defn- micro-attacker [unit attack-location]
+  (when ((every-pred completed? idle?) unit)
+    (with-api (attack unit (pixel-x attack-location) (pixel-y attack-location)))))
 
 (defn micro-tag-new-unit! [unit]
   (let [unit-type (get-unit-type unit)]
@@ -44,7 +48,8 @@
       (micro-tag-unit! unit {:role :defend}))))
 
 (defn run-micro-engine []
-  (let [base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))]
+  (let [base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))
+        enemy-base (strat/get-priority-enemy-base)]
     (doseq [unit (filter (complement building?) (my-units))]
       (condp = (:role (get-micro-tag unit))
         nil nil
@@ -52,6 +57,7 @@
         :gas (micro-gas-worker unit)
         :early-scout (micro-early-scout unit)
         :defend (micro-defender unit base-choke)
+        :attack (micro-attacker unit enemy-base)
         :else nil))))
 
 (defn start-micro-engine! []

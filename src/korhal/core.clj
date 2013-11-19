@@ -1,5 +1,6 @@
 (ns korhal.core
   (:require [korhal.interop.interop :refer :all]
+            [korhal.strategy.engine :refer [start-strategy-engine! stop-strategy-engine!]]
             [korhal.macro.engine :refer [start-macro-engine! stop-macro-engine!]]
             [korhal.macro.state :refer [builder-to-constructor!
                                         construction-completed!]]
@@ -45,13 +46,14 @@
 (defn korhal-gameStarted [this]
   (println "Game Started")
   (enable-user-input)
-  (set-game-speed 1)
+  (set-game-speed 10)
   (load-map-data true)
   (draw-targets true)
   (draw-ids true)
   (show-contract-display true)
   (clear-contract-atoms)
   (contract-add-initial-cc)
+  (start-strategy-engine!)
   (start-macro-engine!)
   (start-micro-engine!)
   (start-repl! 7777))
@@ -62,6 +64,7 @@
   (execute-repl-queue))
 
 (defn korhal-gameEnded [this]
+  (stop-strategy-engine!)
   (stop-macro-engine!)
   (stop-micro-engine!)
   (stop-repl!))

@@ -249,6 +249,12 @@
 (defn my-unit? [unit]
   (= (get-id (get-self)) (player-id unit)))
 
+(defn worker? [unit]
+  (or (is-scv? unit) (is-drone? unit) (is-probe? unit)))
+
+(defn combat-unit? [unit]
+  (and (not (worker? unit)) (not (building? unit))))
+
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]
   (let [class-type (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" t))))]
