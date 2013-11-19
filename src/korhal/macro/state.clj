@@ -1,15 +1,9 @@
 (ns korhal.macro.state
   (:require [korhal.interop.interop :refer :all]
-            [korhal.macro.build-order :refer [build-orders]]
             [korhal.micro.engine :refer [micro-tag-unit!]])
   (:import (jnibwapi.model Unit)))
 
-(def macro-state (ref {:build-order [] :tags {}}))
-
-(defn start-macro-engine []
-  (dosync
-   (commute macro-state assoc-in [:build-order] (build-orders :test-order))
-   (commute macro-state assoc-in [:tags] {})))
+(def macro-state (ref {:build-order [] :tags {} :frame 0}))
 
 (defn macro-tag-unit! [unit-or-unit-id tag]
   (let [unit-id (if (instance? Unit unit-or-unit-id) (get-id unit-or-unit-id) unit-or-unit-id)]

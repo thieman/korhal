@@ -2,7 +2,10 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.macro.command :refer :all]
+            [korhal.macro.build-order :refer [build-orders]]
             [korhal.micro.engine :refer [micro-tag-unit! get-micro-tag]]
+            [korhal.tools.queue :refer [with-api]]
+            [korhal.tools.repl :refer [repl-control]]
             [korhal.tools.contract :refer [cancel-contracts contract-train
                                            can-afford? contracted-max-supply
                                            contracted-addons]]
@@ -19,7 +22,7 @@
      (macro-tag-unit! builder (merge tag {:retry (inc (:retry tag))}))
      (let [tx (+ (first (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))
            ty (+ (second (:args tag)) (* (Math/pow -1 (rand-int 2)) jitter-amount))]
-       (build builder tx ty (last (:args tag))))))
+       (with-api (build builder tx ty (last (:args tag)))))))
 
 (defn- retry-failed-addons
   "Addons that could not be built should be retried."
@@ -27,7 +30,7 @@
   (let [idle-building? (fn [b] (and (completed? b) (zero? (training-queue-size b))))]
     (doseq [building (filter idle-building? (my-buildings))]
       (when-let [addon (first (contracted-addons building))]
-        (build-addon building (:kw addon))))))
+        (with-api (build-addon building (:kw addon)))))))
 
 (defn- restart-failed-building-scvs
   "SCVs that are idle but should be building probably ran into a
@@ -113,7 +116,7 @@
         (let [reassign (first (filter #(not= (order-id %) (get-id (:harvest-gas order-type-kws))) assigned))]
           (micro-tag-unit! reassign nil)
           (macro-tag-unit! reassign nil)
-          (stop reassign))
+          (with-api (stop reassign)))
         (dotimes [n num-to-assign]
           (let [scv (assign-spare-scv! nil)]
             (micro-tag-unit! scv {:role :gas :assigned refinery}))))))))
@@ -132,3 +135,30 @@
     (process-build-order-step)
     (do (ensure-enough-depots)
         (maybe-train-army))))
+
+(defn start-macro-engine! []
+  (dosync
+   (commute macro-state assoc-in [:build-order] (build-orders :test-order))
+   (commute macro-state assoc-in [:tags] {})
+   (commute macro-state assoc-in [:frame] 0)
+   (commute macro-state assoc-in [:run] true))
+  (future (loop []
+            (if (not (:run @macro-state))
+              nil
+              (let [frame (frame-count)]
+                (if (and (> frame (:frame @macro-state)) (not @repl-control))
+                  (do (try
+                        (run-macro-engine)
+                      (catch Exception e
+                        (println "Macro engine crash!")
+                        (.printStackTrace e)
+                        (dosync
+                         (commute macro-state assoc-in [:run] false))))
+                      (dosync
+                       (commute macro-state assoc-in [:frame] frame)))
+                  (Thread/sleep 1))
+                (recur))))))
+
+(defn stop-macro-engine! []
+  (dosync
+   (commute macro-state assoc-in [:run] false)))

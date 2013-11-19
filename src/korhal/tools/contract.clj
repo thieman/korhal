@@ -12,7 +12,8 @@
 
 (ns korhal.tools.contract
   (:require [clojure.set :refer [intersection]]
-            [korhal.interop.interop :refer :all])
+            [korhal.interop.interop :refer :all]
+            [korhal.tools.queue :refer [with-api]])
   (:import (jnibwapi.model Unit)))
 
 (declare building-tiles reserved-tiles)
@@ -96,8 +97,8 @@
      (let [build-type (get-unit-type (to-build unit-type-kws))]
        (contract-building builder to-build build-type (building-tiles tx ty build-type accommodate-addon))
        (if (tile-explored? tx ty)
-         (build builder tx ty to-build)
-         (move builder (* 32 tx) (* 32 ty))))))
+         (with-api (build builder tx ty to-build))
+         (with-api (move builder (* 32 tx) (* 32 ty)))))))
 
 (defn add-unit-costs-to-frame [unit]
   (dosync
@@ -109,31 +110,31 @@
   [building to-build]
   (let [build-type (get-unit-type (to-build unit-type-kws))]
     (contract-building building to-build build-type (building-tiles building))
-    (build-addon building to-build)))
+    (with-api (build-addon building to-build))))
 
 (defn contract-train
   "Replaces the train function from the standard API."
   [building to-train]
   (add-unit-costs-to-frame (get-unit-type (to-train unit-type-kws)))
-  (train building to-train))
+  (with-api (train building to-train)))
 
 (defn contract-morph
   "Replaces the morph function from the standard API."
   [unit morph-to]
   (add-unit-costs-to-frame (get-unit-type (morph-to unit-type-kws)))
-  (morph unit morph-to))
+  (with-api (morph unit morph-to)))
 
 (defn contract-research
   "Replaces the research function from the standard API."
   [unit to-research]
   (add-unit-costs-to-frame (get-tech-type (to-research tech-type-kws)))
-  (research unit to-research))
+  (with-api (research unit to-research)))
 
 (defn contract-upgrade
   "Replaces the upgrade function from the standard API."
   [unit to-upgrade]
   (add-unit-costs-to-frame (get-upgrade-type (to-upgrade upgrade-type-kws)))
-  (upgrade unit to-upgrade))
+  (with-api (upgrade unit to-upgrade)))
 
 (defn cancel-contracts [unit-or-unit-id]
   "Cancel all contracts associated with a given unit."

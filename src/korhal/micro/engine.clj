@@ -1,12 +1,10 @@
 (ns korhal.micro.engine
-  (:require [korhal.interop.interop :refer :all])
+  (:require [korhal.interop.interop :refer :all]
+            [korhal.tools.repl :refer [repl-control]]
+            [korhal.tools.queue :refer [with-api]])
   (:import (jnibwapi.model Unit)))
 
-(def micro-state (ref {:tags {}}))
-
-(defn start-micro-engine []
-  (dosync
-   (commute micro-state assoc-in [:tags] {})))
+(def micro-state (ref {:tags {} :frame 0}))
 
 (defn micro-tag-unit! [unit-or-unit-id tag]
   (let [unit-id (if (instance? Unit unit-or-unit-id) (get-id unit-or-unit-id) unit-or-unit-id)]
@@ -20,22 +18,24 @@
 (defn- micro-mineral-worker [unit]
   (when (and (completed? unit) (or (idle? unit) (gathering-gas? unit)))
     (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
-      (right-click unit closest-mineral))))
+      (with-api (right-click unit closest-mineral)))))
 
 (defn- micro-gas-worker [unit]
   (when (and (completed? unit) (or (idle? unit) (gathering-minerals? unit)))
     (let [closest-refinery (apply min-key (partial dist unit) (my-refineries))]
       (when (and closest-refinery (completed? closest-refinery))
-        (right-click unit closest-refinery)))))
+        (with-api (right-click unit closest-refinery))))))
 
 (defn- micro-early-scout [unit]
   (let [enemy-base (first (enemy-start-locations))]
-    (move unit (pixel-x enemy-base) (pixel-y enemy-base))))
+    (with-api (move unit (pixel-x enemy-base) (pixel-y enemy-base)))))
 
 (defn- micro-defender [unit base-choke]
   (let [unit-type (get-unit-type unit)]
-    (when ((complement completed?) unit)
-      (right-click unit (center-x base-choke) (center-y base-choke)))))
+    (when (and (completed? unit)
+               (idle? unit)
+               (> (dist-choke unit base-choke) 200))
+      (with-api (right-click unit (center-x base-choke) (center-y base-choke))))))
 
 (defn micro-tag-new-unit! [unit]
   (let [unit-type (get-unit-type unit)]
@@ -53,3 +53,30 @@
         :early-scout (micro-early-scout unit)
         :defend (micro-defender unit base-choke)
         :else nil))))
+
+(defn start-micro-engine! []
+  (dosync
+   (commute micro-state assoc-in [:tags] {})
+   (commute micro-state assoc-in [:frame] 0)
+   (commute micro-state assoc-in [:run] true))
+  (future (loop []
+            (if (not (:run @micro-state))
+              nil
+              (let [frame (frame-count)]
+                (if (and (> frame (:frame @micro-state))
+                         (not @repl-control))
+                  (do (try
+                        (run-micro-engine)
+                      (catch Exception e
+                        (println "Micro engine crash!")
+                        (.printStackTrace e)
+                        (dosync
+                         (commute micro-state assoc-in [:run] false))))
+                      (dosync
+                       (commute micro-state assoc-in [:frame] frame)))
+                  (Thread/sleep 1))
+                (recur))))))
+
+(defn stop-micro-engine! []
+  (dosync
+   (commute micro-state assoc-in [:run] false)))
