@@ -1,6 +1,8 @@
 (ns korhal.core
   (:require [korhal.interop.interop :refer :all]
-            [korhal.strategy.engine :refer [start-strategy-engine! stop-strategy-engine!]]
+            [korhal.strategy.engine :refer [start-strategy-engine! stop-strategy-engine!
+                                            strategy-inform! strategy-expire!
+                                            strategy-remove!]]
             [korhal.macro.engine :refer [start-macro-engine! stop-macro-engine!]]
             [korhal.macro.state :refer [builder-to-constructor!
                                         construction-completed!]]
@@ -59,6 +61,7 @@
   (start-repl! 7777))
 
 (defn korhal-gameUpdate [this]
+  (strategy-expire! :nukes 250) ;; estimated frames for a nuke to drop
   (clear-contracts)
   (execute-api-queue)
   (execute-repl-queue))
@@ -76,7 +79,9 @@
 
 (defn korhal-receiveText [this text])
 
-(defn korhal-nukeDetect [this x y])
+(defn korhal-nukeDetect [this x y]
+  (strategy-inform! :nukes {:x x :y y :frame (frame-count)}))
+
 (defn korhal-playerLeft [this player-id])
 
 (defn korhal-unitCreate [this unit-id]
@@ -89,9 +94,17 @@
 
 (defn korhal-unitDestroy [this unit-id]
   ;; NOTE: destroyed units are no longer available through the API
-  (cancel-contracts unit-id))
+  (cancel-contracts unit-id)
+  (strategy-remove! :enemy-units unit-id))
 
-(defn korhal-unitDiscover [this unit-id])
+(defn korhal-unitDiscover [this unit-id]
+  (let [unit (get-unit-by-id unit-id)]
+    (when (not (my-unit? unit))
+      (strategy-inform! :enemy-units {:id unit-id
+                                      :type (get-unit-type unit)
+                                      :x (pixel-x unit)
+                                      :y (pixel-y unit)
+                                      :frame (frame-count)}))))
 
 (defn korhal-unitEvade [this unit-id])
 
@@ -103,7 +116,14 @@
       (builder-to-constructor! unit)
       (contract-add-new-building unit))))
 
-(defn korhal-unitShow [this unit-id])
+(defn korhal-unitShow [this unit-id]
+  (let [unit (get-unit-by-id unit-id)]
+    (when (not (my-unit? unit))
+      (strategy-inform! :enemy-units {:id unit-id
+                                      :type (get-unit-type unit)
+                                      :x (pixel-x unit)
+                                      :y (pixel-y unit)
+                                      :frame (frame-count)}))))
 
 (defn korhal-unitRenegade [this unit-id])
 

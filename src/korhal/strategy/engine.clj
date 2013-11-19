@@ -3,8 +3,22 @@
             [korhal.strategy.query :refer [strategy-state]]
             [korhal.micro.engine :refer [micro-tag-unit!]]
             [korhal.tools.repl :refer [repl-control]]
-            [korhal.tools.queue :refer [with-api]])
-  (:import (jnibwapi.model Unit)))
+            [korhal.tools.queue :refer [with-api]]))
+
+(defn strategy-inform! [tag-type doc]
+  (dosync
+   (if (:id doc)
+     (commute strategy-state assoc-in [tag-type (:id doc)] doc)
+     (commute strategy-state update-in [tag-type] conj doc))))
+
+(defn strategy-remove! [tag-type id]
+  (dosync
+   (commute strategy-state update-in [tag-type] #(dissoc % id))))
+
+(defn strategy-expire! [tag-type frame-diff]
+  (let [expired? (fn [doc] (>= (- (frame-count) (:frame doc)) frame-diff))]
+    (dosync
+     (commute strategy-state update-in [tag-type] #(remove expired? %)))))
 
 (defn run-strategy-engine []
   (let [enemy-base (first (enemy-start-locations))

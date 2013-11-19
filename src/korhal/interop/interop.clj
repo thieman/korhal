@@ -249,12 +249,6 @@
 (defn my-unit? [unit]
   (= (get-id (get-self)) (player-id unit)))
 
-(defn worker? [unit]
-  (or (is-scv? unit) (is-drone? unit) (is-probe? unit)))
-
-(defn combat-unit? [unit]
-  (and (not (worker? unit)) (not (building? unit))))
-
 ;; type predicates, e.g. is-drone?
 (doseq [[n t] (partition 2 unit-types)]
   (let [class-type (eval `(.getID ~(symbol (str "jnibwapi.types.UnitType$UnitTypes/" t))))]
@@ -280,6 +274,12 @@
 
 (def my-citadels-of-adun my-citadel-of-aduns)
 (def my-nexuses my-nexus)
+
+(defn worker? [unit]
+  (or (is-scv? unit) (is-drone? unit) (is-probe? unit)))
+
+(defn combat-unit? [unit]
+  (and (not (worker? unit)) (not (building? unit))))
 
 (defn get-unit-by-id [unit-id] (.getUnit api unit-id))
 
