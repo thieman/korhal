@@ -1,15 +1,7 @@
 # Korhal
 
-## Installation
+Korhal is a Brood War AI written in Clojure on top of JNIBWAPI.
 
-#### Virtual Machine Image
+## Getting Started
 
-A ready-to-go VM image is provided for you at <url>. The file is AES encrypted with the password "korhal." To decrypt it:
-
-#### On Mac
-
-    todo
-
-#### On Ubuntu
-
-    openssl aes-256-cbc -d -in Korhal.ova.aes -out Korhal.ova
+A virtual machine image is provided to get you up and running. [See the wiki page.](../../wiki/VM Setup)
