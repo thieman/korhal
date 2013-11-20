@@ -33,10 +33,13 @@
         (with-api (build-addon building (:kw addon)))))))
 
 (defn- restart-failed-building-scvs
-  "SCVs that are idle but should be building probably ran into a
-  problem while trying to build. Restart them."
+  "SCVs that are idle or gathering but should be building probably ran
+  into a problem while trying to build. Restart them."
   []
-  (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
+  (doseq [idle-scv (filter #(and (completed? %)
+                                 (or (idle? %) (gathering-minerals? %) (gathering-gas? %)))
+                           (my-scvs))]
+    (micro-tag-unit! idle-scv nil)
     (let [tag (get-macro-tag idle-scv)]
       (when (= :build (:role tag))
         (if (not (:jitter tag))
@@ -150,10 +153,8 @@
                   (do (try
                         (run-macro-engine)
                       (catch Exception e
-                        (println "Macro engine crash!")
-                        (.printStackTrace e)
-                        (dosync
-                         (commute macro-state assoc-in [:run] false))))
+                        (println "Macro engine exception!")
+                        (.printStackTrace e)))
                       (dosync
                        (commute macro-state assoc-in [:frame] frame)))
                   (Thread/sleep 1))

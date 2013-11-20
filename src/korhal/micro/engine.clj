@@ -74,10 +74,8 @@
                   (do (try
                         (run-micro-engine)
                       (catch Exception e
-                        (println "Micro engine crash!")
-                        (.printStackTrace e)
-                        (dosync
-                         (commute micro-state assoc-in [:run] false))))
+                        (println "Micro engine exception!")
+                        (.printStackTrace e)))
                       (dosync
                        (commute micro-state assoc-in [:frame] frame)))
                   (Thread/sleep 1))

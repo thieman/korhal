@@ -21,6 +21,8 @@
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
 
+(def run-repl? true)
+
 (gen-class
  :name "korhal.core"
  :implements [jnibwapi.BWAPIEventListener clojure.lang.IDeref]
@@ -43,7 +45,8 @@
   [[] (atom {})])
 
 (defn korhal-connected [this]
-  (load-type-data))
+  (load-type-data)
+  (when run-repl? (start-repl! 7777)))
 
 (defn korhal-gameStarted [this]
   (println "Game Started")
@@ -52,8 +55,7 @@
   (load-map-data true)
   (draw-targets true)
   (draw-ids true)
-  (show-contract-display true)
-  (start-repl! 7777))
+  (show-contract-display true))
 
 (defn korhal-gameUpdate [this]
   ;; we have to do this here instead of korhal-gameStarted because frame does not
@@ -64,7 +66,7 @@
     (start-strategy-engine!)
     (start-macro-engine!)
     (start-micro-engine!))
-  (strategy-expire! :nukes 250) ;; estimated frames for a nuke to drop
+  (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
   (clear-contracts)
   (execute-api-queue)
   (execute-repl-queue))
@@ -72,8 +74,7 @@
 (defn korhal-gameEnded [this]
   (stop-strategy-engine!)
   (stop-macro-engine!)
-  (stop-micro-engine!)
-  (stop-repl!))
+  (stop-micro-engine!))
 
 (defn korhal-keyPressed [this keycode])
 

@@ -27,7 +27,7 @@
 
 (defn start-strategy-engine! []
   (dosync
-   (commute strategy-state assoc-in [:frame] 0) ;; BW does NOT reset the frame count when you restart a mission
+   (commute strategy-state assoc-in [:frame] 0)
    (commute strategy-state assoc-in [:run] true))
   (future (loop []
             (if (not (:run @strategy-state))
@@ -38,10 +38,8 @@
                   (do (try
                         (run-strategy-engine)
                       (catch Exception e
-                        (println "Strategy engine crash!")
-                        (.printStackTrace e)
-                        (dosync
-                         (commute strategy-state assoc-in [:run] false))))
+                        (println "Strategy engine exception!")
+                        (.printStackTrace e)))
                       (dosync
                        (commute strategy-state assoc-in [:frame] frame)))
                   (Thread/sleep 1))
