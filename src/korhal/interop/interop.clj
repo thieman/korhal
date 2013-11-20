@@ -476,6 +476,9 @@
                          [:command-center :factory :starport :science-facility])]
     (boolean (some #{unit-type} match-types))))
 
+(defn has-addon? [unit]
+  (and (building? unit) (not= -1 (addon-id unit))))
+
 (defn tile-visible?
   ([point] (tile-visible? (.x point) (.y point)))
   ([tx ty] (.isVisible api tx ty)))
@@ -524,8 +527,8 @@
                                                             (get-type-id unit-to-build) check-explored)))
 
 (defn can-make?
-  ([unit-to-make] (.canMake api (get-type-id unit-to-make)))
-  ([unit unit-to-make] (.canMake api (.getID unit) (get-type-id unit-to-make))))
+  ([unit-to-make-kw] (.canMake api (get-type-id (unit-type-kws unit-to-make-kw))))
+  ([unit unit-to-make-kw] (.canMake api (.getID unit) (get-type-id (unit-type-kws unit-to-make-kw)))))
 
 (defn can-research?
   ([tech] (.canResearch api (get-type-id tech)))

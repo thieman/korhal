@@ -34,8 +34,8 @@
 (defn- micro-defender [unit base-choke]
   (when (and (completed? unit)
              (idle? unit)
-             (> (dist-choke unit base-choke) 200))
-    (with-api (right-click unit (center-x base-choke) (center-y base-choke)))))
+             (> (dist-choke unit base-choke) 300))
+    (with-api (attack unit (center-x base-choke) (center-y base-choke)))))
 
 (defn- micro-attacker [unit attack-location]
   (when ((every-pred completed? idle?) unit)

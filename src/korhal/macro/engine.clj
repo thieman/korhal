@@ -6,9 +6,10 @@
             [korhal.micro.engine :refer [micro-tag-unit! get-micro-tag]]
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
-            [korhal.tools.contract :refer [cancel-contracts contract-train
+            [korhal.tools.contract :refer [cancel-contracts clear-contracts
+                                           contract-train
                                            can-afford? contracted-max-supply
-                                           contracted-addons]]
+                                           contracted-addons can-make-now?]]
             [korhal.tools.util :refer [profile]]))
 
 (defn- send-early-game-scout []
@@ -39,9 +40,9 @@
   (doseq [idle-scv (filter #(and (completed? %)
                                  (or (idle? %) (gathering-minerals? %) (gathering-gas? %)))
                            (my-scvs))]
-    (micro-tag-unit! idle-scv nil)
     (let [tag (get-macro-tag idle-scv)]
       (when (= :build (:role tag))
+        (micro-tag-unit! idle-scv nil)
         (if (not (:jitter tag))
           (retry-build idle-scv tag)
           (retry-build idle-scv tag (Math/floor (/ (:retry tag) 20))))))))
@@ -80,8 +81,14 @@
   composition."
   []
   (doseq [barracks (filter can-build-now? (my-barracks))]
-    (when (can-afford? :marine)
-      (contract-train barracks :marine))))
+    (cond
+     (can-make-now? barracks :medic) (contract-train barracks :medic)
+     (can-make-now? barracks :marine) (contract-train barracks :marine)))
+  (doseq [factory (filter can-build-now? (my-factories))]
+    (cond
+     (can-make-now? factory :siege-tank-tank-mode) (contract-train factory :siege-tank-tank-mode)
+     (can-make-now? factory :goliath) (contract-train factory :goliath)
+     (can-make-now? factory :vulture) (contract-train factory :vulture))))
 
 (defn process-build-order-step []
   (let [[directive kw] (first (partition 2 (:build-order @macro-state)))]
@@ -128,6 +135,7 @@
   "Issue commands based on the current state of the game and the macro
   engine. Should be called in each gameUpdate loop."
   []
+  (clear-contracts)
   (retry-failed-addons)
   (restart-failed-building-scvs)
   (mine-with-idle-scvs)

@@ -16,7 +16,8 @@
                                            clear-contracts cancel-contracts
                                            show-contract-display clear-contract-atoms
                                            can-build? contract-add-initial-cc
-                                           contract-add-new-building]])
+                                           contract-add-new-building
+                                           contract-display draw-contract-display]])
   (:import (clojure.lang.IDeref)
            (jnibwapi.JNIBWAPI)
            (jnibwapi.BWAPIEventListener)))
@@ -45,8 +46,7 @@
   [[] (atom {})])
 
 (defn korhal-connected [this]
-  (load-type-data)
-  (when run-repl? (start-repl! 7777)))
+  (load-type-data))
 
 (defn korhal-gameStarted [this]
   (println "Game Started")
@@ -55,7 +55,8 @@
   (load-map-data true)
   (draw-targets true)
   (draw-ids true)
-  (show-contract-display true))
+  (show-contract-display true)
+  (when run-repl? (start-repl! 7777)))
 
 (defn korhal-gameUpdate [this]
   ;; we have to do this here instead of korhal-gameStarted because frame does not
@@ -66,15 +67,16 @@
     (start-strategy-engine!)
     (start-macro-engine!)
     (start-micro-engine!))
+  (when @contract-display (draw-contract-display))
   (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
-  (clear-contracts)
   (execute-api-queue)
   (execute-repl-queue))
 
 (defn korhal-gameEnded [this]
   (stop-strategy-engine!)
   (stop-macro-engine!)
-  (stop-micro-engine!))
+  (stop-micro-engine!)
+  (when run-repl? (stop-repl!)))
 
 (defn korhal-keyPressed [this keycode])
 

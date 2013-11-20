@@ -89,7 +89,7 @@
   (let [unit-type (get-unit-type (kw unit-type-kws))
         what-builds (what-build-id unit-type)
         my-builders (my-buildings-id what-builds)
-        builder (first (filter can-build-now? my-builders))]
+        builder (first (filter (every-pred can-build-now? (complement has-addon?)) my-builders))]
     (when (and builder (can-afford? unit-type))
       (contract-build-addon builder kw)
       (pop-build-order!))))

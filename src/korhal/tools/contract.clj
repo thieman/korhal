@@ -47,7 +47,7 @@
 (defn contracted-addons [building]
   (filter #(= (:builder %) building) (:buildings @contracted)))
 
-(defn- draw-contract-display []
+(defn draw-contract-display []
   (draw-text 380 20 "Contracted" true)
   (draw-text 450 20 (:minerals @contracted) true)
   (draw-text 520 20 (:gas @contracted) true)
@@ -153,13 +153,15 @@
      (commute contracted update-in [:building-ids] merge {(get-id cc) cc}))))
 
 (defn contract-add-new-building [new-building]
-  (decontract-building (get-unit-by-id (build-unit-id new-building))
-                       (get-unit-type new-building))
+  (if (addon? new-building)
+    (let [builder (first (filter #(= (get-id new-building) (addon-id %)) (my-buildings)))]
+      (decontract-building builder (get-unit-type new-building)))
+    (decontract-building (get-unit-by-id (build-unit-id new-building))
+                         (get-unit-type new-building)))
   (dosync
    (commute contracted update-in [:building-ids] merge {(get-id new-building) new-building})))
 
 (defn clear-contracts []
-  (when @contract-display (draw-contract-display))
   (clear-frame-resources))
 
 (defn- building-tiles
@@ -214,3 +216,7 @@
     (and (>= (available-minerals) (mineral-price unit-type))
          (>= (available-gas) (gas-price unit-type))
          (>= (my-supply-total) (+ (my-supply-used) (supply-required unit-type))))))
+
+(defn can-make-now?
+  ([kw] (and (can-afford? kw) (can-make? kw)))
+  ([unit kw] (and (can-afford? kw) (can-make? unit kw))))

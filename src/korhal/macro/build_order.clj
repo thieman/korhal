@@ -81,12 +81,15 @@
    :train :siege-tank-tank-mode
    29 :engineering-bay])
 
-(def build-orders
+#_(def build-orders
   {:double-rax-mnm double-rax-mnm
    :triple-rax-mnm triple-rax-mnm
    :triple-factory-vulture triple-factory-vulture
    :one-rax-fast-expand-marine-defense one-rax-fast-expand-marine-defense
    :one-rax-fast-expand-no-defense one-rax-fast-expand-no-defense})
+
+(def build-orders
+  {:triple-factory-vulture triple-factory-vulture})
 
 (defn get-random-build-order []
   (let [k (nth (keys build-orders) (rand-int (count build-orders)))]
