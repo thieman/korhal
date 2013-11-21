@@ -1,5 +1,6 @@
 (ns korhal.interop.interop
-  (:require [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
+  (:require [clojure.set :refer [map-invert]]
+            [korhal.interop.interop-types :refer [unit-types upgrade-types tech-types
                                                   unit-command-types race-types unit-size-types
                                                   weapon-types bullet-types damage-types
                                                   explosion-types order-types
@@ -149,13 +150,21 @@
 
 (define-player-fns)
 
-(defn has-researched [player tech] (.hasResearched player (.getID tech)))
+(defn researched?
+  ([tech-kw] (.hasResearched (.getSelf api) (.getID (tech-type-kws tech-kw))))
+  ([player tech] (.hasResearched player (.getID tech))))
 
-(defn researching? [player tech] (.isResearching player (.getID tech)))
+(defn researching?
+  ([tech-kw] (.isResearching (.getSelf api) (.getID (tech-type-kws tech-kw))))
+  ([player tech] (.isResearching player (.getID tech))))
 
-(defn upgrade-level [player upgrade] (.upgradeLevel player (.getID upgrade)))
+(defn upgrade-level
+  ([upgrade-kw] (.upgradeLevel (.getSelf api) (.getID (upgrade-type-kws upgrade-kw))))
+  ([player upgrade] (.upgradeLevel player (.getID upgrade))))
 
-(defn upgrading? [player upgrade] (.isUpgrading player (.getID upgrade)))
+(defn upgrading?
+  ([upgrade-kw] (.isUpgrading (.getSelf api) (.getID (upgrade-type-kws upgrade-kw))))
+  ([player upgrade] (.isUpgrading player (.getID upgrade))))
 
 ;; generate base location methods
 
@@ -202,6 +211,10 @@
   (if (instance? Unit unit-or-unit-type)
     (.getUnitType api (.getTypeID unit-or-unit-type))
     (.getUnitType api (.getID unit-or-unit-type))))
+
+(defn get-unit-type-kw [unit-or-unit-type]
+  (let [unit-type (get-unit-type unit-or-unit-type)]
+    ((map-invert unit-type-ids) (get-id unit-type))))
 
 (defn get-tech-type [tech] (.getTechType api (.getID tech)))
 
@@ -538,6 +551,9 @@
   ([upgrade] (.canUpgrade api (get-type-id upgrade)))
   ([unit upgrade] (.canUpgrade api (.getID unit) (get-type-id upgrade))))
 
+(defn under-aoe? [unit]
+  (or (under-dark-swarm? unit) (under-disruption-web? unit) (under-storm? unit)))
+
 (defn print-text [msg] (.printText api (str msg)))
 
 (defn send-text [msg] (.sendText api (str msg)))
@@ -573,3 +589,20 @@
 (defn dist-choke [unit-or-building choke]
   (Math/sqrt (+ (Math/pow (- (pixel-x unit-or-building) (center-x choke)) 2)
                 (Math/pow (- (pixel-y unit-or-building) (center-y choke)) 2))))
+
+(defn closest [unit coll]
+  (when (and unit (seq coll))
+    (apply min-key (partial dist unit) coll)))
+
+(defn closest-tile [unit coll]
+  (when (and unit (seq coll))
+    (apply min-key (partial dist-tile unit) coll)))
+
+(defn closest-choke [unit coll]
+  (when (and unit (seq coll))
+    (apply min-key (partial dist-choke unit) coll)))
+
+(defn closest-choke-start [start coll]
+  (when (and start (seq coll))
+    (let [tile-start (java.awt.Point. (* 32 (.x start)) (* 32 (.y start)))]
+      (apply min-key (partial dist-choke tile-start) coll))))

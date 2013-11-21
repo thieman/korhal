@@ -2,7 +2,7 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.macro.command :refer :all]
-            [korhal.macro.build-order :refer [get-random-build-order]]
+            [korhal.macro.build-order :refer [build-orders get-random-build-order]]
             [korhal.micro.engine :refer [micro-tag-unit! get-micro-tag]]
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
@@ -149,7 +149,7 @@
 
 (defn start-macro-engine! []
   (dosync
-   (commute macro-state assoc-in [:build-order] (get-random-build-order))
+   (commute macro-state assoc-in [:build-order] (build-orders :test-order))
    (commute macro-state assoc-in [:tags] {})
    (commute macro-state assoc-in [:frame] 0)
    (commute macro-state assoc-in [:run] true))

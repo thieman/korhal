@@ -16,14 +16,20 @@
   (let [unit-id (if (instance? Unit unit-or-unit-id) (get-id unit-or-unit-id) unit-or-unit-id)]
     (get-in @micro-state [:tags unit-id])))
 
+(defn micro-tag-new-unit! [unit]
+  (let [unit-type (get-unit-type unit)]
+    (condp = unit-type
+      (get-unit-type (:scv unit-type-kws)) nil
+      (micro-tag-unit! unit {:role :defend}))))
+
 (defn- micro-mineral-worker [unit]
   (when (and (completed? unit) (or (idle? unit) (gathering-gas? unit)))
-    (let [closest-mineral (apply min-key (partial dist unit) (minerals))]
+    (when-let [closest-mineral (closest unit (minerals))]
       (with-api (right-click unit closest-mineral)))))
 
 (defn- micro-gas-worker [unit]
   (when (and (completed? unit) (or (idle? unit) (gathering-minerals? unit)))
-    (let [closest-refinery (apply min-key (partial dist unit) (my-refineries))]
+    (when-let [closest-refinery (closest unit (my-refineries))]
       (when (and closest-refinery (completed? closest-refinery))
         (with-api (right-click unit closest-refinery))))))
 
@@ -33,32 +39,48 @@
 
 (defn- micro-defender [unit base-choke]
   (when (and (completed? unit)
-             (idle? unit)
-             (> (dist-choke unit base-choke) 300))
-    (with-api (attack unit (center-x base-choke) (center-y base-choke)))))
+             (idle? unit))
+    (if (> (dist-choke unit base-choke) 300)
+      (with-api (attack unit (center-x base-choke) (center-y base-choke)))
+      (when (and (is-siege-tank-tank-mode? unit) (researched? :tank-siege-mode))
+        (siege unit)))))
 
 (defn- micro-attacker [unit attack-location]
   (when ((every-pred completed? idle?) unit)
     (with-api (attack unit (pixel-x attack-location) (pixel-y attack-location)))))
 
-(defn micro-tag-new-unit! [unit]
-  (let [unit-type (get-unit-type unit)]
-    (condp = unit-type
-      (get-unit-type (:scv unit-type-kws)) nil
-      (micro-tag-unit! unit {:role :defend}))))
+(defn dispatch-on-role [role unit] role)
+(defmulti micro-combat-role dispatch-on-role)
+
+(defmethod micro-combat-role :worker [role unit])
+
+(defmethod micro-combat-role :attack [role unit])
+
+(defmethod micro-combat-role :stim [role unit])
+
+(defmethod micro-combat-role :default [role unit])
+
+(defn micro-combat [unit]
+  (doseq [role (strat/combat-roles (get-unit-type-kw unit))]
+    (micro-combat-role role unit)))
+
+(defn micro-under-aoe [unit])
 
 (defn run-micro-engine []
-  (let [base-choke (apply min-key (partial dist-choke (first (my-command-centers))) (chokepoints))
+  (let [base-choke (closest-choke-start (my-start-location) (chokepoints))
         enemy-base (strat/get-priority-enemy-base)]
     (doseq [unit (filter (complement building?) (my-units))]
-      (condp = (:role (get-micro-tag unit))
-        nil nil
-        :mineral (micro-mineral-worker unit)
-        :gas (micro-gas-worker unit)
-        :early-scout (micro-early-scout unit)
-        :defend (micro-defender unit base-choke)
-        :attack (micro-attacker unit enemy-base)
-        :else nil))))
+      (cond
+       (under-aoe? unit) (micro-under-aoe unit)
+       (or (attacking? unit) (under-attack? unit)) (micro-combat unit)
+       :else (condp = (:role (get-micro-tag unit))
+               nil nil
+               :mineral (micro-mineral-worker unit)
+               :gas (micro-gas-worker unit)
+               :early-scout (micro-early-scout unit)
+               :defend (micro-defender unit base-choke)
+               :attack (micro-attacker unit enemy-base)
+               :else nil)))))
 
 (defn start-micro-engine! []
   (dosync

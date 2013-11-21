@@ -37,8 +37,8 @@
    25 :wait
    :upgrade :ion-thrusters
    :addon :machine-shop
-   30 :supply-depot
-   32 :factory
+   25 :supply-depot
+   25 :factory
    :research :spider-mines])
 
 (def one-rax-fast-expand-marine-defense
@@ -81,15 +81,24 @@
    :train :siege-tank-tank-mode
    29 :engineering-bay])
 
-#_(def build-orders
-  {:double-rax-mnm double-rax-mnm
+(def test-order
+  [9 :supply-depot
+   11 :barracks
+   12 :refinery
+   15 :supply-depot
+   15 :factory
+   15 :factory
+   :addon :machine-shop
+   :research :tank-siege-mode
+   :addon :machine-shop])
+
+(def build-orders
+  {:test-order test-order
+   :double-rax-mnm double-rax-mnm
    :triple-rax-mnm triple-rax-mnm
    :triple-factory-vulture triple-factory-vulture
    :one-rax-fast-expand-marine-defense one-rax-fast-expand-marine-defense
    :one-rax-fast-expand-no-defense one-rax-fast-expand-no-defense})
-
-(def build-orders
-  {:triple-factory-vulture triple-factory-vulture})
 
 (defn get-random-build-order []
   (let [k (nth (keys build-orders) (rand-int (count build-orders)))]
