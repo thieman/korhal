@@ -1,6 +1,6 @@
 # Korhal
 
-Korhal is a Brood War AI written in Clojure on top of JNIBWAPI.
+Korhal is a Brood War AI written in Clojure on top of a custom fork of JNIBWAPI that we use to extract even more information from the Brood War process.
 
 ## Getting Started
 

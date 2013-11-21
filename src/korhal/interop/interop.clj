@@ -6,7 +6,7 @@
                                                   explosion-types order-types
                                                   unit-type-fn-maps unit-fn-maps
                                                   base-location-fn-maps player-fn-maps]])
-  (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint)
+  (:import (jnibwapi.model Map Player Unit BaseLocation Region ChokePoint Bullet)
            (jnibwapi.types.UnitType$UnitTypes)
            (jnibwapi.types.UpgradeType$UpgradeTypes)
            (jnibwapi.types.TechType$TechTypes)
@@ -92,6 +92,8 @@
 (defn enemy-units [] (.getEnemyUnits api))
 
 (defn neutral-units [] (.getNeutralUnits api))
+
+(defn bullets [] (.getAllBullets api))
 
 (defn minerals []
   (filter #(= (.getTypeID %) (.getID jnibwapi.types.UnitType$UnitTypes/Resource_Mineral_Field))
@@ -220,10 +222,10 @@
 
 (defn get-upgrade-type [upgrade] (.getUpgradeType api (.getID upgrade)))
 
-(defn get-type-id [unit-or-unit-type]
-  (if (instance? Unit unit-or-unit-type)
-    (.getTypeID unit-or-unit-type)
-    (.getID unit-or-unit-type)))
+(defn get-type-id [obj-or-unit-type]
+  (if (or (instance? Unit obj-or-unit-type) (instance? Bullet obj-or-unit-type))
+    (.getTypeID obj-or-unit-type)
+    (.getID obj-or-unit-type)))
 
 (defn pixel-x [obj] (.getX obj))
 
@@ -294,7 +296,8 @@
 (defn combat-unit? [unit]
   (and (not (worker? unit)) (not (building? unit))))
 
-(defn get-unit-by-id [unit-id] (.getUnit api unit-id))
+(defn get-unit-by-id [unit-id]
+  (when (pos? unit-id) (.getUnit api unit-id)))
 
 (defn my-units-id [id] (filter #(= (.getTypeID %) id) (my-units)))
 
@@ -577,6 +580,37 @@
 
 (defn what-researches [tech]
   (.getUnitType api (.getWhatResearchesTypeID tech)))
+
+;; additional bullet functions
+;; fns that should also work: angle, velocity-x, velocity-y, remove-timer, exists?, visible?
+
+(defn player-id [bullet] (.getPlayerID bullet))
+
+(defn source-unit [bullet] (get-unit-by-id (.getSourceUnitID bullet)))
+
+(defn position-x [bullet] (.getPositionX bullet))
+
+(defn position-y [bullet] (.getPositionY bullet))
+
+(defn position-valid? [bullet] (.getPositionValid bullet))
+
+(defn position [bullet]
+  (when (.getPositionValid bullet)
+    (java.awt.Point. (.getPositionX bullet)
+                     (.getPositionY bullet))))
+
+(defn target-unit [bullet] (get-unit-by-id (.getTargetUnitID bullet)))
+
+(defn target-position-x [bullet] (.getTargetPositionX bullet))
+
+(defn target-position-y [bullet] (.getTargetPositionY bullet))
+
+(defn target-position-valid [bullet] (.getTargetPositionValid bullet))
+
+(defn target-position [bullet]
+  (when (.getTargetPositionValid bullet)
+    (java.awt.Point. (.getTargetPositionX bullet)
+                     (.getTargetPositionY bullet))))
 
 ;; utility functions supplemental to JNIBWAPI
 

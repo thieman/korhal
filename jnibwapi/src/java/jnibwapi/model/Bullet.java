@@ -111,11 +111,11 @@ public class Bullet {
 		return removeTimer;
 	}
 
-	public boolean getExists() {
+	public boolean isExists() {
 		return exists;
 	}
 
-	public boolean getVisible() {
+	public boolean isVisible() {
 		return visible;
 	}
 
