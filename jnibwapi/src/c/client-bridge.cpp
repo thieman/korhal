@@ -37,7 +37,7 @@ jint *intBuf;
 const int bufferSize = 5000000;
 
 // utility functions
-void drawHealth(void); 
+void drawHealth(void);
 void drawTargets(void);
 void drawIDs(void);
 bool showHealth = false;
@@ -169,8 +169,8 @@ JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_startClient(JNIEnv* env, jobject j
 				}
 
 				// check for key presses
-				for (int keyCode = 0; keyCode <= 0xff; ++keyCode) {	
-					if (Broodwar->getKeyState(keyCode)) {	
+				for (int keyCode = 0; keyCode <= 0xff; ++keyCode) {
+					if (Broodwar->getKeyState(keyCode)) {
 						if (!keyState[keyCode]) {
 							env->CallObjectMethod(classref, keyPressCallback, keyCode);
 						}
@@ -207,13 +207,13 @@ void reconnect(void)
 	}
 }
 
-void javaPrint(const char* msg) 
+void javaPrint(const char* msg)
 {
 	jEnv->CallObjectMethod(classref, printCallback, jEnv->NewStringUTF(msg));
 }
 
 // build type mappings
-void loadTypeData(void) 
+void loadTypeData(void)
 {
 	std::set<UnitType> types = UnitTypes::allUnitTypes();
 	for (std::set<UnitType>::iterator i = types.begin(); i != types.end(); ++i) {
@@ -295,7 +295,7 @@ JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_enableUserInput(JNIEnv* env, jobje
 	Broodwar->enableFlag(Flag::UserInput);
 }
 
-JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_enablePerfectInformation(JNIEnv* env, jobject jObj) 
+JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_enablePerfectInformation(JNIEnv* env, jobject jObj)
 {
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 }
@@ -319,12 +319,12 @@ JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_leaveGame(JNIEnv* env, jobject jOb
 // Game state queries
 /*****************************************************************************************************************/
 
-JNIEXPORT jint JNICALL Java_jnibwapi_JNIBWAPI_getFrame(JNIEnv* env, jobject jObj) 
+JNIEXPORT jint JNICALL Java_jnibwapi_JNIBWAPI_getFrame(JNIEnv* env, jobject jObj)
 {
 	return Broodwar->getFrameCount();
 }
 
-JNIEXPORT jint JNICALL Java_jnibwapi_JNIBWAPI_getReplayFrameTotal(JNIEnv* env, jobject jObj) 
+JNIEXPORT jint JNICALL Java_jnibwapi_JNIBWAPI_getReplayFrameTotal(JNIEnv* env, jobject jObj)
 {
 	return Broodwar->getReplayFrameCount();
 }
@@ -334,7 +334,7 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getPlayersData(JNIEnv* env, j
 	int index = 0;
 
 	std::set<Player*> players = Broodwar->getPlayers();
-	
+
 	for (std::set<Player*>::iterator i = players.begin(); i != players.end(); ++i) {
 		intBuf[index++] = (*i)->getID();
 		intBuf[index++] = (*i)->getRace().getID();
@@ -421,7 +421,7 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUpgradeStatus(JNIEnv* env,
 	return result;
 }
 
-JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUnitTypes(JNIEnv* env, jobject jObj) 
+JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUnitTypes(JNIEnv* env, jobject jObj)
 {
 	int index = 0;
 
@@ -504,12 +504,12 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUnitTypes(JNIEnv* env, job
 	return result;
 }
 
-JNIEXPORT jstring JNICALL Java_jnibwapi_JNIBWAPI_getUnitTypeName(JNIEnv* env, jobject jObj, jint typeID) 
+JNIEXPORT jstring JNICALL Java_jnibwapi_JNIBWAPI_getUnitTypeName(JNIEnv* env, jobject jObj, jint typeID)
 {
 	return env->NewStringUTF(unitTypeMap[typeID].getName().c_str());
 }
 
-JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getRaceTypes(JNIEnv* env, jobject jObj) 
+JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getRaceTypes(JNIEnv* env, jobject jObj)
 {
 	int index = 0;
 
@@ -529,7 +529,7 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getRaceTypes(JNIEnv* env, job
 	return result;
 }
 
-JNIEXPORT jstring JNICALL Java_jnibwapi_JNIBWAPI_getRaceTypeName(JNIEnv* env, jobject jObj, jint typeID) 
+JNIEXPORT jstring JNICALL Java_jnibwapi_JNIBWAPI_getRaceTypeName(JNIEnv* env, jobject jObj, jint typeID)
 {
 	return env->NewStringUTF(raceTypeMap[typeID].getName().c_str());
 }
@@ -575,7 +575,7 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUpgradeTypes(JNIEnv* env, 
 		intBuf[index++] = i->mineralPrice();
 		intBuf[index++] = i->mineralPriceFactor();
 		intBuf[index++] = i->gasPrice();
-		intBuf[index++] = i->gasPriceFactor(); 
+		intBuf[index++] = i->gasPriceFactor();
 		intBuf[index++] = i->upgradeTime();
 		intBuf[index++] = i->upgradeTimeFactor();
 		intBuf[index++] = i->maxRepeats();
@@ -634,7 +634,7 @@ JNIEXPORT jstring JNICALL Java_jnibwapi_JNIBWAPI_getWeaponTypeName(JNIEnv* env, 
 	return env->NewStringUTF(weaponTypeMap[weaponID].getName().c_str());
 }
 
-JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUnitSizeTypes(JNIEnv* env, jobject jObj) 
+JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getUnitSizeTypes(JNIEnv* env, jobject jObj)
 {
 	int index = 0;
 
@@ -749,11 +749,11 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getOrderTypes(JNIEnv* env, jo
 }
 
 /**
-* Returns the list of active units in the game. 
+* Returns the list of active units in the game.
 *
 * Each unit takes up a fixed number of integer values. Currently: 118
 */
-JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllUnitsData(JNIEnv* env, jobject jObj) 
+JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllUnitsData(JNIEnv* env, jobject jObj)
 {
 	int index = 0;
 
@@ -890,6 +890,38 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllUnitsData(JNIEnv* env, 
 	return result;
 }
 
+/**
+* Returns the list of active bullets in the game.
+*
+* Each unit takes up a fixed number of integer values. Currently: 17.
+*/
+JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllBulletsData(JNIEnv* env, jobject jObj)
+{
+	int index = 0;
+
+	std::set<Bullet*> bullets = Broodwar->getBullets();
+	for (std::set<Bullet*>::iterator i = bullets.begin(); i != bullets.end(); ++i) {
+	  intBuf[index++] = (*i)->getID();
+	  intBuf[index++] = (*i)->getPlayer()->getID();
+	  intBuf[index++] = (*i)->getType()->getID();
+	  intBuf[index++] = (*i)->getSource()->getID();
+	  intBuf[index++] = (*i)->getPosition()->x();
+	  intBuf[index++] = (*i)->getPosition()->y();
+	  intBuf[index++] = (*i)->getPosition()->isValid() ? 1 : 0;
+	  intBuf[index++] = static_cast<int>(TO_DEGREES * (*i)->getAngle());
+	  intBuf[index++] = static_cast<int>(fixedScale * (*i)->getVelocityX());
+	  intBuf[index++] = static_cast<int>(fixedScale * (*i)->getVelocityY());
+	  intBuf[index++] = (*i)->getTarget()->getID();
+	  intBuf[index++] = (*i)->getRemoveTimer();
+	  intBuf[index++] = (*i)->exists() ? 1 : 0;
+	  intBuf[index++] = (*i)->isVisible() ? 1 : 0;
+	}
+
+	jintArray result = env->NewIntArray(index);
+	env->SetIntArrayRegion(result, 0, index, intBuf);
+	return result;
+}
+
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_isVisibleToPlayer(JNIEnv* env, jobject jObj, jint unitID, jint playerID)
 {
 	Unit* u = Broodwar->getUnit(unitID);
@@ -973,7 +1005,7 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getRegionMap(JNIEnv* env, job
 JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getWalkableData(JNIEnv* env, jobject jObj)
 {
 	// Note: walk tiles are 8x8 pixels, build tiles are 32x32 pixels
-	int index = 0;	
+	int index = 0;
 	int width = 4 * Broodwar->mapWidth();
 	int height = 4 * Broodwar->mapHeight();
 
@@ -1055,7 +1087,7 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getRegions(JNIEnv* env, jobje
 	jintArray result = env->NewIntArray(index);
 	env->SetIntArrayRegion(result, 0, index, intBuf);
 	return result;
-} 
+}
 
 JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getPolygon(JNIEnv* env, jobject jObj, jint regionID)
 {
@@ -1120,7 +1152,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_attack__III(JNIEnv* env, jobje
 {
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
-		return unit->attack(BWAPI::Position(x, y), false); 
+		return unit->attack(BWAPI::Position(x, y), false);
 	}
 	return JNI_FALSE;
 }
@@ -1136,7 +1168,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_attack__II(JNIEnv* env, jobjec
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_build(JNIEnv* env, jobject jObj, jint unitID, jint tx, jint ty, jint typeID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (unitTypeMap.count(typeID) > 0) {
@@ -1147,7 +1179,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_build(JNIEnv* env, jobject jOb
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_buildAddon(JNIEnv* env, jobject jObj, jint unitID, jint typeID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (unitTypeMap.count(typeID) > 0) {
@@ -1158,7 +1190,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_buildAddon(JNIEnv* env, jobjec
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_train(JNIEnv* env, jobject jObj, jint unitID, jint typeID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (unitTypeMap.count(typeID) > 0) {
@@ -1169,7 +1201,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_train(JNIEnv* env, jobject jOb
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_morph(JNIEnv* env, jobject jObj, jint unitID, jint typeID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (unitTypeMap.count(typeID) > 0) {
@@ -1180,7 +1212,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_morph(JNIEnv* env, jobject jOb
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_research(JNIEnv* env, jobject jObj, jint unitID, jint techID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (techTypeMap.count(techID) > 0) {
@@ -1191,7 +1223,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_research(JNIEnv* env, jobject 
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_upgrade(JNIEnv* env, jobject jObj, jint unitID, jint upgradeID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (upgradeTypeMap.count(upgradeID) > 0) {
@@ -1202,7 +1234,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_upgrade(JNIEnv* env, jobject j
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_setRallyPoint__III(JNIEnv* env, jobject jObj, jint unitID, jint x, jint y)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->setRallyPoint(BWAPI::Position(x, y));
@@ -1211,7 +1243,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_setRallyPoint__III(JNIEnv* env
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_setRallyPoint__II(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1221,7 +1253,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_setRallyPoint__II(JNIEnv* env,
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_move(JNIEnv* env, jobject jObj, jint unitID, jint x, jint y)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->move(BWAPI::Position(x, y));
@@ -1230,7 +1262,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_move(JNIEnv* env, jobject jObj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_patrol(JNIEnv* env, jobject jObj, jint unitID, jint x, jint y)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->patrol(BWAPI::Position(x, y));
@@ -1239,7 +1271,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_patrol(JNIEnv* env, jobject jO
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_holdPosition(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->holdPosition();
@@ -1248,7 +1280,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_holdPosition(JNIEnv* env, jobj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_stop(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->stop();
@@ -1257,7 +1289,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_stop(JNIEnv* env, jobject jObj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_follow(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1267,7 +1299,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_follow(JNIEnv* env, jobject jO
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_gather(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1277,7 +1309,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_gather(JNIEnv* env, jobject jO
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_returnCargo(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->returnCargo();
@@ -1286,7 +1318,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_returnCargo(JNIEnv* env, jobje
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_repair(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1296,7 +1328,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_repair(JNIEnv* env, jobject jO
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_burrow(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->burrow();
@@ -1305,7 +1337,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_burrow(JNIEnv* env, jobject jO
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unburrow(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->unburrow();
@@ -1314,7 +1346,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unburrow(JNIEnv* env, jobject 
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cloak(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cloak();
@@ -1323,7 +1355,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cloak(JNIEnv* env, jobject jOb
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_decloak(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->decloak();
@@ -1332,7 +1364,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_decloak(JNIEnv* env, jobject j
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_siege(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->siege();
@@ -1341,7 +1373,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_siege(JNIEnv* env, jobject jOb
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unsiege(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->unsiege();
@@ -1350,7 +1382,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unsiege(JNIEnv* env, jobject j
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_lift(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->lift();
@@ -1359,7 +1391,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_lift(JNIEnv* env, jobject jObj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_land(JNIEnv* env, jobject jObj, jint unitID, jint tx, jint ty)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->land(BWAPI::TilePosition(tx, ty));
@@ -1368,7 +1400,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_land(JNIEnv* env, jobject jObj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_load(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1378,7 +1410,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_load(JNIEnv* env, jobject jObj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unload(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1388,7 +1420,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unload(JNIEnv* env, jobject jO
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unloadAll__I(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->unloadAll();
@@ -1397,7 +1429,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unloadAll__I(JNIEnv* env, jobj
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unloadAll__III(JNIEnv* env, jobject jObj, jint unitID, jint x, jint y)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->unloadAll(BWAPI::Position(x, y));
@@ -1406,7 +1438,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_unloadAll__III(JNIEnv* env, jo
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_rightClick__III(JNIEnv* env, jobject jObj, jint unitID, jint x, jint y)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->rightClick(BWAPI::Position(x, y));
@@ -1415,7 +1447,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_rightClick__III(JNIEnv* env, j
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_rightClick__II(JNIEnv* env, jobject jObj, jint unitID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1425,7 +1457,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_rightClick__II(JNIEnv* env, jo
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_haltConstruction(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->haltConstruction();
@@ -1434,7 +1466,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_haltConstruction(JNIEnv* env, 
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelConstruction(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cancelConstruction();
@@ -1443,7 +1475,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelConstruction(JNIEnv* env
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelAddon(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cancelAddon();
@@ -1452,7 +1484,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelAddon(JNIEnv* env, jobje
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelTrain(JNIEnv* env, jobject jObj, jint unitID, jint slot)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cancelTrain(slot);
@@ -1461,7 +1493,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelTrain(JNIEnv* env, jobje
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelMorph(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cancelMorph();
@@ -1470,7 +1502,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelMorph(JNIEnv* env, jobje
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelResearch(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cancelResearch();
@@ -1479,7 +1511,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelResearch(JNIEnv* env, jo
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelUpgrade(JNIEnv* env, jobject jObj, jint unitID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		return unit->cancelUpgrade();
@@ -1488,7 +1520,7 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_cancelUpgrade(JNIEnv* env, job
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_useTech__II(JNIEnv* env, jobject jObj, jint unitID, jint techID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (techTypeMap.count(techID) > 0) {
@@ -1499,18 +1531,18 @@ JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_useTech__II(JNIEnv* env, jobje
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_useTech__IIII(JNIEnv* env, jobject jObj, jint unitID, jint techID, jint x, jint y)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	if (unit != NULL) {
 		if (techTypeMap.count(techID) > 0) {
 			return unit->useTech(techTypeMap[techID], BWAPI::Position(x, y));
-		}			
+		}
 	}
 	return JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_jnibwapi_JNIBWAPI_useTech__III(JNIEnv* env, jobject jObj, jint unitID, jint techID, jint targetID)
-{ 
+{
 	Unit* unit = Broodwar->getUnit(unitID);
 	Unit* target = Broodwar->getUnit(targetID);
 	if (unit != NULL && target != NULL) {
@@ -1564,9 +1596,9 @@ JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_drawLine(JNIEnv* env, jobject jObj
 JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_drawDot(JNIEnv* env, jobject jObj, jint x, jint y, jint color, jboolean screenCoords)
 {
 	if (screenCoords) {
-		Broodwar->drawDotScreen(x, y, BWAPI::Color(color));	  
+		Broodwar->drawDotScreen(x, y, BWAPI::Color(color));
 	} else {
-		Broodwar->drawDotMap(x, y, BWAPI::Color(color));	  
+		Broodwar->drawDotMap(x, y, BWAPI::Color(color));
 	}
 }
 
@@ -1586,7 +1618,7 @@ JNIEXPORT void JNICALL Java_jnibwapi_JNIBWAPI_drawText(JNIEnv* env, jobject jObj
 /**
 * Draws health boxes for units
 */
-void drawHealth(void) 
+void drawHealth(void)
 {
 	std::set<Unit*> units = Broodwar->isReplay() ? Broodwar->getAllUnits() : Broodwar->self()->getUnits();
 	for (std::set<Unit*>::iterator i = units.begin(); i != units.end(); ++i) {
@@ -1654,35 +1686,35 @@ void drawHealth(void)
 void drawTargets(void) {
 	std::set<Unit*> units = Broodwar->isReplay() ? Broodwar->getAllUnits() : Broodwar->self()->getUnits();
 	for (std::set<Unit*>::iterator i = units.begin(); i != units.end(); ++i) {
-		Unit* target = (*i)->getTarget(); 
+		Unit* target = (*i)->getTarget();
 		if (target != NULL) {
 			Broodwar->drawLineMap((*i)->getPosition().x(), (*i)->getPosition().y(), target->getPosition().x(), target->getPosition().y(), BWAPI::Colors::Yellow);
 		}
 
-		target = (*i)->getOrderTarget(); 
+		target = (*i)->getOrderTarget();
 		if (target != NULL) {
 			Broodwar->drawLineMap((*i)->getPosition().x(), (*i)->getPosition().y(), target->getPosition().x(), target->getPosition().y(), BWAPI::Colors::Yellow);
 		}
 
 		Position position = (*i)->getTargetPosition();
 		Broodwar->drawLineMap((*i)->getPosition().x(), (*i)->getPosition().y(), position.x(), position.y(), BWAPI::Colors::Yellow);
-	}	
+	}
 
 	units = Broodwar->enemy()->getUnits();
 	for (std::set<Unit*>::iterator i = units.begin(); i != units.end(); ++i) {
-		Unit* target = (*i)->getTarget(); 
+		Unit* target = (*i)->getTarget();
 		if (target != NULL) {
 			Broodwar->drawLineMap((*i)->getPosition().x(), (*i)->getPosition().y(), target->getPosition().x(), target->getPosition().y(), BWAPI::Colors::Purple);
 		}
 
-		target = (*i)->getOrderTarget(); 
+		target = (*i)->getOrderTarget();
 		if (target != NULL) {
 			Broodwar->drawLineMap((*i)->getPosition().x(), (*i)->getPosition().y(), target->getPosition().x(), target->getPosition().y(), BWAPI::Colors::Purple);
 		}
 
-		Position position = (*i)->getTargetPosition(); 
+		Position position = (*i)->getTargetPosition();
 		Broodwar->drawLineMap((*i)->getPosition().x(), (*i)->getPosition().y(), position.x(), position.y(), BWAPI::Colors::Purple);
-	}	
+	}
 }
 
 /**
@@ -1696,7 +1728,7 @@ void drawIDs(void) {
 		int y = (*i)->getPosition().y();
 
 		Broodwar->drawTextMap(x, y, "%i", (*i)->getID());
-	}	
+	}
 }
 
 /*****************************************************************************************************************/
