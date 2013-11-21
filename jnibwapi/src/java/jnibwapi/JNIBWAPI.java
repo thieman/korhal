@@ -19,6 +19,7 @@ import jnibwapi.model.Map;
 import jnibwapi.model.Player;
 import jnibwapi.model.Region;
 import jnibwapi.model.Unit;
+import jnibwapi.model.Bullet;
 import jnibwapi.types.*;
 
 /**
@@ -55,6 +56,7 @@ public class JNIBWAPI {
 	private int gameFrame = 0;
 	private Map map;
 	private HashMap<Integer, Unit> units = new HashMap<Integer, Unit>();
+	private HashMap<Integer, Bullet> bullets = new HashMap<Integer, Bullet>();
 	private ArrayList<Unit> playerUnits = new ArrayList<Unit>();
 	private ArrayList<Unit> alliedUnits = new ArrayList<Unit>();
 	private ArrayList<Unit> enemyUnits = new ArrayList<Unit>();
@@ -247,8 +249,9 @@ public class JNIBWAPI {
 	public RaceType getRaceType(int typeID) { return raceTypes.get(typeID); }
 	public TechType getTechType(int typeID) { return techTypes.get(typeID); }
 	public UpgradeType getUpgradeType(int upgradeID) { return upgradeTypes.get(upgradeID); }
-	public WeaponType getWeaponType(int weaponID) { return weaponTypes.get(weaponID); }
 	public UnitSizeType getUnitSizeType(int sizeID) { return unitSizeTypes.get(sizeID); }
+
+	public WeaponType getWeaponType(int weaponID) { return weaponTypes.get(weaponID); }
 	public BulletType getBulletType(int bulletID) { return bulletTypes.get(bulletID); }
 	public DamageType getDamageType(int damageID) { return damageTypes.get(damageID); }
 	public ExplosionType getExplosionType(int explosionID) { return explosionTypes.get(explosionID); }
@@ -302,6 +305,10 @@ public class JNIBWAPI {
 
 	public Collection<Unit> getAllUnits() {
 		return Collections.unmodifiableCollection(units.values());
+	}
+	
+	public Collection<Bullet> getAllBullets() {
+		return Collections.unmodifiableCollection(bullets.values());
 	}
 
 	public List<Unit> getMyUnits() {
@@ -646,7 +653,6 @@ public class JNIBWAPI {
 			enemyUnits.clear();
 			neutralUnits.clear();
 			int[] unitData = getAllUnitsData();
-			int[] bulletData = getAllBulletsData();
 
 			for (int index = 0; index < unitData.length; index += Unit.numAttributes) {
 				int id = unitData[index];
@@ -701,6 +707,16 @@ public class JNIBWAPI {
 			ArrayList<Unit> alliedList = new ArrayList<Unit>();
 			ArrayList<Unit> enemyList = new ArrayList<Unit>();
 			ArrayList<Unit> neutralList = new ArrayList<Unit>();
+			
+			for (int index = 0; index < bulletData.length; index += Bullet.numAttributes) {
+				int id = bulletData[index];
+				Bullet bullet = bullets.get(id);
+				if (bullet == null) {
+					bullet = new Bullet(id);
+					bullets.put(id, bullet);
+				}
+				bullet.update(bulletData, index);
+			}
 
 			for (int index = 0; index < unitData.length; index += Unit.numAttributes) {
 				int id = unitData[index];

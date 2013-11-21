@@ -55,15 +55,15 @@ public class Bullet {
 		return ID;
 	}
 
-	public int getPlayer() {
+	public int getPlayerID() {
 		return playerID;
 	}
 
-	public int getType() {
+	public int getTypeID() {
 		return typeID;
 	}
 
-	public int getSourceUnit() {
+	public int getSourceUnitID() {
 		return sourceID;
 	}
 

@@ -902,16 +902,16 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllBulletsData(JNIEnv* env
 	std::set<Bullet*> bullets = Broodwar->getBullets();
 	for (std::set<Bullet*>::iterator i = bullets.begin(); i != bullets.end(); ++i) {
 	  intBuf[index++] = (*i)->getID();
-	  intBuf[index++] = (*i)->getPlayer()->getID();
+	  intBuf[index++] = ((*i)->getPlayer() != NULL) ? (*i)->getPlayer()->getID() : -1;
 	  intBuf[index++] = (*i)->getType().getID();
-	  intBuf[index++] = (*i)->getSource()->getID();
+	  intBuf[index++] = ((*i)->getSource() != NULL) ? (*i)->getSource()->getID() : -1;
 	  intBuf[index++] = (*i)->getPosition().x();
 	  intBuf[index++] = (*i)->getPosition().y();
 	  intBuf[index++] = (*i)->getPosition().isValid() ? 1 : 0;
 	  intBuf[index++] = static_cast<int>(TO_DEGREES * (*i)->getAngle());
 	  intBuf[index++] = static_cast<int>(fixedScale * (*i)->getVelocityX());
 	  intBuf[index++] = static_cast<int>(fixedScale * (*i)->getVelocityY());
-	  intBuf[index++] = (*i)->getTarget()->getID();
+	  intBuf[index++] = ((*i)->getTarget() != NULL) ? (*i)->getTarget()->getID() : -1;
 	  intBuf[index++] = (*i)->getTargetPosition().x();
 	  intBuf[index++] = (*i)->getTargetPosition().y();
 	  intBuf[index++] = (*i)->getPosition().isValid() ? 1 : 0;
