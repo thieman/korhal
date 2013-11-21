@@ -81,6 +81,14 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllUnitsData
 
 /*
  * Class:     jnibwapi_JNIBWAPI
+ * Method:    getAllBulletsData
+ * Signature: ()[I
+ */
+JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllBulletsData
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     jnibwapi_JNIBWAPI
  * Method:    getRaceTypes
  * Signature: ()[I
  */

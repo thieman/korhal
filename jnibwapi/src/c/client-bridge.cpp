@@ -903,15 +903,18 @@ JNIEXPORT jintArray JNICALL Java_jnibwapi_JNIBWAPI_getAllBulletsData(JNIEnv* env
 	for (std::set<Bullet*>::iterator i = bullets.begin(); i != bullets.end(); ++i) {
 	  intBuf[index++] = (*i)->getID();
 	  intBuf[index++] = (*i)->getPlayer()->getID();
-	  intBuf[index++] = (*i)->getType()->getID();
+	  intBuf[index++] = (*i)->getType().getID();
 	  intBuf[index++] = (*i)->getSource()->getID();
-	  intBuf[index++] = (*i)->getPosition()->x();
-	  intBuf[index++] = (*i)->getPosition()->y();
-	  intBuf[index++] = (*i)->getPosition()->isValid() ? 1 : 0;
+	  intBuf[index++] = (*i)->getPosition().x();
+	  intBuf[index++] = (*i)->getPosition().y();
+	  intBuf[index++] = (*i)->getPosition().isValid() ? 1 : 0;
 	  intBuf[index++] = static_cast<int>(TO_DEGREES * (*i)->getAngle());
 	  intBuf[index++] = static_cast<int>(fixedScale * (*i)->getVelocityX());
 	  intBuf[index++] = static_cast<int>(fixedScale * (*i)->getVelocityY());
 	  intBuf[index++] = (*i)->getTarget()->getID();
+	  intBuf[index++] = (*i)->getTargetPosition().x();
+	  intBuf[index++] = (*i)->getTargetPosition().y();
+	  intBuf[index++] = (*i)->getPosition().isValid() ? 1 : 0;
 	  intBuf[index++] = (*i)->getRemoveTimer();
 	  intBuf[index++] = (*i)->exists() ? 1 : 0;
 	  intBuf[index++] = (*i)->isVisible() ? 1 : 0;
