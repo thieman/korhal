@@ -742,3 +742,20 @@
   (when (and start (seq coll))
     (let [tile-start (java.awt.Point. (* 32 (.x start)) (* 32 (.y start)))]
       (apply min-key (partial dist-choke tile-start) coll))))
+
+(defn enemies-nearby [unit range]
+  (let [nearby? (fn [enemy] (<= (dist unit enemy) range))
+        nearby-enemies (filter nearby? (enemy-units))]
+    (seq nearby-enemies)))
+
+(defn enemies-in-range
+  ([unit]
+     (let [max-range (max (max-range (ground-weapon unit)) (max-range (air-weapon unit)))
+           in-range? (fn [enemy] (<= (dist unit enemy) max-range))
+           in-range-enemies (filter in-range? (enemy-units))]
+       (seq in-range-enemies)))
+  ([unit attack-type]
+     (let [get-weapon (if (= attack-type :ground) ground-weapon air-weapon)
+           in-range? (fn [enemy] (<= (dist unit enemy) (max-range (get-weapon unit))))
+           in-range-enemies (filter in-range? (enemy-units))]
+       (seq in-range-enemies))))

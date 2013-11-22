@@ -51,7 +51,7 @@
 (defn korhal-gameStarted [this]
   (println "Game Started")
   (enable-user-input)
-  (set-game-speed 10)
+  (set-game-speed 20)
   (load-map-data true)
   (draw-targets true)
   (draw-ids true)
@@ -70,6 +70,7 @@
   (when @contract-display (draw-contract-display))
   (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
   (execute-api-queue)
+  (execute-when-queue)
   (execute-repl-queue))
 
 (defn korhal-gameEnded [this]

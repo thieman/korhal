@@ -2,7 +2,7 @@
   (:require [korhal.interop.interop :refer :all]
             [korhal.strategy.query :as strat]
             [korhal.tools.repl :refer [repl-control]]
-            [korhal.tools.queue :refer [with-api]])
+            [korhal.tools.queue :refer [with-api with-api-when]])
   (:import (jnibwapi.model Unit)))
 
 (def micro-state (ref {:tags {} :frame 0}))
@@ -46,7 +46,7 @@
         (siege unit)))))
 
 (defn- micro-attacker [unit attack-location]
-  (when ((every-pred completed? idle?) unit)
+  (when (and attack-location ((every-pred completed? idle?) unit))
     (with-api (attack unit (pixel-x attack-location) (pixel-y attack-location)))))
 
 (defn dispatch-on-role [role unit] role)
@@ -54,7 +54,16 @@
 
 (defmethod micro-combat-role :worker [role unit])
 
-(defmethod micro-combat-role :attack [role unit])
+(defmethod micro-combat-role :attack [role unit]
+  (when (and (idle? unit) (not (enemies-in-range unit)))
+    (let [enemy (closest unit (enemies-nearby unit 1000))
+          px (when enemy (pixel-x enemy))
+          py (when enemy (pixel-y enemy))]
+      (with-api
+        (when (idle? unit)
+          (if (and enemy (visible? enemy))
+            (attack unit enemy)
+            (attack unit px py)))))))
 
 (defmethod micro-combat-role :stim [role unit]
   (if (and (or (is-marine? unit) (is-firebat? unit))
@@ -68,12 +77,17 @@
   (let [close-melee?
         (fn [enemy]
           (and (ground-melee? enemy)
-               (<= (dist unit enemy) (max-range (ground-weapon unit)))))
+               (< (dist unit enemy) (- (max-range (ground-weapon unit)) 2))))
         enemy-melee (filter close-melee? (enemy-units))]
-    (when (seq enemy-melee)
-      (let [closest (apply min-key (partial dist unit) enemy-melee)]
-        (with-api
-          (move-angle unit (angle-away unit closest) 50))))))
+    (let [enemy (closest unit enemy-melee)
+          away (when enemy (angle-away unit enemy))]
+      (when away
+        (with-api-when
+          (or (not (zero? (ground-weapon-cooldown unit)))
+              (= unit (target-unit enemy)))
+          (if (= unit (target-unit enemy))
+            (move-angle unit away 200)
+            (move-angle unit away 100)))))))
 
 (defmethod micro-combat-role :default [role unit])
 
@@ -93,7 +107,9 @@
     (doseq [unit (filter (complement building?) (my-units))]
       (cond
        (under-aoe? unit) (micro-under-aoe unit storms)
-       (or (attacking? unit) (under-attack? unit)) (micro-combat unit)
+       (or (attacking? unit)
+           (under-attack? unit)
+           (enemies-nearby unit 1000)) (micro-combat unit)
        :else (condp = (:role (get-micro-tag unit))
                nil nil
                :mineral (micro-mineral-worker unit)
