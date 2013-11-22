@@ -63,7 +63,7 @@
   ;; get reset to 0 until now when restarting a game
   (when (zero? (frame-count))
     (clear-contract-atoms)
-    (contract-add-initial-cc)
+    (when (seq (my-command-centers)) (contract-add-initial-cc))
     (start-strategy-engine!)
     (start-macro-engine!)
     (start-micro-engine!))

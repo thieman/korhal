@@ -56,7 +56,24 @@
 
 (defmethod micro-combat-role :attack [role unit])
 
-(defmethod micro-combat-role :stim [role unit])
+(defmethod micro-combat-role :stim [role unit]
+  (if (and (or (is-marine? unit) (is-firebat? unit))
+           (>= (health-perc unit) 0.5)
+           (researched? :stim-packs))
+    (with-api
+      (when-not (stimmed? unit)
+        (use-tech unit (tech-type-kws :stim-packs))))))
+
+(defmethod micro-combat-role :kite [role unit]
+  (let [close-melee?
+        (fn [enemy]
+          (and (ground-melee? enemy)
+               (<= (dist unit enemy) (max-range (ground-weapon unit)))))
+        enemy-melee (filter close-melee? (enemy-units))]
+    (when (seq enemy-melee)
+      (let [closest (apply min-key (partial dist unit) enemy-melee)]
+        (with-api
+          (move-angle unit (angle-away unit closest) 50))))))
 
 (defmethod micro-combat-role :default [role unit])
 
@@ -64,14 +81,18 @@
   (doseq [role (strat/combat-roles (get-unit-type-kw unit))]
     (micro-combat-role role unit)))
 
-(defn micro-under-aoe [unit])
+(defn micro-under-aoe [unit storms]
+  (let [storm-range 288]
+    (when (and (under-storm? unit) (not (moving? unit)))
+      (with-api (move unit (- (pixel-x unit) 100) (- (pixel-y unit) 100))))))
 
 (defn run-micro-engine []
   (let [base-choke (closest-choke-start (my-start-location) (chokepoints))
-        enemy-base (strat/get-priority-enemy-base)]
+        enemy-base (strat/get-priority-enemy-base)
+        storms (filter #(= (bullet-type-kws :psionic-storm) (get-type-id %)) (bullets))]
     (doseq [unit (filter (complement building?) (my-units))]
       (cond
-       (under-aoe? unit) (micro-under-aoe unit)
+       (under-aoe? unit) (micro-under-aoe unit storms)
        (or (attacking? unit) (under-attack? unit)) (micro-combat unit)
        :else (condp = (:role (get-micro-tag unit))
                nil nil

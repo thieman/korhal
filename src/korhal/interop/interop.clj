@@ -215,12 +215,30 @@
     (.getUnitType api (.getID unit-or-unit-type))))
 
 (defn get-unit-type-kw [unit-or-unit-type]
-  (let [unit-type (get-unit-type unit-or-unit-type)]
-    ((map-invert unit-type-ids) (get-id unit-type))))
+  (let [unit-type (get-unit-type unit-or-unit-type)
+        static-type (unit-type-ids (get-id unit-type))]
+    ((map-invert unit-type-kws) static-type)))
 
 (defn get-tech-type [tech] (.getTechType api (.getID tech)))
 
 (defn get-upgrade-type [upgrade] (.getUpgradeType api (.getID upgrade)))
+
+(defn get-weapon-type [weapon-or-id]
+  (.getWeaponType api (if (number? weapon-or-id)
+                        weapon-or-id
+                        (.getID weapon-or-id))))
+
+(defn get-damage-type [damage-or-id]
+  (.getDamageType api
+                  (if (number? damage-or-id)
+                    damage-or-id
+                    (.getID damage-or-id))))
+
+(defn get-explosion-type [explosion-or-id]
+  (.getExplosionType api
+                     (if (number? explosion-or-id)
+                       explosion-or-id
+                       (.getID explosion-or-id))))
 
 (defn get-type-id [obj-or-unit-type]
   (if (or (instance? Unit obj-or-unit-type) (instance? Bullet obj-or-unit-type))
@@ -295,6 +313,9 @@
 
 (defn combat-unit? [unit]
   (and (not (worker? unit)) (not (building? unit))))
+
+(defn health-perc [unit]
+  (/ (hit-points unit) (initial-hit-points unit)))
 
 (defn get-unit-by-id [unit-id]
   (when (pos? unit-id) (.getUnit api unit-id)))
@@ -581,6 +602,64 @@
 (defn what-researches [tech]
   (.getUnitType api (.getWhatResearchesTypeID tech)))
 
+;; weapon functions
+
+(defn ground-weapon [unit] (get-weapon-type (.getGroundWeaponID (get-unit-type unit))))
+
+(defn air-weapon [unit] (get-weapon-type (.getAirWeaponID (get-unit-type unit))))
+
+(defn damage-amount [weapon] (.getDamageAmount weapon))
+
+(defn damage-bonus [weapon] (.getDamageBonus weapon))
+
+(defn damage-cooldown [weapon] (.getDamageCooldown weapon))
+
+(defn damage-factor [weapon] (.getDamageFactor weapon))
+
+(defn weapon-upgrade-type [weapon]
+  (get-upgrade-type (upgrade-type-ids (.getUpgradeTypeID weapon))))
+
+(defn weapon-damage-type [weapon]
+  (get-damage-type (damage-type-ids (.getDamageTypeID weapon))))
+
+(defn weapon-explosion-type [weapon]
+  (get-explosion-type (.getExplosionType weapon)))
+
+(defn min-range [weapon] (.getMinRange weapon))
+
+(defn max-range [weapon] (.getMaxRange weapon))
+
+(defn inner-splash-radius [weapon] (.getInnerSplashRadius weapon))
+
+(defn median-splash-radius [weapon] (.getMedianSplashRadius weapon))
+
+(defn outer-splash-radius [weapon] (.getOuterSplashRadius weapon))
+
+(defn targets-air? [weapon] (.isTargetsAir weapon))
+
+(defn targets-ground? [weapon] (.isTargetsGround weapon))
+
+(defn targets-mechanical? [weapon] (.isTargetsMechanical weapon))
+
+(defn targets-organic? [weapon] (.isTargetsOrganic weapon))
+
+(defn targets-non-building? [weapon] (.isTargetsNonBuilding weapon))
+
+(defn targets-non-robotic? [weapon] (.isTargetsNonRobotic weapon))
+
+(defn targets-terrain? [weapon] (.isTargetsTerrain weapon))
+
+(defn targets-organic-or-mech? [weapon] (.isTargetsOrgOrMech weapon))
+
+(defn targets-own? [weapon] (.isTargetsOwn weapon))
+
+(defn ground-melee?
+  "True for any unit with a ground attack with equal or shorter range
+  to a firebat's (32)."
+  [unit]
+  (let [weapon (ground-weapon unit)]
+    (<= (max-range weapon) 32)))
+
 ;; additional bullet functions
 ;; fns that should also work: angle, velocity-x, velocity-y, remove-timer, exists?, visible?
 
@@ -615,14 +694,37 @@
 ;; utility functions supplemental to JNIBWAPI
 
 (defn dist [a b]
-  (Math/sqrt (+ (Math/pow (- (pixel-x a) (pixel-x b)) 2) (Math/pow (- (pixel-y a) (pixel-y b)) 2))))
+  (Math/sqrt (+ (Math/pow (- (pixel-x a) (pixel-x b)) 2)
+                (Math/pow (- (pixel-y a) (pixel-y b)) 2))))
 
 (defn dist-tile [a b]
-  (Math/sqrt (+ (Math/pow (- (tile-x a) (tile-x b)) 2) (Math/pow (- (tile-y a) (tile-y b)) 2))))
+  (Math/sqrt (+ (Math/pow (- (tile-x a) (tile-x b)) 2)
+                (Math/pow (- (tile-y a) (tile-y b)) 2))))
 
 (defn dist-choke [unit-or-building choke]
   (Math/sqrt (+ (Math/pow (- (pixel-x unit-or-building) (center-x choke)) 2)
                 (Math/pow (- (pixel-y unit-or-building) (center-y choke)) 2))))
+
+(defn deg->rad [deg] (* deg (/ Math/PI 180)))
+(defn rad->deg [rad] (mod (* rad (/ 180 Math/PI)) 360))
+
+(defn angle-to
+  ([unit1 unit2] (angle-to (pixel-x unit1) (pixel-y unit1)
+                           (pixel-x unit2) (pixel-y unit2)))
+  ([x1 y1 x2 y2] (rad->deg (Math/atan2 (- y2 y1) (- x2 x1)))))
+
+(defn angle-away
+  ([unit1 unit2] (angle-away (pixel-x unit1) (pixel-y unit1)
+                             (pixel-x unit2) (pixel-y unit2)))
+  ([x1 y1 x2 y2] (mod (- (angle-to x1 y1 x2 y2) 180) 360)))
+
+(defn move-angle
+  "Move a unit a specified distance at a specified angle."
+  [unit angle distance]
+  (let [rad (deg->rad angle)
+        px (+ (pixel-x unit) (* distance (Math/cos rad)))
+        py (+ (pixel-y unit) (* distance (Math/sin rad)))]
+    (move unit px py)))
 
 (defn closest [unit coll]
   (when (and unit (seq coll))
