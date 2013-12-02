@@ -51,7 +51,7 @@
 (defn korhal-gameStarted [this]
   (println "Game Started")
   (enable-user-input)
-  (set-game-speed 40)
+  (set-game-speed 20)
   (load-map-data true)
   (draw-targets true)
   (draw-ids true)
@@ -63,6 +63,7 @@
   ;; get reset to 0 until now when restarting a game
   (when (zero? (frame-count))
     (clear-contract-atoms)
+    (clear-api-units)
     (when (seq (my-command-centers)) (contract-add-initial-cc))
     (start-strategy-engine!)
     (start-macro-engine!)
@@ -71,6 +72,7 @@
   (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
   (execute-api-queue)
   (execute-when-queue)
+  (execute-synchronous-unit-commands)
   (execute-repl-queue))
 
 (defn korhal-gameEnded [this]
@@ -102,6 +104,7 @@
 (defn korhal-unitDestroy [this unit-id]
   ;; NOTE: destroyed units are no longer available through the API
   (cancel-contracts unit-id)
+  (clear-api-unit-tag unit-id)
   (strategy-remove! :enemy-units unit-id))
 
 (defn korhal-unitDiscover [this unit-id]

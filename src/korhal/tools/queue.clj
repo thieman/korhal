@@ -3,6 +3,7 @@
 
 (def api-command (atom (clojure.lang.PersistentQueue/EMPTY)))
 (def api-defer (atom (clojure.lang.PersistentQueue/EMPTY)))
+(def api-units (atom {}))
 (def repl-command (atom (clojure.lang.PersistentQueue/EMPTY)))
 (def repl-result (atom (clojure.lang.PersistentQueue/EMPTY)))
 
@@ -31,6 +32,29 @@
   `(do (swap! api-defer conj {:test (fn [] (do ~test))
                               :command (fn [] (do ~@body))
                               :frame (frame-count)})))
+
+(defmacro with-api-unit
+  "Assign a synchronous action on a unit to be run in each gameUpdate
+  loop. Subsequent calls to the same unit will override any previously
+  assigned actions."
+  [unit tag & body]
+  `(do (swap! api-units assoc (get-id ~unit) {:unit ~unit
+                                              :tag ~tag
+                                              :command (fn [] (do ~@body))})))
+
+(defn api-unit-tag
+  "Get the tag currently assigned to this unit's synchronous API
+  action, or nil if none exists."
+  [unit]
+  (:tag (@api-units (get-id unit))))
+
+(defn clear-api-unit-tag [unit-or-unit-id]
+  (if (number? unit-or-unit-id)
+    (swap! api-units dissoc unit-or-unit-id)
+    (swap! api-units dissoc (get-id unit-or-unit-id))))
+
+(defn clear-api-units []
+  (reset! api-units {}))
 
 (defmacro cmd
   "For REPL use. Wrap a form to be executed during the gameUpdate
@@ -67,6 +91,18 @@
                           (println "Exception in API When queue!")
                           (.printStackTrace e)))
                    (recur))))))
+
+(defn execute-synchronous-unit-commands []
+  (let [units @api-units]
+    (doseq [unit-id (keys units)]
+      (if-not (get-unit-by-id unit-id)
+        (swap! api-units dissoc unit-id)
+        (let [{:keys [unit tag command] :as doc} (units unit-id)]
+          (try
+            (command)
+            (catch Exception e
+              (println "Exception in API Units synchronous commands!")
+              (.printStackTrace e))))))))
 
 (defn execute-repl-queue []
   (when-let [command (dequeue! repl-command)]
