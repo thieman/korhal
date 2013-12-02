@@ -45,17 +45,28 @@
 (defn execute-api-queue []
   (let [command (dequeue! api-command)]
     (when (fn? command)
-      (do (command)
-          (recur)))))
+      (try
+        (command)
+        (catch Exception e
+          (println "Exception in API queue!")
+          (.printStackTrace e)))
+      (recur))))
 
 (defn execute-when-queue []
   (let [{:keys [test command frame] :as doc} (dequeue! api-defer)]
     (when doc
-      (cond
-       (< (frame-count) frame) nil
-       (not (test)) (do (swap! api-defer conj {:test test :command command :frame (inc frame)})
-                        (recur))
-       :else (do (command) (recur))))))
+        (cond
+         (< (frame-count) frame) nil
+         (not (test)) (do (try (swap! api-defer conj {:test test :command command :frame (inc frame)})
+                               (catch Exception e
+                                 (println "Exception in API When queue!")
+                                 (.printStackTrace e)))
+                          (recur))
+         :else (do (try (command)
+                        (catch Exception e
+                          (println "Exception in API When queue!")
+                          (.printStackTrace e)))
+                   (recur))))))
 
 (defn execute-repl-queue []
   (when-let [command (dequeue! repl-command)]

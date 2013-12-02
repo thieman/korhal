@@ -51,7 +51,7 @@
 (defn korhal-gameStarted [this]
   (println "Game Started")
   (enable-user-input)
-  (set-game-speed 20)
+  (set-game-speed 40)
   (load-map-data true)
   (draw-targets true)
   (draw-ids true)
