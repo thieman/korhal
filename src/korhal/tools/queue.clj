@@ -37,9 +37,11 @@
   "Assign a synchronous action on a unit to be run in each gameUpdate
   loop. Subsequent calls to the same unit will override any previously
   assigned actions."
-  [unit tag & body]
+  [unit tag frequency & body]
   `(do (swap! api-units assoc (get-id ~unit) {:unit ~unit
                                               :tag ~tag
+                                              :frequency ~frequency
+                                              :offset (rand-int ~frequency)
                                               :command (fn [] (do ~@body))})))
 
 (defn api-unit-tag
@@ -97,7 +99,8 @@
     (doseq [unit-id (keys units)]
       (if-not (get-unit-by-id unit-id)
         (swap! api-units dissoc unit-id)
-        (let [{:keys [unit tag command] :as doc} (units unit-id)]
+        (let [{:keys [unit tag command frequency offset] :as doc} (units unit-id)]
+          ;; TODO: make frequency offset work
           (try
             (command)
             (catch Exception e

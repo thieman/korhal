@@ -6,7 +6,7 @@
 (defn- micro-combat-attack [unit]
   (when (and (idle? unit) (not (enemies-in-range unit)))
     (clear-api-unit-tag unit)
-    (let [enemy (closest unit (enemies-nearby unit 1000))
+    (let [enemy (closest unit (units-nearby unit 1000 (enemy-units)))
           px (when enemy (pixel-x enemy))
           py (when enemy (pixel-y enemy))]
       (with-api
@@ -49,7 +49,7 @@
 
 (defn- micro-combat-kite [unit]
   (when-not (= :kite (api-unit-tag unit))
-    (with-api-unit unit :kite
+    (with-api-unit unit :kite 3
       (let [enemy-melee (filter (partial close-melee? unit) (enemy-units))
             closest-enemy (closest unit enemy-melee)
             kite-angle (repulsion-angle unit enemy-melee)

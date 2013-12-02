@@ -35,7 +35,7 @@
        (under-aoe? unit) (micro-under-aoe unit storms)
        (or (attacking? unit)
            (under-attack? unit)
-           (enemies-nearby unit 1000)) (micro-combat unit)
+           (units-nearby unit 1000 (enemy-units))) (micro-combat unit)
        :else (condp = (:role (get-micro-tag unit))
                nil nil
                :mineral (micro-mineral-worker unit)

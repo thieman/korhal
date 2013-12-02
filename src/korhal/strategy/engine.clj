@@ -20,10 +20,30 @@
     (dosync
      (commute strategy-state update-in [tag-type] #(remove expired? %)))))
 
+(defn draw-squads-display []
+  (let [squads (:squad-members @strategy-state)]
+    (doseq [unit (my-units)]
+      (when-let [squad (squads unit)]
+        (draw-text (pixel-x unit) (pixel-y unit) squad false)))))
+
+(defn reform-squads []
+  (loop [latest-id 0
+         squads {}
+         rest' (remove worker? (my-units))]
+    (if-not (seq rest')
+      (dosync
+       (commute strategy-state assoc :squad-members squads))
+      (let [unit (first rest')
+            closest-ally (closest unit (keys squads))
+            ally-squad (squads closest-ally)]
+        (if (and ally-squad (<= (dist unit closest-ally) 300))
+          (recur latest-id (assoc squads unit ally-squad) (next rest'))
+          (recur (inc latest-id) (assoc squads unit latest-id) (next rest')))))))
+
 (defn run-strategy-engine []
   (let [enemy-base (first (enemy-start-locations))
         combat-units (filter (every-pred completed? combat-unit?) (my-units))]
-    nil))
+    (reform-squads)))
 
 (defn start-strategy-engine! []
   (dosync

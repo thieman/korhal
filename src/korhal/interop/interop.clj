@@ -744,10 +744,10 @@
     (let [tile-start (java.awt.Point. (* 32 (.x start)) (* 32 (.y start)))]
       (apply min-key (partial dist-choke tile-start) coll))))
 
-(defn enemies-nearby [unit range]
-  (let [nearby? (fn [enemy] (<= (dist unit enemy) range))
-        nearby-enemies (filter nearby? (enemy-units))]
-    (seq nearby-enemies)))
+(defn units-nearby [unit range coll]
+  (let [nearby? (fn [target-unit] (<= (dist unit target-unit) range))
+        nearby-units (remove #{unit} (filter nearby? coll))]
+    (seq nearby-units)))
 
 (defn enemies-in-range
   ([unit]
