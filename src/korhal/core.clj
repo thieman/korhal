@@ -54,7 +54,7 @@
   (set-game-speed 20)
   (load-map-data true)
   (draw-targets true)
-  ;(draw-ids true)
+  (draw-ids true)
   (show-contract-display true)
   (when run-repl? (start-repl! 7777)))
 
@@ -69,7 +69,6 @@
     (start-macro-engine!)
     (start-micro-engine!))
   (when @contract-display (draw-contract-display))
-  (draw-squads-display)
   (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
   (execute-api-queue)
   (execute-when-queue)

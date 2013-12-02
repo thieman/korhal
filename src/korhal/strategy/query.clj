@@ -6,3 +6,8 @@
 
 (defn get-priority-enemy-base []
   (first (enemy-start-locations)))
+
+(defn get-squad-orders [unit]
+  (let [state @strategy-state
+        squad ((:squad-members state) unit)]
+    ((:squad-orders state) squad)))

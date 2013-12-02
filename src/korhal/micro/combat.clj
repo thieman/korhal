@@ -1,12 +1,16 @@
 (ns korhal.micro.combat
   (:require [korhal.interop.interop :refer :all]
+            [korhal.strategy.query :refer [get-squad-orders]]
             [korhal.tools.queue :refer [with-api with-api-unit
                                         clear-api-unit-tag api-unit-tag]]))
 
 (defn- micro-combat-attack [unit]
   (when (and (idle? unit) (not (enemies-in-range unit)))
     (clear-api-unit-tag unit)
-    (let [enemy (closest unit (units-nearby unit 1000 (enemy-units)))
+    (let [squad-target (:target (get-squad-orders unit))
+          enemy (if squad-target
+                  squad-target
+                  (closest unit (units-nearby unit 1000 (enemy-units))))
           px (when enemy (pixel-x enemy))
           py (when enemy (pixel-y enemy))]
       (with-api
@@ -52,6 +56,8 @@
     (with-api-unit unit :kite 3
       (let [enemy-melee (filter (partial close-melee? unit) (enemy-units))
             closest-enemy (closest unit enemy-melee)
+            squad-target (:target (get-squad-orders unit))
+            target-enemy (if squad-target squad-target closest-enemy)
             kite-angle (repulsion-angle unit enemy-melee)
             kite-dist (condp = (get-unit-type-kw unit)
                         :marine 25
@@ -61,7 +67,7 @@
           (cond
            (and (not (attack-frame? unit))
                 (zero? (ground-weapon-cooldown unit))
-                (> (dist unit closest-enemy) fire-range)) (attack unit closest-enemy)
+                (> (dist unit closest-enemy) fire-range)) (attack unit target-enemy)
            (<= (dist unit closest-enemy) fire-range) (move-angle unit kite-angle kite-dist)))))))
 
 (defn- micro-combat-heal [unit])

@@ -659,7 +659,7 @@
   to a firebat's (32)."
   [unit]
   (let [weapon (ground-weapon unit)]
-    (<= (max-range weapon) 32)))
+    (and (not (building? unit)) (<= (max-range weapon) 32))))
 
 ;; additional bullet functions
 ;; fns that should also work: angle, velocity-x, velocity-y, remove-timer, exists?, visible?

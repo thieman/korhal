@@ -1,5 +1,6 @@
 (ns korhal.strategy.engine
-  (:require [korhal.interop.interop :refer :all]
+  (:require [clojure.set :refer [map-invert]]
+            [korhal.interop.interop :refer :all]
             [korhal.strategy.query :refer [strategy-state]]
             [korhal.micro.engine :refer [micro-tag-unit!]]
             [korhal.tools.repl :refer [repl-control]]
@@ -29,7 +30,7 @@
 (defn reform-squads []
   (loop [latest-id 0
          squads {}
-         rest' (remove worker? (my-units))]
+         rest' (remove #(or (worker? %) (building? %)) (my-units))]
     (if-not (seq rest')
       (dosync
        (commute strategy-state assoc :squad-members squads))
@@ -40,15 +41,30 @@
           (recur latest-id (assoc squads unit ally-squad) (next rest'))
           (recur (inc latest-id) (assoc squads unit latest-id) (next rest')))))))
 
+(defn assign-squad-targets []
+  (let [state @strategy-state]
+    (doseq [squad (keys (map-invert (:squad-members state)))]
+      (let [members (map first (filter #(= (second %) squad) (:squad-members state)))
+            votes (remove nil? (map #(closest % (enemy-units)) members))]
+        (when (seq votes)
+          (let [target (first (apply max-key second (frequencies votes)))]
+            (dosync
+             (commute strategy-state assoc-in [:squad-orders squad :target] target))))))))
+
 (defn run-strategy-engine []
   (let [enemy-base (first (enemy-start-locations))
         combat-units (filter (every-pred completed? combat-unit?) (my-units))]
-    (reform-squads)))
+    (reform-squads)
+    (assign-squad-targets)))
 
 (defn start-strategy-engine! []
   (dosync
    (commute strategy-state assoc-in [:frame] 0)
-   (commute strategy-state assoc-in [:run] true))
+   (commute strategy-state assoc-in [:run] true)
+   (commute strategy-state assoc-in [:enemy-units] {})
+   (commute strategy-state assoc-in [:nukes] {})
+   (commute strategy-state assoc-in [:squad-members] {})
+   (commute strategy-state assoc-in [:squad-orders] {}))
   (future (loop []
             (if (not (:run @strategy-state))
               nil
