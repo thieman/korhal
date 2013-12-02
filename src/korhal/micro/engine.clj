@@ -49,12 +49,7 @@
   (when (and attack-location ((every-pred completed? idle?) unit))
     (with-api (attack unit (pixel-x attack-location) (pixel-y attack-location)))))
 
-(defn dispatch-on-role [role unit] role)
-(defmulti micro-combat-role dispatch-on-role)
-
-(defmethod micro-combat-role :worker [role unit])
-
-(defmethod micro-combat-role :attack [role unit]
+(defn micro-combat-attack [unit]
   (when (and (idle? unit) (not (enemies-in-range unit)))
     (let [enemy (closest unit (enemies-nearby unit 1000))
           px (when enemy (pixel-x enemy))
@@ -65,7 +60,7 @@
             (attack unit enemy)
             (attack unit px py)))))))
 
-(defmethod micro-combat-role :stim [role unit]
+(defn micro-combat-stim [unit]
   (if (and (or (is-marine? unit) (is-firebat? unit))
            (>= (health-perc unit) 0.5)
            (researched? :stim-packs))
@@ -73,7 +68,7 @@
       (when-not (stimmed? unit)
         (use-tech unit (tech-type-kws :stim-packs))))))
 
-(defmethod micro-combat-role :kite [role unit]
+(defn micro-combat-kite [unit]
   (let [close-melee?
         (fn [enemy]
           (and (ground-melee? enemy)
@@ -89,11 +84,16 @@
             (move-angle unit away 200)
             (move-angle unit away 100)))))))
 
-(defmethod micro-combat-role :default [role unit])
+(defn dispatch-on-unit-type-kw [unit] (get-unit-type-kw unit))
+(defmulti micro-combat dispatch-on-unit-type-kw)
 
-(defn micro-combat [unit]
-  (doseq [role (strat/combat-roles (get-unit-type-kw unit))]
-    (micro-combat-role role unit)))
+(defmethod micro-combat :marine [unit]
+  (micro-combat-stim unit)
+  (micro-combat-kite unit)
+  (micro-combat-attack unit))
+
+(defmethod micro-combat :default [unit]
+  (micro-combat-attack unit))
 
 (defn micro-under-aoe [unit storms]
   (let [storm-range 288]

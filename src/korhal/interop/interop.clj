@@ -315,7 +315,8 @@
   (and (not (worker? unit)) (not (building? unit))))
 
 (defn health-perc [unit]
-  (/ (hit-points unit) (initial-hit-points unit)))
+  (when (pos? (initial-hit-points unit))
+    (/ (hit-points unit) (initial-hit-points unit))))
 
 (defn get-unit-by-id [unit-id]
   (when (pos? unit-id) (.getUnit api unit-id)))
