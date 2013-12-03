@@ -33,6 +33,6 @@
 
 (defn micro-tag-new-unit! [unit]
   (let [unit-type (get-unit-type unit)]
-    (case unit-type
+    (condp = unit-type
       (get-unit-type (:scv unit-type-kws)) nil
       (micro-tag-unit! unit {:role :defend}))))
