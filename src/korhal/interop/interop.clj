@@ -609,6 +609,8 @@
 
 (defn air-weapon [unit] (get-weapon-type (.getAirWeaponID (get-unit-type unit))))
 
+(defn weapon? [weapon] (not= (get-id weapon) (get-id (weapon-type-kws :none))))
+
 (defn damage-amount [weapon] (.getDamageAmount weapon))
 
 (defn damage-bonus [weapon] (.getDamageBonus weapon))
@@ -758,6 +760,15 @@
   ([unit coll] (attackable-by unit coll 128))
   ([unit coll buffer]
      (filter #(<= (dist unit %) (max buffer (unit-max-range %))) coll)))
+
+(defn can-attack?
+  "Returns true if unit has a weapon capable of hitting target."
+  [unit target]
+  (and (attack-capable? unit)
+       (or (and (weapon? (ground-weapon unit))
+                (not (flyer? target)))
+           (and (weapon? (air-weapon unit))
+                (flyer? target)))))
 
 (defn enemies-in-range
   ([unit]

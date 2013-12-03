@@ -35,9 +35,10 @@
       (dosync
        (commute strategy-state assoc :squad-members squads))
       (let [unit (first rest')
-            closest-ally (closest unit (keys squads))
-            ally-squad (squads closest-ally)]
-        (if (and ally-squad (<= (dist unit closest-ally) 300))
+            same-type (fn [target] (= (get-unit-type-kw unit) (get-unit-type-kw target)))
+            closest-same-type-ally (closest unit (filter same-type (keys squads)))
+            ally-squad (squads closest-same-type-ally)]
+        (if (and ally-squad (<= (dist unit closest-same-type-ally) 300))
           (recur latest-id (assoc squads unit ally-squad) (next rest'))
           (recur (inc latest-id) (assoc squads unit latest-id) (next rest')))))))
 
@@ -45,7 +46,9 @@
   (let [state @strategy-state]
     (doseq [squad (keys (map-invert (:squad-members state)))]
       (let [members (map first (filter #(= (second %) squad) (:squad-members state)))
-            votes (remove nil? (map #(closest % (enemy-units)) members))]
+            leader (first members)
+            attackable (filter #(can-attack? leader %) (enemy-units))
+            votes (remove nil? (map #(closest % attackable) members))]
         (when (seq votes)
           (let [target (first (apply max-key second (frequencies votes)))]
             (dosync

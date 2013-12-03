@@ -70,20 +70,20 @@
 
 (defn- micro-combat-heal [unit]
   (let [organics (filter organic? (my-units))
-        nearby (units-nearby unit (max-range (ground-weapon unit)) organics)
+        nearby (units-nearby unit 128 organics)
         nearby-injured (filter #(not= (health-perc %) 1) nearby)]
     (if (seq nearby-injured)
-      (attack unit (apply min-key health-perc nearby-injured))
+      (with-api (attack unit (apply min-key health-perc nearby-injured)))
       (let [outer (units-nearby unit 1000 organics)
             outer-injured (filter #(not= (health-perc %) 1) outer)]
         (when (seq outer-injured)
-          (attack unit (apply min-key health-perc outer-injured)))))))
+          (with-api (attack unit (apply min-key health-perc outer-injured))))))))
 
 (defn- micro-combat-cower [unit]
   (when-not (= :cower (api-unit-tag unit))
     (with-api-unit unit :cower 5
       (let [threats (units-nearby unit 256 (remove building? (enemy-units)))
-            in-range-of (attackable-by unit threats 128)
+            in-range-of (attackable-by unit threats 64)
             cower-angle (repulsion-angle unit threats)
             cower-dist 50]
         (when (and cower-angle (seq in-range-of))
@@ -113,6 +113,27 @@
 (defmethod micro-combat :medic [unit]
   (micro-combat-cower unit)
   (micro-combat-heal unit))
+
+(defmethod micro-combat :ghost [unit])
+
+(defmethod micro-combat :siege-tank-tank-mode [unit])
+
+(defmethod micro-combat :siege-tank-siege-mode [unit])
+
+(defmethod micro-combat :goliath [unit])
+
+(defmethod micro-combat :wraith [unit])
+
+(defmethod micro-combat :science-vessel [unit])
+
+(defmethod micro-combat :dropship [unit])
+
+(defmethod micro-combat :battlecruiser [unit])
+
+(defmethod micro-combat :valkyrie [unit])
+
+(defmethod micro-combat :missile-turret [unit]
+  (micro-combat-attack unit))
 
 (defmethod micro-combat :default [unit]
   (micro-combat-attack unit))

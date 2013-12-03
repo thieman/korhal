@@ -6,7 +6,7 @@
             [korhal.micro.combat :refer [micro-combat]]
             [korhal.strategy.query :as strat]
             [korhal.tools.repl :refer [repl-control]]
-            [korhal.tools.queue :refer [with-api with-api-when]])
+            [korhal.tools.queue :refer [with-api with-api-when clear-api-unit-tag]])
   (:import (jnibwapi.model Unit)))
 
 (def micro-state (ref {:tags {} :frame 0}))
@@ -35,15 +35,17 @@
        (under-aoe? unit) (micro-under-aoe unit storms)
        (or (attacking? unit)
            (under-attack? unit)
-           (units-nearby unit 1000 (enemy-units))) (micro-combat unit)
-       :else (condp = (:role (get-micro-tag unit))
-               nil nil
-               :mineral (micro-mineral-worker unit)
-               :gas (micro-gas-worker unit)
-               :early-scout (micro-early-scout unit)
-               :defend (micro-defender unit base-choke)
-               :attack (micro-attacker unit enemy-base)
-               :else nil)))))
+           (seq (units-nearby unit 1000 (enemy-units)))) (micro-combat unit)
+       :else (do
+               (clear-api-unit-tag unit)
+               (condp = (:role (get-micro-tag unit))
+                 nil nil
+                 :mineral (micro-mineral-worker unit)
+                 :gas (micro-gas-worker unit)
+                 :early-scout (micro-early-scout unit)
+                 :defend (micro-defender unit base-choke)
+                 :attack (micro-attacker unit enemy-base)
+                 :else nil))))))
 
 (defn start-micro-engine! []
   (dosync
