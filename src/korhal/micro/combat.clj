@@ -68,10 +68,34 @@
                 (> (dist unit closest-enemy) fire-range)) (attack unit target-enemy)
            (<= (dist unit closest-enemy) fire-range) (move-angle unit kite-angle kite-dist)))))))
 
-(defn- micro-combat-heal [unit])
+(defn- micro-combat-heal [unit]
+  (let [organics (filter organic? (my-units))
+        nearby (units-nearby unit (max-range (ground-weapon unit)) organics)
+        nearby-injured (filter #(not= (health-perc %) 1) nearby)]
+    (if (seq nearby-injured)
+      (attack unit (apply min-key health-perc nearby-injured))
+      (let [outer (units-nearby unit 1000 organics)
+            outer-injured (filter #(not= (health-perc %) 1) outer)]
+        (when (seq outer-injured)
+          (attack unit (apply min-key health-perc outer-injured)))))))
+
+(defn- micro-combat-cower [unit]
+  (when-not (= :cower (api-unit-tag unit))
+    (with-api-unit unit :cower 5
+      (let [threats (units-nearby unit 256 (remove building? (enemy-units)))
+            in-range-of (attackable-by unit threats 128)
+            cower-angle (repulsion-angle unit threats)
+            cower-dist 50]
+        (when (and cower-angle (seq in-range-of))
+          (move-angle unit cower-angle cower-dist))))))
 
 (defn dispatch-on-unit-type-kw [unit] (get-unit-type-kw unit))
 (defmulti micro-combat dispatch-on-unit-type-kw)
+
+(defmethod micro-combat :scv [unit]
+  (if (<= (health-perc unit) 0.25)
+    (micro-combat-cower unit)
+    (micro-combat-attack unit)))
 
 (defmethod micro-combat :marine [unit]
   (micro-combat-stim unit)
@@ -87,6 +111,7 @@
   (micro-combat-attack unit))
 
 (defmethod micro-combat :medic [unit]
+  (micro-combat-cower unit)
   (micro-combat-heal unit))
 
 (defmethod micro-combat :default [unit]

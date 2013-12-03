@@ -319,7 +319,7 @@
     (/ (hit-points unit) (initial-hit-points unit))))
 
 (defn get-unit-by-id [unit-id]
-  (when (pos? unit-id) (.getUnit api unit-id)))
+  (when (>= unit-id 0) (.getUnit api unit-id)))
 
 (defn my-units-id [id] (filter #(= (.getTypeID %) id) (my-units)))
 
@@ -748,6 +748,16 @@
   (let [nearby? (fn [target-unit] (<= (dist unit target-unit) range))
         nearby-units (remove #{unit} (filter nearby? coll))]
     (seq nearby-units)))
+
+(defn unit-max-range [unit]
+  (max (max-range (ground-weapon unit)) (max-range (air-weapon unit))))
+
+(defn attackable-by
+  "Returns all units in coll that can currently attack unit OR are
+  within buffer pixels. TODO: Filter by ground/air."
+  ([unit coll] (attackable-by unit coll 128))
+  ([unit coll buffer]
+     (filter #(<= (dist unit %) (max buffer (unit-max-range %))) coll)))
 
 (defn enemies-in-range
   ([unit]
