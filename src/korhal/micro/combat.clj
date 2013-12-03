@@ -53,15 +53,13 @@
 
 (defn- micro-combat-kite [unit]
   (when-not (= :kite (api-unit-tag unit))
-    (with-api-unit unit :kite 3
+    (with-api-unit unit :kite 5
       (let [enemy-melee (filter (partial close-melee? unit) (enemy-units))
             closest-enemy (closest unit enemy-melee)
             squad-target (:target (get-squad-orders unit))
             target-enemy (if squad-target squad-target closest-enemy)
             kite-angle (repulsion-angle unit enemy-melee)
-            kite-dist (condp = (get-unit-type-kw unit)
-                        :marine 25
-                        :vulture 50)
+            kite-dist 50
             fire-range (- (max-range (ground-weapon unit)) 15)]
         (when kite-angle
           (cond

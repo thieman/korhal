@@ -100,12 +100,12 @@
       (if-not (get-unit-by-id unit-id)
         (swap! api-units dissoc unit-id)
         (let [{:keys [unit tag command frequency offset] :as doc} (units unit-id)]
-          ;; TODO: make frequency offset work
-          (try
-            (command)
-            (catch Exception e
-              (println "Exception in API Units synchronous commands!")
-              (.printStackTrace e))))))))
+          (when (zero? (mod (+ (frame-count) offset) frequency))
+            (try
+              (command)
+              (catch Exception e
+                (println "Exception in API Units synchronous commands!")
+                (.printStackTrace e)))))))))
 
 (defn execute-repl-queue []
   (when-let [command (dequeue! repl-command)]
