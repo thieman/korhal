@@ -1,6 +1,6 @@
 (ns korhal.macro.state
   (:require [korhal.interop.interop :refer :all]
-            [korhal.micro.engine :refer [micro-tag-unit!]])
+            [korhal.micro.state :refer [micro-tag-unit!]])
   (:import (jnibwapi.model Unit)))
 
 (def macro-state (ref {:build-order [] :tags {} :frame 0}))

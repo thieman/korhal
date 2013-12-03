@@ -6,8 +6,9 @@
             [korhal.macro.engine :refer [start-macro-engine! stop-macro-engine!]]
             [korhal.macro.state :refer [builder-to-constructor!
                                         construction-completed!]]
-            [korhal.micro.engine :refer [start-micro-engine! stop-micro-engine!
-                                         micro-tag-new-unit!]]
+            [korhal.micro.engine :refer [start-micro-engine! stop-micro-engine!]]
+            [korhal.micro.state :refer [micro-expire! micro-tag-unit!
+                                        micro-tag-new-unit!]]
             [korhal.tools.util :refer [swap-key swap-keys profile]]
             [korhal.tools.repl :refer :all]
             [korhal.tools.queue :refer :all]
@@ -70,6 +71,7 @@
     (start-micro-engine!))
   (when @contract-display (draw-contract-display))
   (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
+  (micro-expire! :lockdown 40)
   (execute-api-queue)
   (execute-when-queue)
   (execute-synchronous-unit-commands)

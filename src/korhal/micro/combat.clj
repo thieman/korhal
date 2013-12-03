@@ -1,11 +1,12 @@
 (ns korhal.micro.combat
   (:require [korhal.interop.interop :refer :all]
+            [korhal.micro.state :refer [micro-state micro-inform!]]
             [korhal.strategy.query :refer [get-squad-orders]]
             [korhal.tools.queue :refer [with-api with-api-unit
                                         clear-api-unit-tag api-unit-tag]]))
 
 (defn- micro-combat-attack [unit]
-  (when (and (idle? unit) (not (enemies-in-range unit)))
+  (when (idle? unit)
     (clear-api-unit-tag unit)
     (let [squad-target (:target (get-squad-orders unit))
           enemy (if squad-target
@@ -69,13 +70,12 @@
            (<= (dist unit closest-enemy) fire-range) (move-angle unit kite-angle kite-dist)))))))
 
 (defn- micro-combat-heal [unit]
-  (let [organics (filter organic? (my-units))
-        nearby (units-nearby unit 128 organics)
-        nearby-injured (filter #(not= (health-perc %) 1) nearby)]
+  (let [injured? (fn [target] (not= (health-perc target) 1))
+        organics (filter organic? (my-units))
+        nearby-injured (filter injured? (units-nearby unit 128 organics))]
     (if (seq nearby-injured)
       (with-api (attack unit (apply min-key health-perc nearby-injured)))
-      (let [outer (units-nearby unit 1000 organics)
-            outer-injured (filter #(not= (health-perc %) 1) outer)]
+      (let [outer-injured (filter injured? (units-nearby unit 1000 organics))]
         (when (seq outer-injured)
           (with-api (attack unit (apply min-key health-perc outer-injured))))))))
 
@@ -89,7 +89,25 @@
         (when (and cower-angle (seq in-range-of))
           (move-angle unit cower-angle cower-dist))))))
 
-(defn dispatch-on-unit-type-kw [unit] (get-unit-type-kw unit))
+(defn locked-down?* [unit]
+  (or (not (zero? (lockdown-timer unit)))
+      (get-in @micro-state [:lockdown (get-id unit)])))
+
+(defn- micro-combat-lockdown [unit]
+  (when (and (researched? :lockdown)
+             (>= (energy unit) 100))
+    (when-let [target (get-in (get-squad-orders unit) [:lockdown unit])]
+      (with-api
+        (when (and (>= (energy unit) 100)
+                   (not (locked-down?* target))
+                   ;; hard to tell when command was issued to fire lockdown
+                   ;; using attack-frame doesn't work, so we use last-command-frame
+                   (>= (- (frame-count) (last-command-frame unit)) 20))
+          (when (use-tech unit (tech-type-kws :lockdown) target)
+            (micro-inform! :lockdown {:id (get-id target)
+                                      :frame (frame-count)})))))))
+
+(defn dispatch-on-unit-type-kw [unit] (or (get-unit-type-kw unit) :default))
 (defmulti micro-combat dispatch-on-unit-type-kw)
 
 (defmethod micro-combat :scv [unit]
@@ -114,7 +132,12 @@
   (micro-combat-cower unit)
   (micro-combat-heal unit))
 
-(defmethod micro-combat :ghost [unit])
+(defmethod micro-combat :ghost [unit]
+  (let [orders (get-squad-orders unit)
+        lockdown-target (get-in orders [:lockdown unit])]
+    (if (and lockdown-target (not (locked-down?* lockdown-target)))
+      (micro-combat-lockdown unit)
+      (micro-combat-attack unit))))
 
 (defmethod micro-combat :siege-tank-tank-mode [unit])
 

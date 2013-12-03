@@ -1,8 +1,9 @@
 (ns korhal.strategy.engine
-  (:require [clojure.set :refer [map-invert]]
+  (:require [clojure.set :refer [map-invert union difference]]
             [korhal.interop.interop :refer :all]
             [korhal.strategy.query :refer [strategy-state]]
-            [korhal.micro.engine :refer [micro-tag-unit!]]
+            [korhal.micro.state :refer [micro-tag-unit!]]
+            [korhal.micro.combat :refer [locked-down?*]]
             [korhal.tools.repl :refer [repl-control]]
             [korhal.tools.queue :refer [with-api]]))
 
@@ -17,9 +18,12 @@
    (commute strategy-state update-in [tag-type] #(dissoc % id))))
 
 (defn strategy-expire! [tag-type frame-diff]
-  (let [expired? (fn [doc] (>= (- (frame-count) (:frame doc)) frame-diff))]
-    (dosync
-     (commute strategy-state update-in [tag-type] #(remove expired? %)))))
+  (dosync
+   (let [current (@strategy-state tag-type)
+         keep (for [[k v] current
+                    :when (not (>= (- (frame-count) (:frame v)) frame-diff))]
+                k)]
+     (commute strategy-state update-in [tag-type] select-keys keep))))
 
 (defn draw-squads-display []
   (let [squads (:squad-members @strategy-state)]
@@ -42,6 +46,13 @@
           (recur latest-id (assoc squads unit ally-squad) (next rest'))
           (recur (inc latest-id) (assoc squads unit latest-id) (next rest')))))))
 
+(defn tag-squads []
+  (let [state @strategy-state]
+    (doseq [squad (keys (map-invert (:squad-members state)))]
+      (let [leader (first (filter #(= squad ((:squad-members state) %)) (my-units)))]
+        (dosync
+         (commute strategy-state assoc-in [:squad-orders squad :type] (get-unit-type-kw leader)))))))
+
 (defn assign-squad-targets []
   (let [state @strategy-state]
     (doseq [squad (keys (map-invert (:squad-members state)))]
@@ -54,11 +65,49 @@
             (dosync
              (commute strategy-state assoc-in [:squad-orders squad :target] target))))))))
 
+(defn dispatch-on-squad-type [squad members]
+  (or (get-in @strategy-state [:squad-orders squad :type]) :default))
+(defmulti assign-special-orders dispatch-on-squad-type)
+
+(defmethod assign-special-orders :ghost [squad members]
+  (let [state @strategy-state
+        previous-orders (-> (get-in state [:squad-orders squad :lockdown])
+                            (select-keys members)
+                            (map-invert))
+        assigned-ghosts (set (keys (map-invert previous-orders)))
+        lockdown-capable (filter #(>= (energy %) 100) members)
+        mech? (fn [x] (or (mechanical? x) (robotic? x)))
+        mechs (filter mech? (enemy-units))
+        nearby-mechs (->> (map #(units-nearby % 300 mechs) members)
+                          (set)
+                          (apply union))
+        targets (filter (complement locked-down?*) nearby-mechs)
+        available (difference (set lockdown-capable) assigned-ghosts)
+        cleaned-orders (select-keys previous-orders targets)
+        new-targets (difference (set targets) (set (keys cleaned-orders)))]
+    (loop [orders cleaned-orders
+           available available
+           targets new-targets]
+      (if (or (not (seq targets)) (not (seq available)))
+        (dosync
+         (commute strategy-state assoc-in [:squad-orders squad :lockdown] (map-invert orders)))
+        (recur (assoc orders (first targets) (first available))
+               (next available)
+               (next targets))))))
+
+(defmethod assign-special-orders :default [squad members])
+
 (defn run-strategy-engine []
   (let [enemy-base (first (enemy-start-locations))
         combat-units (filter (every-pred completed? combat-unit?) (my-units))]
     (reform-squads)
-    (assign-squad-targets)))
+    (tag-squads)
+    (assign-squad-targets)
+    (doseq [squad (keys (map-invert (:squad-members @strategy-state)))]
+      (let [members (->> (seq (:squad-members @strategy-state))
+                         (filter #(= (second %) squad))
+                         (map first))]
+        (assign-special-orders squad members)))))
 
 (defn start-strategy-engine! []
   (dosync

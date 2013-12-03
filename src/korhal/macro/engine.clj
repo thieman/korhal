@@ -3,7 +3,7 @@
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.macro.command :refer :all]
             [korhal.macro.build-order :refer [build-orders get-random-build-order]]
-            [korhal.micro.engine :refer [micro-tag-unit! get-micro-tag]]
+            [korhal.micro.state :refer [micro-tag-unit! get-micro-tag]]
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
             [korhal.tools.contract :refer [cancel-contracts clear-contracts

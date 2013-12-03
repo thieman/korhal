@@ -1,7 +1,7 @@
 (ns korhal.macro.command
   (:require [korhal.interop.interop :refer :all]
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
-            [korhal.micro.engine :refer [micro-tag-unit!]]
+            [korhal.micro.state :refer [micro-tag-unit!]]
             [korhal.tools.contract :refer [contract-build contract-build-addon
                                            contract-train contract-upgrade
                                            contract-research clear-contracts
