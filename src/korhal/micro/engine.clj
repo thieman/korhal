@@ -21,7 +21,7 @@
            (seq (units-nearby unit 1000 (enemy-units)))) (micro-combat unit)
        :else (do
                (clear-api-unit-tag unit)
-               (condp = (:role (get-micro-tag unit))
+               (case (:role (get-micro-tag unit))
                  nil nil
                  :mineral (micro-mineral-worker unit)
                  :gas (micro-gas-worker unit)

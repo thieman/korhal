@@ -56,28 +56,33 @@
   (when-not (= :kite (api-unit-tag unit))
     (with-api-unit unit :kite 5
       (let [enemy-melee (filter (partial close-melee? unit) (enemy-units))
-            closest-enemy (closest unit enemy-melee)
+            enemies-nearby (units-nearby unit (max-range (ground-weapon unit)) (enemy-units))
+            closest-melee (closest unit enemy-melee)
             squad-target (:target (get-squad-orders unit))
-            target-enemy (if squad-target squad-target closest-enemy)
-            kite-angle (repulsion-angle unit enemy-melee)
+            target-enemy (if squad-target squad-target closest-melee)
+            kite-angle (repulsion-angle unit enemies-nearby)
             kite-dist 50
             fire-range (- (max-range (ground-weapon unit)) 15)]
-        (when kite-angle
+        (when (and kite-angle closest-melee)
           (cond
            (and (not (attack-frame? unit))
                 (zero? (ground-weapon-cooldown unit))
-                (> (dist unit closest-enemy) fire-range)) (attack unit target-enemy)
-           (<= (dist unit closest-enemy) fire-range) (move-angle unit kite-angle kite-dist)))))))
+                (> (dist unit closest-melee) fire-range)) (attack unit target-enemy)
+           (<= (dist unit closest-melee) fire-range) (move-angle unit kite-angle kite-dist)))))))
 
 (defn- micro-combat-heal [unit]
   (let [injured? (fn [target] (not= (health-perc target) 1))
         organics (filter organic? (my-units))
         nearby-injured (filter injured? (units-nearby unit 128 organics))]
     (if (seq nearby-injured)
-      (with-api (attack unit (apply min-key health-perc nearby-injured)))
+      (with-api (use-tech unit
+                          (tech-type-kws :healing)
+                          (apply min-key health-perc nearby-injured)))
       (let [outer-injured (filter injured? (units-nearby unit 1000 organics))]
         (when (seq outer-injured)
-          (with-api (attack unit (apply min-key health-perc outer-injured))))))))
+          (with-api (use-tech unit
+                              (tech-type-kws :healing)
+                              (apply min-key health-perc outer-injured))))))))
 
 (defn- micro-combat-cower [unit]
   (when-not (= :cower (api-unit-tag unit))
@@ -137,7 +142,11 @@
         lockdown-target (get-in orders [:lockdown unit])]
     (if (and lockdown-target (not (locked-down?* lockdown-target)))
       (micro-combat-lockdown unit)
-      (micro-combat-attack unit))))
+      ;; TODO: kite properly while maintaining lockdown capability
+      (do (if (< (energy unit) 100)
+            (micro-combat-kite unit)
+            (clear-api-unit-tag unit))
+          (micro-combat-attack unit)))))
 
 (defmethod micro-combat :siege-tank-tank-mode [unit])
 

@@ -76,7 +76,7 @@
                             (map-invert))
         assigned-ghosts (set (keys (map-invert previous-orders)))
         lockdown-capable (filter #(>= (energy %) 100) members)
-        mech? (fn [x] (or (mechanical? x) (robotic? x)))
+        mech? (fn [x] (and (not (building? x)) (or (mechanical? x) (robotic? x))))
         mechs (filter mech? (enemy-units))
         nearby-mechs (->> (map #(units-nearby % 300 mechs) members)
                           (set)

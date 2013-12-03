@@ -30,7 +30,7 @@
 ;; type conversions
 
 (defn java-point [obj grid-type]
-  (condp = grid-type
+  (case grid-type
     :pixel (java.awt.Point. (pixel-x obj) (pixel-y obj))
     :tile (java.awt.Point. (tile-x obj) (tile-y obj))))
 

@@ -97,12 +97,12 @@
         (cond
          (= kw :wait) (pop-build-order!)
          (= kw :send-scout) (send-early-game-scout)
-         :else (condp = kw
+         :else (case kw
                  :command-center (expand true)
                  :refinery (build-refinery true)
                  (build-kw kw true))))
       (when (can-afford? kw)
-        (condp = directive
+        (case directive
           :addon (addon-kw kw)
           :train (train-kw kw)
           :research (research-kw kw)
