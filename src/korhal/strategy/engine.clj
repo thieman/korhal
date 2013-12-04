@@ -72,11 +72,11 @@
 (defmethod assign-special-orders :ghost [squad members]
   (when (researched? :lockdown)
     (let [state @strategy-state
+          lockdown-capable (filter #(>= (energy %) 100) members)
           previous-orders (-> (get-in state [:squad-orders squad :lockdown])
-                              (select-keys members)
+                              (select-keys lockdown-capable)
                               (map-invert))
           assigned-ghosts (set (keys (map-invert previous-orders)))
-          lockdown-capable (filter #(>= (energy %) 100) members)
           mech? (fn [x] (and (not (building? x)) (or (mechanical? x) (robotic? x))))
           mechs (filter mech? (enemy-units))
           nearby-mechs (->> (map #(units-nearby % 300 mechs) members)
