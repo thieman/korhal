@@ -13,7 +13,7 @@
   (let [base-choke (closest-choke-start (my-start-location) (chokepoints))
         enemy-base (strat/get-priority-enemy-base)
         storms (filter #(= (bullet-type-kws :psionic-storm) (get-type-id %)) (bullets))]
-    (doseq [unit (filter (complement building?) (my-units))]
+    (doseq [unit (filter (every-pred completed? (complement building?)) (my-units))]
       (cond
        (under-aoe? unit) (micro-under-aoe unit storms)
        (or (attacking? unit)

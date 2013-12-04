@@ -315,8 +315,8 @@
   (and (not (worker? unit)) (not (building? unit))))
 
 (defn health-perc [unit]
-  (when (pos? (initial-hit-points unit))
-    (/ (hit-points unit) (initial-hit-points unit))))
+  (when (pos? (max-hit-points unit))
+    (/ (hit-points unit) (max-hit-points unit))))
 
 (defn get-unit-by-id [unit-id]
   (when (>= unit-id 0) (.getUnit api unit-id)))
@@ -728,6 +728,18 @@
         px (+ (pixel-x unit) (* distance (Math/cos rad)))
         py (+ (pixel-y unit) (* distance (Math/sin rad)))]
     (move unit px py)))
+
+(defn mineral-walk-angle
+  "Attempt to mineral walk in the general direction of the provided
+  angle. If no minerals are in that direction, falls back to
+  move-angle."
+  [unit angle distance]
+  (let [in-direction? (fn [mineral] (<= (Math/abs (- angle (angle-to unit mineral))) 135))
+        minerals (filter in-direction? (minerals))
+        current-frame (frame-count)]
+    (if (seq minerals)
+      (gather unit (first minerals))
+      (move-angle unit angle distance))))
 
 (defn closest [unit coll]
   (when (and unit (seq coll))

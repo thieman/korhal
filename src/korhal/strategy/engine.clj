@@ -70,30 +70,31 @@
 (defmulti assign-special-orders dispatch-on-squad-type)
 
 (defmethod assign-special-orders :ghost [squad members]
-  (let [state @strategy-state
-        previous-orders (-> (get-in state [:squad-orders squad :lockdown])
-                            (select-keys members)
-                            (map-invert))
-        assigned-ghosts (set (keys (map-invert previous-orders)))
-        lockdown-capable (filter #(>= (energy %) 100) members)
-        mech? (fn [x] (and (not (building? x)) (or (mechanical? x) (robotic? x))))
-        mechs (filter mech? (enemy-units))
-        nearby-mechs (->> (map #(units-nearby % 300 mechs) members)
-                          (set)
-                          (apply union))
-        targets (filter (complement locked-down?*) nearby-mechs)
-        available (difference (set lockdown-capable) assigned-ghosts)
-        cleaned-orders (select-keys previous-orders targets)
-        new-targets (difference (set targets) (set (keys cleaned-orders)))]
-    (loop [orders cleaned-orders
-           available available
-           targets new-targets]
-      (if (or (not (seq targets)) (not (seq available)))
-        (dosync
-         (commute strategy-state assoc-in [:squad-orders squad :lockdown] (map-invert orders)))
-        (recur (assoc orders (first targets) (first available))
-               (next available)
-               (next targets))))))
+  (when (researched? :lockdown)
+    (let [state @strategy-state
+          previous-orders (-> (get-in state [:squad-orders squad :lockdown])
+                              (select-keys members)
+                              (map-invert))
+          assigned-ghosts (set (keys (map-invert previous-orders)))
+          lockdown-capable (filter #(>= (energy %) 100) members)
+          mech? (fn [x] (and (not (building? x)) (or (mechanical? x) (robotic? x))))
+          mechs (filter mech? (enemy-units))
+          nearby-mechs (->> (map #(units-nearby % 300 mechs) members)
+                            (set)
+                            (apply union))
+          targets (filter (complement locked-down?*) nearby-mechs)
+          available (difference (set lockdown-capable) assigned-ghosts)
+          cleaned-orders (select-keys previous-orders targets)
+          new-targets (difference (set targets) (set (keys cleaned-orders)))]
+      (loop [orders cleaned-orders
+             available available
+             targets new-targets]
+        (if (or (not (seq targets)) (not (seq available)))
+          (dosync
+           (commute strategy-state assoc-in [:squad-orders squad :lockdown] (map-invert orders)))
+          (recur (assoc orders (first targets) (first available))
+                 (next available)
+                 (next targets)))))))
 
 (defmethod assign-special-orders :default [squad members])
 
