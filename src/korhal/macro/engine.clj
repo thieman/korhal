@@ -3,7 +3,8 @@
             [korhal.macro.state :refer [macro-state macro-tag-unit! get-macro-tag pop-build-order!]]
             [korhal.macro.command :refer :all]
             [korhal.macro.build-order :refer [build-orders get-random-build-order]]
-            [korhal.micro.state :refer [micro-tag-unit! get-micro-tag]]
+            [korhal.micro.state :refer [micro-tag-unit! get-micro-tag
+                                        micro-inform!]]
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
             [korhal.tools.contract :refer [cancel-contracts clear-contracts
@@ -46,6 +47,16 @@
         (if (not (:jitter tag))
           (retry-build idle-scv tag)
           (retry-build idle-scv tag (Math/floor (/ (:retry tag) 20))))))))
+
+(defn- update-mining-scv-targets
+  "Keep track of which patches SCVs are mining on so we can split
+  optimally."
+  []
+  (doseq [mining-scv (filter gathering-minerals? (my-scvs))]
+    (when (= (order-id mining-scv) (get-id (order-type-kws :mining-minerals)))
+      (let [mineral (get-unit-by-id (target-unit-id mining-scv))]
+        (micro-inform! :mining {:id (get-id mining-scv)
+                                :mineral (get-id mineral)})))))
 
 (defn- mine-with-idle-scvs []
   (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]
@@ -138,6 +149,7 @@
   (clear-contracts)
   (retry-failed-addons)
   (restart-failed-building-scvs)
+  (update-mining-scv-targets)
   (mine-with-idle-scvs)
   (mine-with-unassigned-gas-scvs)
   (assign-scvs-to-refineries)

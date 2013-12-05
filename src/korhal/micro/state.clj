@@ -2,7 +2,7 @@
   (:require [korhal.interop.interop :refer :all])
   (:import (jnibwapi.model Unit)))
 
-(def micro-state (ref {:tags {} :frame 0 :lockdown {}}))
+(def micro-state (ref {:tags {} :frame 0 :lockdown {} :mining {}}))
 
 (defn micro-inform! [tag-type doc]
   (dosync

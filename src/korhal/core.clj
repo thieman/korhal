@@ -72,10 +72,11 @@
   (when @contract-display (draw-contract-display))
   (strategy-expire! :nukes 300) ;; estimated frames for a nuke to drop
   (micro-expire! :lockdown 40)
-  (execute-api-queue)
-  (execute-when-queue)
-  (execute-synchronous-unit-commands)
-  (execute-repl-queue))
+  (profile
+   (execute-api-queue)
+   (execute-when-queue)
+   (execute-synchronous-unit-commands)
+   (execute-repl-queue)))
 
 (defn korhal-gameEnded [this]
   (stop-strategy-engine!)

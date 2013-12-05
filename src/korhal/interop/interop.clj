@@ -793,3 +793,9 @@
            in-range? (fn [enemy] (<= (dist unit enemy) (max-range (get-weapon unit))))
            in-range-enemies (filter in-range? (enemy-units))]
        (seq in-range-enemies))))
+
+(defn being-targeted-by
+  "Return units in coll that are currently targeting the specified
+  unit."
+  [unit coll]
+  (filter #(= (get-id unit) (target-unit-id %)) coll))

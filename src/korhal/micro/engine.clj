@@ -35,6 +35,7 @@
    (commute micro-state assoc-in [:tags] {})
    (commute micro-state assoc-in [:frame] 0)
    (commute micro-state assoc-in [:lockdown] {})
+   (commute micro-state assoc-in [:mining] {})
    (commute micro-state assoc-in [:run] true))
   (future (loop []
             (if (not (:run @micro-state))

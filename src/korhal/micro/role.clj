@@ -1,11 +1,26 @@
 (ns korhal.micro.role
   (:require [korhal.interop.interop :refer :all]
+            [korhal.micro.state :refer [micro-state micro-inform!]]
             [korhal.tools.queue :refer [with-api with-api-when]]))
 
 (defn micro-mineral-worker [unit]
   (when (and (completed? unit) (or (idle? unit) (gathering-gas? unit)))
-    (when-let [closest-mineral (closest unit (minerals))]
-      (with-api (right-click unit closest-mineral)))))
+    (let [closest-cc (closest-tile unit (my-command-centers))
+          cc-minerals (units-nearby closest-cc 600 (minerals))
+          freq-seed (into {} (map #(vector % 0) (map get-id cc-minerals)))
+          mining-freq (->> (seq (:mining @micro-state))
+                           (map second)
+                           (map :mineral)
+                           (frequencies)
+                           (merge freq-seed))
+          cc-minerals-freq (select-keys mining-freq (map get-id cc-minerals))
+          sorted (sort-by second cc-minerals-freq)]
+      (when-let [mineral (if (seq sorted)
+                           (get-unit-by-id (first (first sorted)))
+                           (first cc-minerals))]
+        (micro-inform! :mining {:id (get-id unit)
+                                :mineral (get-id mineral)})
+        (with-api (right-click unit mineral))))))
 
 (defn micro-gas-worker [unit]
   (when (and (completed? unit) (or (idle? unit) (gathering-minerals? unit)))
