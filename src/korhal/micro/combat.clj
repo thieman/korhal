@@ -54,7 +54,7 @@
 
 (defn- micro-combat-kite [unit]
   (when-not (= :kite (api-unit-tag unit))
-    (with-api-unit unit :kite 5
+    (with-api-unit unit :kite 3
       (let [enemy-melee (filter (partial close-melee? unit) (enemy-units))
             enemies-nearby (units-nearby unit (max-range (ground-weapon unit)) (enemy-units))
             closest-melee (closest unit enemy-melee)

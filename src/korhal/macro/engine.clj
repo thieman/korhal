@@ -55,8 +55,9 @@
   (doseq [mining-scv (filter gathering-minerals? (my-scvs))]
     (when (= (order-id mining-scv) (get-id (order-type-kws :mining-minerals)))
       (let [mineral (get-unit-by-id (target-unit-id mining-scv))]
-        (micro-inform! :mining {:id (get-id mining-scv)
-                                :mineral (get-id mineral)})))))
+        (when (and mineral mining-scv)
+          (micro-inform! :mining {:id (get-id mining-scv)
+                                  :mineral (get-id mineral)}))))))
 
 (defn- mine-with-idle-scvs []
   (doseq [idle-scv (filter (every-pred completed? idle?) (my-scvs))]

@@ -57,7 +57,9 @@
   (draw-targets true)
   (draw-ids true)
   (show-contract-display true)
-  (when run-repl? (start-repl! 7777)))
+  (when run-repl?
+    (repl-control! false)
+    (start-repl! 7777)))
 
 (defn korhal-gameUpdate [this]
   ;; we have to do this here instead of korhal-gameStarted because frame does not
@@ -84,7 +86,9 @@
   (stop-micro-engine!)
   (when run-repl? (stop-repl!)))
 
-(defn korhal-keyPressed [this keycode])
+(defn korhal-keyPressed [this keycode]
+  (case keycode
+    82 (repl-control! :toggle)))
 
 (defn korhal-matchEnded [this winner])
 (defn korhal-sendText [this text])
