@@ -115,9 +115,21 @@
 
 (defn map-hash [] (.. api getMap getHash))
 
-(defn map-width [] (.. api getMap getWidth))
+(defn map-width
+  ([] (map-width :pixel))
+  ([type]
+     (case type
+       :pixel (* 32 (.. api getMap getWidth))
+       :tile (.. api getMap getWidth))))
 
-(defn map-height [] (.. api getMap getHeight))
+(defn map-height
+  ([] (map-height :pixel))
+  ([type]
+     (case type
+       :pixel (* 32 (.. api getMap getHeight))
+       :tile (.. api getMap getHeight))))
+
+(defn map-tile-height [tx ty] (. (. api getMap) getHeight tx ty))
 
 (defn map-walk-width [] (.. api getMap getWalkWidth))
 
@@ -129,7 +141,7 @@
 
 (defn walkable?
   ([point] (walkable? (.getX point) (.getY point)))
-  ([wx wy] (.. api getMap isWalkable wx wy)))
+  ([wx wy] (. (. api getMap) isWalkable wx wy)))
 
 (defn low-res-walkable?
   ([point] (low-res-walkable? (.getX point) (.getY point)))
@@ -278,6 +290,10 @@
   (if (instance? BaseLocation obj)
     (.getTy obj)
     (.getTileY obj)))
+
+(defn walk-x [obj] (Math/floor (/ (pixel-x obj) 8)))
+
+(defn walk-y [obj] (Math/floor (/ (pixel-y obj) 8)))
 
 (defn mineral-price [obj]
   (cond
@@ -741,13 +757,19 @@
                              (pixel-x unit2) (pixel-y unit2)))
   ([x1 y1 x2 y2] (mod (- (angle-to x1 y1 x2 y2) 180) 360)))
 
-(defn move-angle
-  "Move a unit a specified distance at a specified angle."
+(defn point-angle
+  "Return [px py] of the pixel location a given angle and distance
+  from the unit."
   [unit angle distance]
   (let [rad (deg->rad angle)
         px (+ (pixel-x unit) (* distance (Math/cos rad)))
         py (+ (pixel-y unit) (* distance (Math/sin rad)))]
-    (move unit px py)))
+    [px py]))
+
+(defn move-angle
+  "Move a unit a specified distance at a specified angle."
+  [unit angle distance]
+  (apply move unit (point-angle unit angle distance)))
 
 (defn mineral-walk-angle
   "Attempt to mineral walk in the general direction of the provided
@@ -782,6 +804,24 @@
   (let [nearby? (fn [target-unit] (<= (dist unit target-unit) range))
         nearby-units (remove #{unit} (filter nearby? coll))]
     (seq nearby-units)))
+
+(defn walls-nearby
+  "Return seq of angles to walls nearby the unit within
+  distance. Defaults to 45 degree separation between angles."
+  ;; TODO: clean up these pixel/walk-tile/build-tile conversions
+  ([unit distance] (walls-nearby unit distance 45))
+  ([unit distance sep]
+     (let [angles (for [angle (range 0 360 sep)
+                        :let [[px py] (point-angle unit angle distance)]]
+                    (when (or (not (<= 0 px (map-width)))
+                              (not (<= 0 py (map-height)))
+                              (not= (map-tile-height (Math/floor (/ px 32))
+                                                     (Math/floor (/ py 32)))
+                                    (map-tile-height (tile-x unit)
+                                                     (tile-y unit)))
+                              (not (walkable? (/ px 8) (/ py 8))))
+                      angle))]
+       (remove nil? angles))))
 
 (defn unit-max-range [unit]
   (max (max-range (ground-weapon unit)) (max-range (air-weapon unit))))

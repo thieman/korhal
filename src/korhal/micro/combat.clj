@@ -34,22 +34,26 @@
        (< (dist unit enemy) (- (max-range (ground-weapon unit)) 2))))
 
 (defn- repulsion-angle
-  "Bisect the biggest available escape sector."
+  "Bisect the biggest available escape sector. Also takes into account
+  nearby walls and adds them as repulsors."
   [unit coll]
-  (let [angles-to (sort (map (partial angle-to unit) coll))]
+  (let [angles-to-units (map (partial angle-to unit) coll)
+        angles-to-walls (walls-nearby unit 50)
+        repulsor-angles (sort (concat angles-to-units angles-to-walls))
+        curve-angle (if (seq angles-to-walls) 0 45)]
     (cond
-     (zero? (count angles-to)) nil
-     (= 1 (count angles-to)) (+ (first angles-to) 180 45) ;; curve around
-     :else (let [pairs (for [idx (range (dec (count angles-to)))
-                             :let [a (nth angles-to idx)
-                                   b (nth angles-to (inc idx))]]
+     (zero? (count repulsor-angles)) nil
+     (= 1 (count repulsor-angles)) (+ (first repulsor-angles) 180 curve-angle) ;; curve around
+     :else (let [pairs (for [idx (range (dec (count repulsor-angles)))
+                             :let [a (nth repulsor-angles idx)
+                                   b (nth repulsor-angles (inc idx))]]
                          [a b])
-                 pairs-with-last (conj pairs [(last angles-to) (+ 360 (first angles-to))])
+                 pairs-with-last (conj pairs [(last repulsor-angles) (+ 360 (first repulsor-angles))])
                  best (apply max-key #(- (second %) (first %)) pairs-with-last)
                  diff (- (second best) (first best))
                  bisected (+ (first best) (/ diff 2))]
              (if (> diff 270)
-               (+ 45 bisected) ;; curve around so we don't just run away in a straight line forever
+               (+ curve-angle bisected) ;; curve around so we don't just run away in a straight line forever
                bisected)))))
 
 (defn- micro-combat-kite [unit]
