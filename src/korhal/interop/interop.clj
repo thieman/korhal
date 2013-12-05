@@ -109,27 +109,47 @@
 
 (defn load-map-data [boolean] (.loadMapData api boolean))
 
-(defn map-width [] (.. api getMap getMapWidth))
+(defn map-name [] (.. api getMap getName))
 
-(defn map-height [] (.. api getMap getMapHeight))
+(defn map-filename [] (.. api getMap getFileName))
 
-(defn map-name [] (.. api getMap getMapName))
+(defn map-hash [] (.. api getMap getHash))
 
-(defn region-map [] (.. api getMap getRegionMap))
+(defn map-width [] (.. api getMap getWidth))
 
-(defn walkable-data [] (.. api getMap getWalkableData))
+(defn map-height [] (.. api getMap getHeight))
 
-(defn buildable-data [] (.. api getMap getBuildableData))
+(defn map-walk-width [] (.. api getMap getWalkWidth))
 
-(defn chokepoints [] (.. api getMap getChokePoints))
+(defn map-walk-height [] (.. api getMap getWalkHeight))
+
+(defn region-at-tile
+  ([point] (region-at-tile (.getX point) (.getY point)))
+  ([tx ty] (.. api getMap getRegion tx ty)))
+
+(defn walkable?
+  ([point] (walkable? (.getX point) (.getY point)))
+  ([wx wy] (.. api getMap isWalkable wx wy)))
+
+(defn low-res-walkable?
+  ([point] (low-res-walkable? (.getX point) (.getY point)))
+  ([tx ty] (.. api getMap isLowResWalkable tx ty)))
 
 (defn regions [] (.. api getMap getRegions))
 
-(defn polygon [region-id] (.. api getMap getPolygon region-id))
+(defn chokepoints [] (.. api getMap getChokePoints))
 
 (defn base-locations [] (.. api getMap getBaseLocations))
 
 (defn my-start-location [] (.. api getSelf getStartLocation))
+
+(defn ground-distance
+  ([p1 p2] (ground-distance (.getX p1) (.getY p1) (.getX p2) (.getY p2)))
+  ([tx1 ty1 tx2 ty2] (.. api getMap getGroundDistance tx1 ty1 tx2 ty2)))
+
+(defn connected?
+  ([p1 p2] (connected? (.getX p1) (.getY p1) (.getX p2) (.getY p2)))
+  ([tx1 ty1 tx2 ty2] (.. api getMap isConnected tx1 ty1 tx2 ty2)))
 
 (defn enemy-start-locations []
   (let [bases (base-locations)
