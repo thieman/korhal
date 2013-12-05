@@ -88,7 +88,8 @@
 
 (defn korhal-keyPressed [this keycode]
   (case keycode
-    82 (repl-control! :toggle)))
+    #_R 82 (repl-control! :toggle)
+    nil))
 
 (defn korhal-matchEnded [this winner])
 (defn korhal-sendText [this text])
