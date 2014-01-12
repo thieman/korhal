@@ -1,6 +1,6 @@
 # Korhal
 
-Korhal is a Brood War AI written in Clojure on top of a custom fork of JNIBWAPI that we use to extract even more information from the Brood War process.
+Korhal is a Brood War AI written in Clojure on top of a custom fork of JNIBWAPI that we use to extract even more information from the Brood War process. Korhal was started during my time at [Hacker School](https://www.hackerschool.com/).
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ Korhal is still in early development and is not combat ready. There's a whole lo
 
 ### Features
 
-* nREPL server, useful for development
+* nREPL server for interacting with a running game
 * Brood War API designed for Clojure, ported from JNIBWAPI
 * Fully asynchronous AI using Clojure's awesome ref types
 * Contracts system keeps track of resources that have been committed to actions but not yet spent
@@ -23,6 +23,10 @@ Korhal is still in early development and is not combat ready. There's a whole lo
 
 ### Example Videos
 
-[Marines kiting some zealots](http://www.youtube.com/watch?v=4cbZM1INAf4)
+[Marines kiting zealots](http://www.youtube.com/watch?v=opuMbeqU0TI)
+
+[Ghosts coordinating lockdowns](http://www.youtube.com/watch?v=dLX-cETVdyM)
+
+[Skirmish against zealots and dragoons](http://www.youtube.com/watch?v=qYkhnUEt310)
 
 [Basic build order execution](http://www.youtube.com/watch?v=LnIq5zx1jqw)
