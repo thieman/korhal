@@ -8,3 +8,6 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 *.jbwta
+.idea*
+*.iml
+.DS_Store
