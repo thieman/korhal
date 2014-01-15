@@ -1,0 +1,9 @@
+#+TITLE: jaccarmac/korhal
+#+AUTHOR: Jacob MacDonald
+#+DATE:
+#+PROPERTY: header-args :mkdirp yes
+* TODO: Write code
+This project is my attempt to convert [[https://github.com/thieman/korhal][thieman/korhal]] into a literate
+program. The secondary goal is to refine the AI itself. As you can see,
+I have barely started to achieve either of these goals, so your time
+will be better spent examining the [[https://github.com/thieman/korhal][parent project]].
