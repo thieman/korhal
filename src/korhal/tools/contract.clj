@@ -220,3 +220,9 @@
 (defn can-make-now?
   ([kw] (and (can-afford? kw) (can-make? kw)))
   ([unit kw] (and (can-afford? kw) (can-make? unit kw))))
+
+(defn contracted?
+  [kw]
+  (if (seq (filter #(= (:kw %) kw) (:buildings @contracted)))
+    true
+    false))

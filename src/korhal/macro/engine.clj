@@ -7,8 +7,8 @@
                                         micro-inform!]]
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
-            [korhal.tools.contract :refer [cancel-contracts clear-contracts
-                                           contract-train
+            [korhal.tools.contract :refer [cancel-contracts clear-contracts contracted?
+                                           contract-train contract-upgrade
                                            can-afford? contracted-max-supply
                                            contracted-addons can-make-now?]]
             [korhal.tools.util :refer [profile]]))
@@ -88,6 +88,20 @@
     (when (can-afford? :scv)
       (contract-train cc :scv))))
 
+(defn- maybe-build-engineering-bay
+  "Builds an Engineering Bay if it doesn't already exist (may want more than one at times?)"
+  []
+  (if (and (empty? (my-buildings-kw :engineering-bay)) (not (contracted? :engineering-bay)))
+    (when (can-afford? :engineering-bay)
+      (build-kw :engineering-bay))))
+
+(defn- maybe-upgrade-infantry
+  []
+  (doseq [engineering-bay (filter can-build-now? (my-engineering-bays))]
+    (cond
+      (can-afford? :infantry-weapons) (contract-upgrade engineering-bay :infantry-weapons)
+      (can-afford? :infantry-armor) (contract-upgrade engineering-bay :infantry-armor))));;doesn't get this
+
 (defn- maybe-train-army
   "Train army units from finished structures based on the desired unit
   composition."
@@ -158,7 +172,9 @@
   (if (seq (:build-order @macro-state))
     (process-build-order-step)
     (do (ensure-enough-depots)
-        (maybe-train-army))))
+        (maybe-train-army)
+        (maybe-build-engineering-bay)
+        (maybe-upgrade-infantry))))
 
 (defn start-macro-engine! []
   (dosync
