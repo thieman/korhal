@@ -5,7 +5,7 @@
             [korhal.tools.contract :refer [contract-build contract-build-addon
                                            contract-train contract-upgrade
                                            contract-research clear-contracts
-                                           cancel-contracts can-build? can-afford?]]))
+                                           cancel-contracts can-build? can-afford? contracted?]]))
 
 (defn- scv-available? [scv]
   (and (:available (get-macro-tag scv))
@@ -120,3 +120,11 @@
     (when (and builder (can-afford? upgrade-type))
       (contract-upgrade builder kw)
       (pop-build-order!))))
+
+(defn building-built?
+  "For checking if a building is built or is contracted to be built,
+  to avoid building more than one."
+  [kw]
+  (if (or (seq (my-buildings-kw kw)) (contracted? kw))
+    true
+    false))

@@ -88,19 +88,22 @@
     (when (can-afford? :scv)
       (contract-train cc :scv))))
 
-(defn- maybe-build-engineering-bay
-  "Builds an Engineering Bay if it doesn't already exist (may want more than one at times?)"
+(defn- maybe-upgrade
   []
-  (if (and (empty? (my-buildings-kw :engineering-bay)) (not (contracted? :engineering-bay)))
+  (if (building-built? :engineering-bay)
+    (doseq [engineering-bay (filter can-build-now? (my-engineering-bays))]
+      (cond
+        (can-afford? :infantry-weapons) (contract-upgrade engineering-bay :infantry-weapons)
+        (can-afford? :infantry-armor) (contract-upgrade engineering-bay :infantry-armor)))
     (when (can-afford? :engineering-bay)
-      (build-kw :engineering-bay))))
-
-(defn- maybe-upgrade-infantry
-  []
-  (doseq [engineering-bay (filter can-build-now? (my-engineering-bays))]
-    (cond
-      (can-afford? :infantry-weapons) (contract-upgrade engineering-bay :infantry-weapons)
-      (can-afford? :infantry-armor) (contract-upgrade engineering-bay :infantry-armor))));;doesn't get this
+      (build-kw :engineering-bay)))
+  (if (building-built? :armory)
+    (doseq [armory (filter can-build-now? (my-armories))]
+      (cond
+        (can-afford? :vehicle-weapons) (contract-upgrade armory :vehicle-weapons)
+        (can-afford? :vehicle-plating) (contract-upgrade armory :vehicle-plating)))
+    (when (can-afford? :armory)
+      (build-kw :armory))))
 
 (defn- maybe-train-army
   "Train army units from finished structures based on the desired unit
@@ -173,8 +176,7 @@
     (process-build-order-step)
     (do (ensure-enough-depots)
         (maybe-train-army)
-        (maybe-build-engineering-bay)
-        (maybe-upgrade-infantry))))
+        (maybe-upgrade))))
 
 (defn start-macro-engine! []
   (dosync
