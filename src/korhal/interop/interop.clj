@@ -612,6 +612,10 @@
   ([upgrade] (.canUpgrade api (get-type-id upgrade)))
   ([unit upgrade] (.canUpgrade api (.getID unit) (get-type-id upgrade))))
 
+(defn can-upgrade-kw?
+  ([upgrade-kw] (.canUpgrade api (get-type-id (upgrade-type-kws upgrade-kw))))
+  ([unit upgrade-kw] (.canUpgrade api (.getID unit) (get-type-id (upgrade-type-kws upgrade-kw)))))
+
 (defn under-aoe? [unit]
   (or (under-dark-swarm? unit) (under-disruption-web? unit) (under-storm? unit)))
 

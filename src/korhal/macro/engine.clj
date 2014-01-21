@@ -7,10 +7,11 @@
                                         micro-inform!]]
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
-            [korhal.tools.contract :refer [cancel-contracts clear-contracts contracted?
+            [korhal.tools.contract :refer [cancel-contracts clear-contracts
                                            contract-train contract-upgrade
                                            can-afford? contracted-max-supply
-                                           contracted-addons can-make-now?]]
+                                           contracted-addons can-make-now?
+                                           contracted-kw? can-upgrade-now?]]
             [korhal.tools.util :refer [profile]]))
 
 (defn- send-early-game-scout []
@@ -88,22 +89,25 @@
     (when (can-afford? :scv)
       (contract-train cc :scv))))
 
-(defn- maybe-upgrade
+(defn- build-ebay-armory
   []
-  (if (building-built? :engineering-bay)
-    (doseq [engineering-bay (filter can-build-now? (my-engineering-bays))]
-      (cond
-        (can-afford? :infantry-weapons) (contract-upgrade engineering-bay :infantry-weapons)
-        (can-afford? :infantry-armor) (contract-upgrade engineering-bay :infantry-armor)))
+  (if (zero? (num-buildings-of-kw :engineering-bay true))
     (when (can-afford? :engineering-bay)
       (build-kw :engineering-bay)))
-  (if (building-built? :armory)
-    (doseq [armory (filter can-build-now? (my-armories))]
-      (cond
-        (can-afford? :vehicle-weapons) (contract-upgrade armory :vehicle-weapons)
-        (can-afford? :vehicle-plating) (contract-upgrade armory :vehicle-plating)))
+  (if (zero? (num-buildings-of-kw :armory true))
     (when (can-afford? :armory)
       (build-kw :armory))))
+
+(defn- maybe-upgrade
+  []
+  (doseq [engineering-bay (filter can-build-now? (my-engineering-bays))]
+    (cond
+      (can-upgrade-now? :infantry-weapons)(contract-upgrade engineering-bay :infantry-weapons)
+      (can-upgrade-now? :infantry-armor) (contract-upgrade engineering-bay :infantry-armor)))
+  (doseq [armory (filter can-build-now? (my-armories))]
+    (cond
+      (can-upgrade-now? :vehicle-weapons) (contract-upgrade armory :vehicle-weapons)
+      (can-upgrade-now? :vehicle-plating) (contract-upgrade armory :vehicle-plating))))
 
 (defn- maybe-train-army
   "Train army units from finished structures based on the desired unit
@@ -176,7 +180,8 @@
     (process-build-order-step)
     (do (ensure-enough-depots)
         (maybe-train-army)
-        (maybe-upgrade))))
+        (maybe-upgrade)
+        (build-ebay-armory))))
 
 (defn start-macro-engine! []
   (dosync
