@@ -5,7 +5,8 @@
             [korhal.tools.contract :refer [contract-build contract-build-addon
                                            contract-train contract-upgrade
                                            contract-research clear-contracts
-                                           cancel-contracts can-build? can-afford?]]))
+                                           cancel-contracts can-build?
+                                           can-afford? contracted-kw?]]))
 
 (defn- scv-available? [scv]
   (and (:available (get-macro-tag scv))
@@ -120,3 +121,11 @@
     (when (and builder (can-afford? upgrade-type))
       (contract-upgrade builder kw)
       (pop-build-order!))))
+
+(defn num-buildings-of-kw
+  ([kw] (num-buildings-of-kw kw false))
+  ([kw include-contracted?]
+   (let [sum (count (my-buildings-kw kw))]
+     (if include-contracted?
+       (+ (count (contracted-kw? kw)) sum)
+       sum))))

@@ -8,9 +8,10 @@
             [korhal.tools.queue :refer [with-api]]
             [korhal.tools.repl :refer [repl-control]]
             [korhal.tools.contract :refer [cancel-contracts clear-contracts
-                                           contract-train
+                                           contract-train contract-upgrade
                                            can-afford? contracted-max-supply
-                                           contracted-addons can-make-now?]]
+                                           contracted-addons can-make-now?
+                                           contracted-kw? can-upgrade-now?]]
             [korhal.tools.util :refer [profile]]))
 
 (defn- send-early-game-scout []
@@ -88,6 +89,26 @@
     (when (can-afford? :scv)
       (contract-train cc :scv))))
 
+(defn- build-ebay-armory
+  []
+  (when (and (zero? (num-buildings-of-kw :engineering-bay true))
+             (can-afford? :engineering-bay))
+    (build-kw :engineering-bay))
+  (when (and (zero? (num-buildings-of-kw :armory true))
+             (can-afford? :armory))
+    (build-kw :armory)))
+
+(defn- maybe-upgrade
+  []
+  (doseq [engineering-bay (filter can-build-now? (my-engineering-bays))]
+    (cond
+      (can-upgrade-now? :infantry-weapons)(contract-upgrade engineering-bay :infantry-weapons)
+      (can-upgrade-now? :infantry-armor) (contract-upgrade engineering-bay :infantry-armor)))
+  (doseq [armory (filter can-build-now? (my-armories))]
+    (cond
+      (can-upgrade-now? :vehicle-weapons) (contract-upgrade armory :vehicle-weapons)
+      (can-upgrade-now? :vehicle-plating) (contract-upgrade armory :vehicle-plating))))
+
 (defn- maybe-train-army
   "Train army units from finished structures based on the desired unit
   composition."
@@ -158,7 +179,9 @@
   (if (seq (:build-order @macro-state))
     (process-build-order-step)
     (do (ensure-enough-depots)
-        (maybe-train-army))))
+        (maybe-train-army)
+        (maybe-upgrade)
+        (build-ebay-armory))))
 
 (defn start-macro-engine! []
   (dosync
