@@ -125,7 +125,7 @@
 (defn num-buildings-of-kw
   ([kw] (num-buildings-of-kw kw false))
   ([kw include-contracted?]
-   (let [sum (count (seq (my-buildings-kw kw)))]
+   (let [sum (count (my-buildings-kw kw))]
      (if include-contracted?
        (+ (count (contracted-kw? kw)) sum)
        sum))))

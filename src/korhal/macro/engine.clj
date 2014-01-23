@@ -91,12 +91,12 @@
 
 (defn- build-ebay-armory
   []
-  (if (zero? (num-buildings-of-kw :engineering-bay true))
-    (when (can-afford? :engineering-bay)
-      (build-kw :engineering-bay)))
-  (if (zero? (num-buildings-of-kw :armory true))
-    (when (can-afford? :armory)
-      (build-kw :armory))))
+  (when (and (zero? (num-buildings-of-kw :engineering-bay true))
+             (can-afford? :engineering-bay))
+    (build-kw :engineering-bay))
+  (when (and (zero? (num-buildings-of-kw :armory true))
+             (can-afford? :armory))
+    (build-kw :armory)))
 
 (defn- maybe-upgrade
   []
