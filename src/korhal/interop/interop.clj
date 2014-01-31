@@ -81,7 +81,7 @@
 
 ;; common calls to get state vars and collections
 
-(defn get-self [] (. api getSelf))
+(defn get-self [] (.getSelf api))
 
 (defn my-minerals [] (.. api getSelf getMinerals))
 
@@ -129,7 +129,7 @@
        :pixel (* 32 (.. api getMap getHeight))
        :tile (.. api getMap getHeight))))
 
-(defn map-tile-height [tx ty] (. (. api getMap) getHeight tx ty))
+(defn map-tile-height [tx ty] (.getHeight (.getMap api) tx ty))
 
 (defn map-walk-width [] (.. api getMap getWalkWidth))
 
@@ -141,7 +141,7 @@
 
 (defn walkable?
   ([point] (walkable? (.getX point) (.getY point)))
-  ([wx wy] (. (. api getMap) isWalkable wx wy)))
+  ([wx wy] (.isWalkable (.getMap api) wx wy)))
 
 (defn low-res-walkable?
   ([point] (low-res-walkable? (.getX point) (.getY point)))
@@ -165,7 +165,7 @@
 
 (defn enemy-start-locations []
   (let [bases (base-locations)
-        enemy-base? (fn [base] (and (not (= (java-point base :tile) (my-start-location)))
+        enemy-base? (fn [base] (and (not= (java-point base :tile) (my-start-location))
                                     (start-location? base)))]
     (filter enemy-base? bases)))
 
@@ -235,7 +235,7 @@
 (defn my-supply-total [] (/ (.. api getSelf getSupplyTotal) 2))
 
 (defn supply-provided [unit]
-  (/ (. (get-unit-type unit) getSupplyProvided) 2))
+  (/ (.getSupplyProvided (get-unit-type unit)) 2))
 
 ;; common API commands shared among multiple types
 
@@ -328,14 +328,14 @@
 ;; own unit type collections, e.g. my-drones
 (defn plural [n]
   (let [n-str (str n)
-        processed-str (cond (re-find #"[^a]y$" n-str) (str (apply str (butlast n-str)) "ies")
+        processed-str (cond (re-find #"[^a]y$" n-str) (str (clojure.string/join (butlast n-str)) "ies")
                             (re-find #"[s]$" n-str) n-str
                             (re-find #"larva$" n-str) (str n-str "e")
                             :else (str n-str "s"))]
     (if (symbol? n) (symbol processed-str) processed-str)))
 
 (doseq [[n t] (partition 2 unit-types)]
-  (when (not (re-seq #"^Critter" (str t)))
+  (when-not (re-seq #"^Critter" (str t))
     (let [type-predicate (eval (symbol (str *ns* "/is-" n "?")))]
       (intern *ns*
               (symbol (str "my-" (plural n)))

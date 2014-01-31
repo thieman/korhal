@@ -38,8 +38,7 @@
    (commute micro-state assoc-in [:mining] {})
    (commute micro-state assoc-in [:run] true))
   (future (loop []
-            (if (not (:run @micro-state))
-              nil
+            (when (:run @micro-state)
               (let [frame (frame-count)]
                 (if (and (> frame (:frame @micro-state))
                          (not @repl-control))

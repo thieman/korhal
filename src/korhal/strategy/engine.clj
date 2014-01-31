@@ -82,7 +82,7 @@
           nearby-mechs (->> (map #(units-nearby % 300 mechs) members)
                             (set)
                             (apply union))
-          targets (filter (complement locked-down?*) nearby-mechs)
+          targets (remove locked-down?* nearby-mechs)
           available (difference (set lockdown-capable) assigned-ghosts)
           cleaned-orders (select-keys previous-orders targets)
           new-targets (difference (set targets) (set (keys cleaned-orders)))]
@@ -119,8 +119,7 @@
    (commute strategy-state assoc-in [:squad-members] {})
    (commute strategy-state assoc-in [:squad-orders] {}))
   (future (loop []
-            (if (not (:run @strategy-state))
-              nil
+            (when (:run @strategy-state)
               (let [frame (frame-count)]
                 (if (and (> frame (:frame @strategy-state))
                          (not @repl-control))
