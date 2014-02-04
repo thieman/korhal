@@ -181,8 +181,8 @@
        (if (and accommodate-addon (supports-addon? build-type))
          (let [max-x (apply max (map first base-tiles))
                max-y (apply max (map second base-tiles))
-               addon-tiles (for [tx (range (+ 1 max-x) (+ 3 max-x))
-                                 ty (range (- max-y 1) (+ max-y 1))]
+               addon-tiles (for [tx (range (inc max-x) (+ 3 max-x))
+                                 ty (range (dec max-y) (inc max-y))]
                              [tx ty])]
            (concat base-tiles addon-tiles))
          base-tiles))))
@@ -190,7 +190,7 @@
 (defn- reserved-tiles
   "Return a set of all tiles reserved by currently contracted buildings."
   []
-  (set (apply concat (map :tiles (:buildings @contracted)))))
+  (set (mapcat :tiles (:buildings @contracted))))
 
 (defn can-build?
   "Checks whether a given building type fits in a specified
@@ -200,7 +200,7 @@
   ([tx ty to-build check-explored accommodate-addon]
      (let [build-type (to-build unit-type-kws)
            tiles (building-tiles tx ty build-type accommodate-addon)]
-       (when (not (seq (intersection (set tiles) (reserved-tiles))))
+       (when-not (seq (intersection (set tiles) (reserved-tiles)))
          (every? #(can-build-here? (first %) (second %) build-type check-explored) tiles)))))
 
 (defn can-afford?

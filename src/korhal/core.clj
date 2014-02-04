@@ -117,7 +117,7 @@
 
 (defn korhal-unitDiscover [this unit-id]
   (let [unit (get-unit-by-id unit-id)]
-    (when (not (my-unit? unit))
+    (when-not (my-unit? unit)
       (strategy-inform! :enemy-units {:id unit-id
                                       :type (get-unit-type unit)
                                       :x (pixel-x unit)
@@ -136,7 +136,7 @@
 
 (defn korhal-unitShow [this unit-id]
   (let [unit (get-unit-by-id unit-id)]
-    (when (not (my-unit? unit))
+    (when-not (my-unit? unit)
       (strategy-inform! :enemy-units {:id unit-id
                                       :type (get-unit-type unit)
                                       :x (pixel-x unit)

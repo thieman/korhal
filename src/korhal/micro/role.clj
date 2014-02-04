@@ -16,7 +16,7 @@
           cc-minerals-freq (select-keys mining-freq (map get-id cc-minerals))
           sorted (sort-by second cc-minerals-freq)]
       (when-let [mineral (if (seq sorted)
-                           (get-unit-by-id (first (first sorted)))
+                           (get-unit-by-id (ffirst sorted))
                            (first cc-minerals))]
         (micro-inform! :mining {:id (get-id unit)
                                 :mineral (get-id mineral)})

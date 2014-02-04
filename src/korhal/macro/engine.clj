@@ -45,7 +45,7 @@
     (let [tag (get-macro-tag idle-scv)]
       (when (= :build (:role tag))
         (micro-tag-unit! idle-scv nil)
-        (if (not (:jitter tag))
+        (if-not (:jitter tag)
           (retry-build idle-scv tag)
           (retry-build idle-scv tag (Math/floor (/ (:retry tag) 20))))))))
 
@@ -190,8 +190,7 @@
    (commute macro-state assoc-in [:frame] 0)
    (commute macro-state assoc-in [:run] true))
   (future (loop []
-            (if (not (:run @macro-state))
-              nil
+            (when (:run @macro-state)
               (let [frame (frame-count)]
                 (if (and (> frame (:frame @macro-state)) (not @repl-control))
                   (do (try
